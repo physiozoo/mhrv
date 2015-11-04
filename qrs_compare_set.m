@@ -37,7 +37,7 @@ fprintf('** Found %d ''%s'' files in %s, processing...\n', length(files), annota
 sqis = repmat(struct('recName','','Se',0,'PPV',0,'F1',0,'TP',0,'FP',0,'FN',0), length(files), 1);
 
 % Process files
-parfor i = 1:length(files)
+for i = 1:length(files)
     file = files(i);
     t2 = tic;
     
@@ -47,8 +47,15 @@ parfor i = 1:length(files)
     % WFDB name of the record (e.g. mitdb/100)
     recName = [set_dir filesep basename];
     
+    % Make sure the record contains an ECG signal
+    ecg_channel = get_signal_channel(recName, 'ecg');
+    if (isempty(ecg_channel))
+        warning('%s Does not seem to caintain ECG data. Skipping...', file.name);
+        continue;
+    end
+    
     % Calculate SQI indices
-    sqis(i) = qrs_compare(recName, 'bsqi_thresh', bsqi_thresh);
+    sqis(i) = qrs_compare(recName, 'bsqi_thresh', bsqi_thresh, 'ecg_col', ecg_channel);
     
     % Print elapsed time
     elapsed_sec = toc(t2);

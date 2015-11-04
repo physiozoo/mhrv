@@ -7,7 +7,7 @@ DEFAULT_N = [];
 DEFAULT_SHOULD_PLOT = false;
 DEFAULT_THRESH = 0.15; % 150 ms
 DEFAULT_ANN_EXT = 'atr';
-DEFAULT_ECG_COL = 1;
+DEFAULT_ECG_COL = [];
 
 % Define input
 p = inputParser;
@@ -26,6 +26,12 @@ bsqi_thresh = p.Results.bsqi_thresh;
 annotation_ext = p.Results.annotation_ext;
 ecg_col = p.Results.ecg_col;
 
+%% === Find ECG signal index if it wasn't specified
+if (isempty(ecg_col))
+    ecg_col = get_signal_channel(recName, 'ecg');
+    if (isempty(ecg_col)); error('can''t find ECG signal in record'); end;
+end
+
 %% === Processing
 
 % Read the signal
@@ -36,14 +42,7 @@ Fs = 1/(tm(2)-tm(1));  % Fs returned from rdsamp is unreliable
 ref_qrs = rdann(recName, annotation_ext, [], N);
 
 % Calculate QRS locations
-gqrs(recName, N, 0, ecg_col, [], 'qrs_tmp');
-try % In case of some very bad data, gqrs might fail to find anything.
-    test_qrs = rdann(recName, 'qrs_tmp', [], N);
-catch
-    warning('%s: Failed to read gqrs results', recName);
-    test_qrs = NaN;
-end
-delete([recName '.qrs_tmp']); % remove intermediary file
+test_qrs = rqrs(recName, 'ecg_col', ecg_col);
 
 % Calculate SQI indices
 [ F1, Se, PPV, TP, FP, FN ] = bsqi(ref_qrs, test_qrs, bsqi_thresh, Fs);
