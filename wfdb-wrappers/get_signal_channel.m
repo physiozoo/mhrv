@@ -1,4 +1,4 @@
-function [ chan ] = get_signal_channel( recName, sig_desc )
+function [ chan ] = get_signal_channel( rec_name, sig_desc )
 %GET_SIGNAL_CHANNEL Find the channel of a signal in the record matching a description
 
 % default value if we can't find the description
@@ -7,7 +7,7 @@ chan = [];
 % regex for comment line in the header file
 comment_regex = '^\s*#.*';
 
-fheader = fopen([recName, '.hea']);
+fheader = fopen([rec_name, '.hea']);
 
 i = 1;
 first_line = true; % first non-comment line is the 'record line', we need to skip it

@@ -35,14 +35,14 @@ end
 %% === Processing
 
 % Read the signal
-[tm, sig, ~] = rdsamp(recName, ecg_col, N);
+[tm, sig, ~] = rdsamp(recName, ecg_col);
 Fs = 1/(tm(2)-tm(1));  % Fs returned from rdsamp is unreliable
 
 % Get the reference QRS annotations
-ref_qrs = rdann(recName, annotation_ext, [], N);
+ref_qrs = rdann(recName, annotation_ext);
 
 % Calculate QRS locations
-test_qrs = rqrs(recName, 'ecg_col', ecg_col);
+test_qrs = gqrs(recName, 'ecg_col', ecg_col);
 
 % Calculate SQI indices
 [ F1, Se, PPV, TP, FP, FN ] = bsqi(ref_qrs, test_qrs, bsqi_thresh, Fs);

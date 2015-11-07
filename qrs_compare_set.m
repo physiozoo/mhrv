@@ -37,7 +37,7 @@ fprintf('** Found %d ''%s'' files in %s, processing...\n', length(files), annota
 sqis = repmat(struct('recName','','Se',0,'PPV',0,'F1',0,'TP',0,'FP',0,'FN',0), length(files), 1);
 
 % Process files
-for i = 1:length(files)
+parfor i = 1:length(files)
     file = files(i);
     t2 = tic;
     
