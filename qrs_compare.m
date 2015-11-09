@@ -1,4 +1,4 @@
-function [sqi] = qrs_compare( recName, varargin )
+function [sqi, tm, sig, ref_qrs, test_qrs] = qrs_compare( recName, varargin )
 
 %% === Input
 

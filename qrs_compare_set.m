@@ -37,7 +37,9 @@ fprintf('** Found %d ''%s'' files in %s, processing...\n', length(files), annota
 sqis = repmat(struct('recName','','Se',0,'PPV',0,'F1',0,'TP',0,'FP',0,'FN',0), length(files), 1);
 
 % Process files
-parfor i = 1:length(files)
+N = length(files);
+N_error = 0;
+parfor i = 1:N
     file = files(i);
     t2 = tic;
     
@@ -51,6 +53,7 @@ parfor i = 1:length(files)
     ecg_channel = get_signal_channel(recName, 'ecg');
     if (isempty(ecg_channel))
         warning('%s Does not seem to caintain ECG data. Skipping...', file.name);
+        N_error = N_error + 1;
         continue;
     end
     
@@ -64,23 +67,24 @@ end
 fprintf('** Done processing, total time: %.3fs\n', toc(t1));
 
 %% === Calculate average Se, PPV, F1
-mean_Se  = mean(cell2mat({sqis.Se}));
-mean_PPV = mean(cell2mat({sqis.PPV}));
-mean_F1 = mean(cell2mat({sqis.F1}));
+N_no_error = N - N_error;
+mean_Se  = 100 * sum(cell2mat({sqis.Se})) / N_no_error;
+mean_PPV = 100 * sum(cell2mat({sqis.PPV}))/ N_no_error;
+mean_F1 =  100 * sum(cell2mat({sqis.F1})) / N_no_error;
 
 % Print results
-fprintf('** Mean:  Se=%.3f, PPV=%.3f, F1=%.3f\n', mean_Se, mean_PPV, mean_F1);
+fprintf('** Mean:  Se=%5.1f%%, PPV=%5.1f%%, F1=%5.1f%%\n', mean_Se, mean_PPV, mean_F1);
 
 %% === Calculate Gross Se, PPV, F1
 TP = sum(cell2mat({sqis.TP}));
 FP = sum(cell2mat({sqis.FP}));
 FN = sum(cell2mat({sqis.FN}));
-gross_Se  = TP/(TP+FN);
-gross_PPV = TP/(FP+TP);
-gross_F1 = 2 * gross_Se * gross_PPV / (gross_Se + gross_PPV);
+gross_Se  = 100 * TP/(TP+FN);
+gross_PPV = 100 * TP/(FP+TP);
+gross_F1 =  2 * gross_Se * gross_PPV / (gross_Se + gross_PPV);
 
 % Print results
-fprintf('** Gross: Se=%.3f, PPV=%.3f, F1=%.3f\n', gross_Se, gross_PPV, gross_F1);
+fprintf('** Gross: Se=%5.1f%%, PPV=%5.1f%%, F1=%5.1f%%\n', gross_Se, gross_PPV, gross_F1);
 
 % Plots
 if ~should_plot; return; end;
