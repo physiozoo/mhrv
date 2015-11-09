@@ -13,6 +13,7 @@ DEFAULT_CONFIG = '';
 
 % Define input
 p = inputParser;
+p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
 p.addParameter('N', DEFAULT_N, @isnumeric);
 p.addParameter('N0', DEFAULT_N0, @isnumeric);
