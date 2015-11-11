@@ -10,6 +10,7 @@ function [ sqis ] = qrs_compare_set( set_dir, varargin )
 DEFAULT_SHOULD_PLOT = false;
 DEFAULT_THRESH = 0.15; % 150 ms
 DEFAULT_ANN_EXT = 'atr';
+DEFAULT_QRS_DETECTOR = 'gqrs';
 
 % Define input
 p = inputParser;
@@ -17,12 +18,14 @@ p.addRequired('set_dir', @(dir) exist(dir, 'dir'));
 p.addParameter('should_plot', DEFAULT_SHOULD_PLOT, @islogical);
 p.addParameter('bsqi_thresh', DEFAULT_THRESH, @isnumeric);
 p.addParameter('annotation_ext', DEFAULT_ANN_EXT, @isstr);
+p.addParameter('qrs_detector', DEFAULT_QRS_DETECTOR, @isstr);
 
 % Get input
 p.parse(set_dir, varargin{:});
 should_plot = p.Results.should_plot;
 bsqi_thresh = p.Results.bsqi_thresh;
 annotation_ext = p.Results.annotation_ext;
+qrs_detector = p.Results.qrs_detector;
 
 %% === Process files
 
@@ -52,17 +55,17 @@ parfor i = 1:N
     % Make sure the record contains an ECG signal
     ecg_channel = get_signal_channel(recName, 'ecg');
     if (isempty(ecg_channel))
-        warning('%s Does not seem to caintain ECG data. Skipping...', file.name);
+        fprintf('** >> %10s: WARNING - No ECG data found. Skipping...\n', file.name);
         N_error = N_error + 1;
         continue;
     end
     
     % Calculate SQI indices
-    sqis(i) = qrs_compare(recName, 'bsqi_thresh', bsqi_thresh, 'ecg_col', ecg_channel);
+    sqis(i) = qrs_compare(recName, 'bsqi_thresh', bsqi_thresh, 'ecg_col', ecg_channel, 'qrs_detector', qrs_detector);
     
     % Print elapsed time
     elapsed_sec = toc(t2);
-    fprintf('** >> %s, elapsed = %.3fs\n', file.name, elapsed_sec);
+    fprintf('** >> %10s: Se = %5.3f, PPV = %5.3f, F1 = %5.3f [elapsed = %6.3fs]\n', file.name, sqis(i).Se, sqis(i).PPV, sqis(i).F1, elapsed_sec);
 end
 fprintf('** Done processing, total time: %.3fs\n', toc(t1));
 
