@@ -1,4 +1,4 @@
-function [ qrs ] = rqrs( rec_name, varargin )
+function [ qrs, tm, sig, Fs ] = rqrs( rec_name, varargin )
 %RQRS R-peak detection in ECG signals, based on 'gqrs'
 %   Detailed explanation goes here
 
@@ -22,7 +22,7 @@ gqrs_detections = gqrs(rec_name, varargin{:});
 
 % === Read Signal
 ecg_col = get_signal_channel(rec_name, 'ecg');
-[~, sig, Fs] = rdsamp(rec_name, ecg_col);
+[tm, sig, Fs] = rdsamp(rec_name, ecg_col);
 window_size_samples = ceil(window_size_sec * Fs);
 
 % === Augment gqrs detections
