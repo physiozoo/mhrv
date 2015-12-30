@@ -19,7 +19,7 @@ p.parse(rec_name, ann_ext, varargin{:});
 % Command to run rdann and cut only the annotation samples out
 command = sprintf('rdann -r %s -a %s | awk ''{print $2}''', rec_name, ann_ext);
 
-[res, out] = system(command);
+[res, out] = jsystem(command);
 if(res ~= 0)
     error('rdann error: %s', out);
 end

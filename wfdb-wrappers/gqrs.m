@@ -58,7 +58,7 @@ if (~isempty(config))
 end
 
 %% === Run gqrs
-[retval, output] = system(cmdline);
+[retval, output] = jsystem(cmdline);
 if(retval ~= 0)
     error('gqrs error: %s', output);
 end

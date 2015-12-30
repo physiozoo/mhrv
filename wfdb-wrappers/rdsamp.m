@@ -35,7 +35,7 @@ end
 
 % run the command and write results to a temp file
 command = sprintf('%s > %s', command, temp_file);
-[res, out] = system(command);
+[res, out] = jsystem(command);
 if(res ~= 0)
     error('rdann error: %s', out);
 end
