@@ -34,3 +34,10 @@ parfor ii = 1:length(qrs)
     [~, window_max_idx] = max(sig_window);
     qrs(ii) = detection_idx + window_max_idx - 1;
 end
+
+% Plot if no output arguments
+if (nargout == 0)
+    figure;
+    plot(tm, sig); hold on; grid on;
+    plot(tm(qrs), sig(qrs,1), 'rx');
+end
