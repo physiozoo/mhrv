@@ -53,7 +53,7 @@ parfor i = 1:N
     recName = [set_dir filesep basename];
     
     % Make sure the record contains an ECG signal
-    ecg_channel = get_signal_channel(recName, 'ecg');
+    ecg_channel = get_signal_channel(recName);
     if (isempty(ecg_channel))
         fprintf('** >> %10s: WARNING - No ECG data found. Skipping...\n', file.name);
         N_error = N_error + 1;

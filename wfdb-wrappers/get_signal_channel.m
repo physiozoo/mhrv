@@ -1,14 +1,30 @@
-function [ chan ] = get_signal_channel( rec_name, sig_desc )
+function [ chan ] = get_signal_channel( rec_name, varargin )
 %GET_SIGNAL_CHANNEL Find the channel of a signal in the record matching a description
+% By default, if no description is specified it looks for ECG signal channels.
+
+% DEFAULTS
+DEFAULT_SIG_REGEX = 'ECG|lead\si+|MLI+|v\d'; % Default is a regex for finding SCG signals in the Physionet files
+DEFAULT_COMMENT_REGEX = '^\s*#.*';
+
+% Define input
+p = inputParser;
+p.KeepUnmatched = true;
+p.addRequired('rec_name', @isrecord);
+p.addParameter('sig_regex', DEFAULT_SIG_REGEX, @isstr);
+p.addParameter('comment_regex', DEFAULT_COMMENT_REGEX, @isstr);
+
+% Get input
+p.parse(rec_name, varargin{:});
+sig_regex = p.Results.sig_regex; % regex for the desired signal
+comment_regex = p.Results.comment_regex; % regex for comment line in the header file
 
 % default value if we can't find the description
 chan = [];
 
-% regex for comment line in the header file
-comment_regex = '^\s*#.*';
-
+% Open the header file of the record for reading
 fheader = fopen([rec_name, '.hea']);
 
+% Read lines in the header file until a match is found
 i = 1;
 first_line = true; % first non-comment line is the 'record line', we need to skip it
 line = fgetl(fheader);
@@ -23,7 +39,7 @@ while ischar(line)
         else
             
             % if line matches the description (partial match), return it's index
-            if (~isempty(regexpi(line, sig_desc)))
+            if (~isempty(regexpi(line, sig_regex)))
                 chan = i;
                 break;
             else

@@ -21,7 +21,7 @@ window_size_sec = p.Results.window_size_sec;
 gqrs_detections = gqrs(rec_name, varargin{:});
 
 % === Read Signal
-ecg_col = get_signal_channel(rec_name, 'ecg');
+ecg_col = get_signal_channel(rec_name);
 [tm, sig, Fs] = rdsamp(rec_name, ecg_col);
 window_size_samples = ceil(window_size_sec * Fs);
 

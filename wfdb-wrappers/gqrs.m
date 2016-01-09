@@ -38,7 +38,7 @@ end
 
 %% === Find ECG signal index if it wasn't specified
 if (isempty(ecg_col))
-    ecg_col = get_signal_channel(rec_name, 'ecg');
+    ecg_col = get_signal_channel(rec_name);
     if (isempty(ecg_col)); error('can''t find ECG signal in record'); end;
 end
 

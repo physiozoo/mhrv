@@ -1,4 +1,4 @@
-function [ hrv, rri ] = rhrv(  rec_name, varargin )
+function [ hrv, rri ] = rhrv( rec_name, varargin )
 %RHRV Heart Rate Variability metrics
 %   Detailed explanation goes here
 
