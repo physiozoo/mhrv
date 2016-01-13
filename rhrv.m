@@ -23,9 +23,25 @@ p.parse(rec_name, varargin{:});
 hrv = struct;
 
 % RR-intervals are the time-difference between R-Peaks
-
 rri = diff(tm(qrs));
-tm_rri = tm(qrs(2:end));
+tm_rri = tm(qrs(1:end-1));
+
+% instantaneus heart rate (bpm)
+ihr = 60 ./ rri;
+
+% calculate an average ihr signal
+nfilt = 10;
+b_fir = 1/nfilt * ones(nfilt,1);
+ihr_lp = filtfilt(b_fir, 1, ihr); % use filtfilt for zero-phase
+
+% remove outliers using x bpm tolerance
+tol_bpm = 10;
+outliers_idx = find(abs(diff(ihr)) > tol_bpm);
+outliers_idx = unique([outliers_idx; find(abs(ihr - ihr_lp) > tol_bpm)]);
+% figure; plot(tm_rri,ihr,'b-', tm_rri,ihr_lp,'r-', tm_rri,ihr_lp-10,'k.', tm_rri,ihr_lp+10,'k.', tm_rri(outliers_idx),ihr_lp(outliers_idx),'kx');
+rri(outliers_idx) = [];
+tm_rri(outliers_idx) = [];
+
 
 %% === Time Domain Metrics
 hrv.AVNN = mean(rri);
@@ -55,7 +71,7 @@ hrv.HF_PWR = bandpower(pxx_lomb,f_lomb,HF_band,'psd');
 fs_rri = 10*f_max; %Hz
 [rri_uni, tm_rri_uni] = resample(rri, tm_rri, fs_rri, 1, 1);
 
-L_AR = 100;
+L_AR = 200;
 [pxx_ar, f_ar] = psd_yulewalker(rri_uni, fs_rri, L_AR); % Yule-Walker AR model
 pxx_ar = interp1(f_ar, pxx_ar, f_lomb); % Evaluate at the lomb frequencies
 
@@ -66,8 +82,9 @@ set(0,'DefaultAxesFontSize',14);
 figure;
 subplot(2,1,1); plot(tm_rri, rri);
 xlabel('Time [s]'); ylabel('RR-interval [s]');
-subplot(2,1,2); plot(f_lomb, 10*log10([pxx_lomb, pxx_ar])); hold on;
+subplot(2,1,2); semilogy(f_lomb, [pxx_lomb, pxx_ar]); hold on;
 xlabel('Frequency [hz]'); ylabel('Power Density [s^2/Hz]');
+xlim([0,f_max*1.01]);
 %# vertical line
 yrange = get(gca,'ylim');
 line(LF_band(1) * ones(1,2), yrange, 'LineStyle', ':', 'Color', 'red');
