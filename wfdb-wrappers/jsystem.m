@@ -10,7 +10,6 @@ pb.directory(java.io.File(pwd));
 pb.redirectErrorStream(true);
 
 process = pb.start();
-res = process.waitFor();
 
 is = process.getInputStream();
 scanner = java.util.Scanner(is).useDelimiter('\\A');
@@ -19,4 +18,7 @@ if scanner.hasNext()
 else
     out = '';
 end
+
+res = process.waitFor();
+
 end
