@@ -64,8 +64,6 @@ if(retval ~= 0)
 end
 
 %% === Parse annotation
-
-% For now use the wfdb-app-toolbox wrapper
 try
     qrs = rdann(rec_name, out_ext);
 catch e
@@ -75,5 +73,13 @@ end
 
 % Delete the annotation file
 delete([rec_name, '.', out_ext]);
-end
 
+% Plot if no output arguments
+if (nargout == 0)
+    ecg_col = get_signal_channel(rec_name);
+    [tm, sig, ~] = rdsamp(rec_name, ecg_col);
+    figure;
+    plot(tm, sig); hold on; grid on;
+    plot(tm(qrs), sig(qrs,1), 'rx');
+end
+end
