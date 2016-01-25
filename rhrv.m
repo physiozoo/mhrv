@@ -38,7 +38,7 @@ ihr_lp = filtfilt(b_fir, 1, ihr); % use filtfilt for zero-phase
 tol_bpm = 10;
 outliers_idx = find(abs(diff(ihr)) > tol_bpm);
 outliers_idx = unique([outliers_idx; find(abs(ihr - ihr_lp) > tol_bpm)]);
-% figure; plot(tm_rri,ihr,'b-', tm_rri,ihr_lp,'r-', tm_rri,ihr_lp-10,'k.', tm_rri,ihr_lp+10,'k.', tm_rri(outliers_idx),ihr_lp(outliers_idx),'kx');
+%figure; plot(tm_rri,ihr,'b-', tm_rri,ihr_lp,'r-', tm_rri,ihr_lp-tol_bpm,'k.', tm_rri,ihr_lp+tol_bpm,'k.', tm_rri(outliers_idx),ihr_lp(outliers_idx),'kx');
 rri(outliers_idx) = [];
 tm_rri(outliers_idx) = [];
 
@@ -47,7 +47,7 @@ tm_rri(outliers_idx) = [];
 hrv.AVNN = mean(rri);
 hrv.SDNN = sqrt(var(rri));
 hrv.RMSSD = sqrt(mean(diff(rri).^2));
-hrv.pNN50 = sum(abs(diff(rri)) > 0.05)/length(rri);
+hrv.pNN50 = sum(abs(diff(rri)) > 0.05)/(length(rri)-1);
 
 %% === Freq domain - Non parametric
 f_max = 0.4; % Hz
