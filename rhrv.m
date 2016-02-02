@@ -39,6 +39,7 @@ tol_bpm = 10;
 outliers_idx = find(abs(diff(ihr)) > tol_bpm);
 outliers_idx = unique([outliers_idx; find(abs(ihr - ihr_lp) > tol_bpm)]);
 %figure; plot(tm_rri,ihr,'b-', tm_rri,ihr_lp,'r-', tm_rri,ihr_lp-tol_bpm,'k.', tm_rri,ihr_lp+tol_bpm,'k.', tm_rri(outliers_idx),ihr_lp(outliers_idx),'kx');
+
 rri(outliers_idx) = [];
 tm_rri(outliers_idx) = [];
 
@@ -79,7 +80,7 @@ hrv.HF_PWR = bandpower(pxx_lomb,f_lomb,HF_band,'psd');
 fs_rri = 10*f_max; %Hz
 [rri_uni, tm_rri_uni] = resample(rri, tm_rri, fs_rri, 1, 1);
 
-L_AR = 200;
+L_AR = 42;
 [pxx_ar, f_ar] = psd_yulewalker(rri_uni, fs_rri, L_AR); % Yule-Walker AR model
 pxx_ar = interp1(f_ar, pxx_ar, f_lomb); % Evaluate at the lomb frequencies
 
@@ -90,9 +91,9 @@ set(0,'DefaultAxesFontSize',14);
 figure;
 subplot(2,1,1); plot(tm_rri, rri);
 xlabel('Time [s]'); ylabel('RR-interval [s]');
-subplot(2,1,2); semilogy(f_lomb, [pxx_lomb, pxx_ar]); hold on;
+subplot(2,1,2); semilogy(f_lomb, [pxx_lomb, pxx_ar]); grid on; hold on;
 xlabel('Frequency [hz]'); ylabel('Power Density [s^2/Hz]');
-xlim([0,f_max*1.01]);
+xlim([0,f_max*1.01]); ylim([1e-7, 1]);
 %# vertical line
 yrange = get(gca,'ylim');
 line(LF_band(1) * ones(1,2), yrange, 'LineStyle', ':', 'Color', 'red');
