@@ -50,6 +50,14 @@ hrv.RMSSD = sqrt(mean(diff(rri).^2));
 hrv.pNN50 = sum(abs(diff(rri)) > 0.05)/(length(rri)-1);
 
 %% === Freq domain - Non parametric
+
+% Detrend and zero mean
+detrend_order = 10;
+rri = rri - mean(rri);
+[poly, ~, poly_mu] = polyfit(tm_rri, rri, detrend_order);
+rri_trend = polyval(poly, tm_rri, [], poly_mu);
+rri = rri - rri_trend;
+
 f_max = 0.4; % Hz
 [pxx_lomb, f_lomb] = plomb(rri, tm_rri, f_max); % lomb periodogram
 
