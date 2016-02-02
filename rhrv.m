@@ -5,14 +5,26 @@ function [ hrv, rri ] = rhrv( rec_name, varargin )
 %% === Input
 
 % Defaults
+DEFAULT_TOLERANCE_BPM = 10;
+DEFAULT_F_MAX = 0.4; %Hz
+DEFAULT_DETREND_ORDER = 10;
+DEFAULT_AR_ORDER = 24;
 
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
+p.addParameter('tol_bpm', DEFAULT_TOLERANCE_BPM, @isnumeric);
+p.addParameter('f_max', DEFAULT_F_MAX, @isnumeric);
+p.addParameter('detrend_order', DEFAULT_DETREND_ORDER, @isnumeric);
+p.addParameter('ar_order', DEFAULT_AR_ORDER, @isnumeric);
 
 % Get input
 p.parse(rec_name, varargin{:});
+tol_bpm = p.Results.tol_bpm;
+f_max = p.Results.f_max;
+detrend_order = p.Results.detrend_order;
+ar_order = p.Results.ar_order;
 
 %% === Calculate HRV metrics
 
@@ -35,7 +47,6 @@ b_fir = 1/nfilt * ones(nfilt,1);
 ihr_lp = filtfilt(b_fir, 1, ihr); % use filtfilt for zero-phase
 
 % remove outliers using x bpm tolerance
-tol_bpm = 10;
 outliers_idx = find(abs(diff(ihr)) > tol_bpm);
 outliers_idx = unique([outliers_idx; find(abs(ihr - ihr_lp) > tol_bpm)]);
 %figure; plot(tm_rri,ihr,'b-', tm_rri,ihr_lp,'r-', tm_rri,ihr_lp-tol_bpm,'k.', tm_rri,ihr_lp+tol_bpm,'k.', tm_rri(outliers_idx),ihr_lp(outliers_idx),'kx');
@@ -43,46 +54,43 @@ outliers_idx = unique([outliers_idx; find(abs(ihr - ihr_lp) > tol_bpm)]);
 rri(outliers_idx) = [];
 tm_rri(outliers_idx) = [];
 
-
 %% === Time Domain Metrics
 hrv.AVNN = mean(rri);
 hrv.SDNN = sqrt(var(rri));
 hrv.RMSSD = sqrt(mean(diff(rri).^2));
 hrv.pNN50 = sum(abs(diff(rri)) > 0.05)/(length(rri)-1);
 
-%% === Freq domain - Non parametric
+%% === Freq domain - Parametric
 
 % Detrend and zero mean
-detrend_order = 10;
 rri = rri - mean(rri);
 [poly, ~, poly_mu] = polyfit(tm_rri, rri, detrend_order);
 rri_trend = polyval(poly, tm_rri, [], poly_mu);
 rri = rri - rri_trend;
 
-f_max = 0.4; % Hz
-[pxx_lomb, f_lomb] = plomb(rri, tm_rri, f_max); % lomb periodogram
+% resample to obtain uniformly sampled signal
+fs_rri = ceil(2*f_max); %Hz
+[rri_uni, tm_rri_uni] = resample(rri, tm_rri, fs_rri, 1, 1);
 
-TOT_band = [min(f_lomb), max(f_lomb)];
+% Yule-Walker AR model
+[pxx_ar, f_ar] = psd_yulewalker(rri_uni, fs_rri, ar_order);
+
+%% === Freq domain - Non parametric
+
+% lomb periodogram, evaluated at frequencies in f_ar
+[pxx_lomb, f_lomb] = plomb(rri, tm_rri, f_ar);
+
+TOT_band = [min(f_lomb), f_max];
 ULF_band = [min(f_lomb), 0.003];
 VLF_band = [0.003, 0.04];
 LF_band = [0.04, 0.15];
-HF_band = [0.15, max(f_lomb)];
+HF_band = [0.15, f_max];
 
 hrv.TOT_PWR = bandpower(pxx_lomb,f_lomb,TOT_band,'psd');
 hrv.ULF_PWR = bandpower(pxx_lomb,f_lomb,ULF_band,'psd');
 hrv.VLF_PWR = bandpower(pxx_lomb,f_lomb,VLF_band,'psd');
 hrv.LF_PWR = bandpower(pxx_lomb,f_lomb,LF_band,'psd');
 hrv.HF_PWR = bandpower(pxx_lomb,f_lomb,HF_band,'psd');
-
-%% === Freq domain - Parametric
-
-% resample to obtain uniformly sampled signal
-fs_rri = 10*f_max; %Hz
-[rri_uni, tm_rri_uni] = resample(rri, tm_rri, fs_rri, 1, 1);
-
-L_AR = 42;
-[pxx_ar, f_ar] = psd_yulewalker(rri_uni, fs_rri, L_AR); % Yule-Walker AR model
-pxx_ar = interp1(f_ar, pxx_ar, f_lomb); % Evaluate at the lomb frequencies
 
 %% === Plot
 % Set larger default font 
