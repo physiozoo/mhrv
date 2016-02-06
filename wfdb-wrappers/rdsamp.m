@@ -43,7 +43,7 @@ end
 M = dlmread(temp_file);
 t = M(:,1);
 sig = M(:,2:end);
-Fs = floor(1/mean(diff(t)));
+Fs = floor(size(sig,1) / max(t)); % since tm is in seconds
 
 % Delete the temp file
 delete(temp_file);
