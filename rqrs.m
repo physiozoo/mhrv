@@ -26,18 +26,20 @@ ecg_col = get_signal_channel(rec_name);
 window_size_samples = ceil(window_size_sec * Fs);
 
 % === Augment gqrs detections
-qrs = zeros(size(gqrs_detections));
-parfor ii = 1:length(qrs)
-    detection_idx = gqrs_detections(ii);
-    max_window_idx = min(length(sig), detection_idx + window_size_samples);
-    sig_window = sig(detection_idx:max_window_idx);
-    [~, window_max_idx] = max(sig_window);
-    qrs(ii) = detection_idx + window_max_idx - 1;
-end
+qrs = arrayfun(@rqrs_helper, gqrs_detections);
+
+    function [new_qrs_idx] = rqrs_helper(qrs_idx)
+        max_win_idx = min(length(sig), qrs_idx + window_size_samples);
+        sig_win = sig(qrs_idx:max_win_idx);
+        [~, win_max_idx] = max(sig_win);
+        new_qrs_idx = qrs_idx + win_max_idx - 1;
+    end
 
 % Plot if no output arguments
 if (nargout == 0)
     figure;
     plot(tm, sig); hold on; grid on;
     plot(tm(qrs), sig(qrs,1), 'rx');
+end
+
 end
