@@ -1,4 +1,4 @@
-function [ qrs ] = gqrs( rec_name, varargin )
+function [ qrs, outliers ] = gqrs( rec_name, varargin )
 %GQRS Wrapper for WFDB's 'gqrs'
 %   Detailed explanation goes here
 
@@ -10,6 +10,7 @@ DEFAULT_N0 = 1;
 DEFAULT_OUT_EXT = 'qrs';
 DEFAULT_ECG_COL = [];
 DEFAULT_CONFIG = '';
+DEFAULT_GQPOST = false;
 
 % Define input
 p = inputParser;
@@ -20,6 +21,7 @@ p.addParameter('N0', DEFAULT_N0, @isnumeric);
 p.addParameter('out_ext', DEFAULT_OUT_EXT, @isstr);
 p.addParameter('ecg_col', DEFAULT_ECG_COL, @isnumeric);
 p.addParameter('config', DEFAULT_CONFIG, @isstr);
+p.addParameter('gqpost', DEFAULT_GQPOST, @islogical);
 
 % Get input
 p.parse(rec_name, varargin{:});
@@ -28,6 +30,7 @@ N0 = p.Results.N0;
 out_ext = p.Results.out_ext;
 ecg_col = p.Results.ecg_col;
 config = p.Results.config;
+gqpost = p.Results.gqpost;
 
 %% === Input validation
 
@@ -49,12 +52,20 @@ if (~isempty(N)); N = N-1; end
 
 %% === Create commandline arguments
 
+% commanline for gqrs
 cmdline = sprintf('gqrs -r %s -s %d -f s%d -o %s', rec_name, ecg_col, N0, out_ext);
 if (~isempty(N))
     cmdline = sprintf('%s -t s%d', cmdline, N);
 end
 if (~isempty(config))
         cmdline = sprintf('%s -c %s', cmdline, config);
+end
+
+% append command for gqpost (use '&&' to make it conditional on gqrs's success)
+if (gqpost)
+    gqpost_cmdline = strrep(cmdline, 'gqrs', 'gqpost'); % replace 'gqrs' with 'gqpost'
+    gqpost_cmdline = regexprep(gqpost_cmdline, ' -[so] \S+', ''); % remove '-s X'/'-o X' flags but keep others
+    cmdline = [cmdline, ' && ', gqpost_cmdline];
 end
 
 %% === Run gqrs
@@ -66,6 +77,11 @@ end
 %% === Parse annotation
 try
     qrs = rdann(rec_name, out_ext);
+    if (gqpost)
+        outliers = rdann(rec_name, 'gqp', 'ann_types', '"|"');
+    else
+        outliers = [];
+    end
 catch e
     warning('%s: Failed to read gqrs results - %s', rec_name, e.message);
     qrs = [];
@@ -73,6 +89,7 @@ end
 
 % Delete the annotation file
 delete([rec_name, '.', out_ext]);
+if (gqpost); delete([rec_name, '.', 'gqp']); end
 
 % Plot if no output arguments
 if (nargout == 0)
@@ -81,5 +98,12 @@ if (nargout == 0)
     figure;
     plot(tm, sig); hold on; grid on;
     plot(tm(qrs), sig(qrs,1), 'rx');
+    
+    if (~isempty(outliers))
+        plot(tm(outliers), sig(outliers,1), 'ko');
+        legend('signal', 'qrs detections', 'suspected outliers');
+    else
+        legend('signal', 'qrs detections');
+    end
 end
 end
