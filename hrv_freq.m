@@ -7,8 +7,9 @@ function [ hrv_fd, pxx, f_lomb ] = hrv_freq( rri, tm_rri, varargin )
 % Defaults
 DEFAULT_F_MAX = 0.4; %Hz
 DEFAULT_AR_ORDER = 24;
+DEFAULT_DETREND_ORDER = 10;
 DEFAULT_METHOD = 'lomb';
-%DEFAULT_WINDOW_MINUTES = 5;
+DEFAULT_WINDOW_MINUTES = 5;
 
 % Define input
 p = inputParser;
@@ -18,15 +19,17 @@ p.addRequired('tm_rri',  @(x) isnumeric(x) && ~isscalar(x));
 
 p.addParameter('f_max', DEFAULT_F_MAX, @isnumeric);
 p.addParameter('ar_order', DEFAULT_AR_ORDER, @isnumeric);
+p.addParameter('detrend_order', DEFAULT_DETREND_ORDER, @isnumeric);
 p.addParameter('method', DEFAULT_METHOD, @ischar);
-%p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @isnumeric);
+p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @isnumeric);
 
 % Get input
 p.parse(rri, tm_rri, varargin{:});
 f_max = p.Results.f_max;
 ar_order = p.Results.ar_order;
+detrend_order = p.Results.detrend_order;
 method = p.Results.method;
-%window_minutes = p.Results.window_minutes;
+window_minutes = p.Results.window_minutes;
 
 % Validate method
 valid_methods = {'lomb', 'ar', 'fft'};
@@ -39,6 +42,14 @@ end
 if (valid == false)
     error(['invalid method: ''' method '''. Should be one of: ' strjoin(valid_methods, ',') '.']);
 end
+
+%% === Pre process
+
+% Detrend and zero mean
+rri = rri - mean(rri);
+[poly, ~, poly_mu] = polyfit(tm_rri, rri, detrend_order);
+rri_trend = polyval(poly, tm_rri, [], poly_mu);
+rri = rri - rri_trend;
 
 %% === Freq domain - Parametric
 
