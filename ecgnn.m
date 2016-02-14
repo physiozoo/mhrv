@@ -8,13 +8,21 @@ function [ nni, tnn, rri, trr ] = ecgnn(rec_name, varargin)
 
 %% === Input
 
+% Defaults
+DEFAULT_GQPOST = true;
+
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
+p.addParameter('gqpost', DEFAULT_GQPOST, @islogical);
+
+% Get input
+p.parse(rec_name, varargin{:});
+gqpost = p.Results.gqpost;
 
 %% Find R peaks
-[ qrs, tm, ~, ~, qrs_outliers ] = rqrs(rec_name, 'gqpost', true, varargin{:});
+[ qrs, tm, ~, ~, qrs_outliers ] = rqrs(rec_name, 'gqpost', gqpost, varargin{:});
 
 %% Find RR intervals
 
