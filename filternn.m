@@ -30,6 +30,7 @@ p.addParameter('min_nn', DEFAULT_MIN_NN, @isnumeric);
 p.addParameter('max_nn', DEFAULT_MAX_NN, @isnumeric);
 p.addParameter('win_samples', DEFAULT_WIN_SAMPLES, @isnumeric);
 p.addParameter('win_percent', DEFAULT_WIN_PERCENT, @(x) x >= 0 && x <= 100);
+p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(tnn, nni, varargin{:});
@@ -37,6 +38,7 @@ min_nn = p.Results.min_nn;
 max_nn = p.Results.max_nn;
 win_samples = p.Results.win_samples;
 win_percent = p.Results.win_percent;
+should_plot = p.Results.plot;
 
 % Make sure input vectors are same length
 if (length(tnn) ~= length(nni))
@@ -67,7 +69,7 @@ nni_filtered(all_outliers_idx) = [];
 tnn_filtered(all_outliers_idx) = [];
 
 %% Plot if no output args
-if (nargout == 0)
+if (should_plot)
     figure; hold on; grid on;
     xlabel('time [s]'); ylabel('Intervals [s]');
 
