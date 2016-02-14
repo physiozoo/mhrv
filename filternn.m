@@ -50,8 +50,6 @@ tnn_filtered = tnn;
 %% Filter single intervals
 
 outlier_idx1 = find( nni < min_nn | nni > max_nn );
-nni_filtered(outlier_idx1) = [];
-tnn_filtered(outlier_idx1) = [];
 
 %% Filter interval in window
 
@@ -61,24 +59,39 @@ nni_lp = filtfilt(b_fir, 1, nni); % using filtfilt for zero-phase
 
 % Find and remove outliers
 outlier_idx2 = find( abs(nni - nni_lp) > (win_percent/100) .* nni_lp );
-nni_filtered(outlier_idx2) = [];
-tnn_filtered(outlier_idx2) = [];
 
+%% Results
+
+all_outliers_idx = [outlier_idx1; outlier_idx2];
+nni_filtered(all_outliers_idx) = [];
+tnn_filtered(all_outliers_idx) = [];
 
 %% Plot if no output args
 if (nargout == 0)
-    
     figure; hold on; grid on;
+    xlabel('time [s]'); ylabel('Intervals [s]');
+
+    % Plot original vs. filtered
     plot(tnn, nni); % original intervals
     plot(tnn_filtered, nni_filtered, 'g:'); % filtered intervals
+    legend_labels = {'original', 'filtered'};
+    
+    % Plot outliers with non-physiological interval lengths
+    if (~isempty(outlier_idx1))
+        plot(tnn(outlier_idx1), nni(outlier_idx1), 'kx'); % outliers as x's
+        legend_labels{end+1} = 'outliers1';
+    end
+    
+    % Plot outliers found by averaging
+    if (~isempty(outlier_idx2))
+        plot(tnn(outlier_idx2), nni(outlier_idx2), 'ro'); % outliers as circles
+        legend_labels{end+1} = 'outliers2';
+    end
 
-    plot(tnn(outlier_idx1), nni(outlier_idx1), 'ko'); % outliers as circles
-    plot(tnn(outlier_idx2), nni(outlier_idx2), 'ro'); % outliers as circles
-    
     % plot averages
-    plot(tnn, nni_lp, 'k', tnn, nni_lp.*(1.0-win_percent/100), 'k.', tnn, nni_lp.*(1.0+win_percent/100), 'k.');
-    
-    legend('original', 'filtered', 'outliers1', 'outliers2', 'average', 'upper threshold', 'lower threshold');
+    plot(tnn, nni_lp, 'k', tnn, nni_lp.*(1.0-win_percent/100), 'k--', tnn, nni_lp.*(1.0+win_percent/100), 'k--');
+    legend_labels = [legend_labels, {'average', 'thresholds'}];
+    legend(legend_labels);
 end
 
 end
