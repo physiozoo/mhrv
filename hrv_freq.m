@@ -1,11 +1,12 @@
-function [ hrv_fd, pxx, f_lomb ] = hrv_freq( rri, tm_rri, varargin )
+function [ hrv_fd, pxx, f_axis ] = hrv_freq( nni, tm_nni, varargin )
 %HRV_FREQ Calcualte frequency-domain HRV metrics
 %   Detailed explanation goes here
 
 %% === Input
 
 % Defaults
-DEFAULT_F_MAX = 0.4; %Hz
+DEFAULT_F_MAX = 0.4; % Hz
+DEFAULT_F_RES = 1e-4; % Frequency resolution in Hz
 DEFAULT_AR_ORDER = 24;
 DEFAULT_DETREND_ORDER = 10;
 DEFAULT_METHOD = 'lomb';
@@ -18,14 +19,16 @@ p.addRequired('rri', @(x) isnumeric(x) && ~isscalar(x));
 p.addRequired('tm_rri',  @(x) isnumeric(x) && ~isscalar(x));
 
 p.addParameter('f_max', DEFAULT_F_MAX, @isnumeric);
+p.addParameter('f_res', DEFAULT_F_RES, @isnumeric);
 p.addParameter('ar_order', DEFAULT_AR_ORDER, @isnumeric);
 p.addParameter('detrend_order', DEFAULT_DETREND_ORDER, @isnumeric);
 p.addParameter('method', DEFAULT_METHOD, @ischar);
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @isnumeric);
 
 % Get input
-p.parse(rri, tm_rri, varargin{:});
+p.parse(nni, tm_nni, varargin{:});
 f_max = p.Results.f_max;
+f_res = p.Results.f_res;
 ar_order = p.Results.ar_order;
 detrend_order = p.Results.detrend_order;
 method = p.Results.method;
@@ -46,47 +49,47 @@ end
 %% === Pre process
 
 % Detrend and zero mean
-rri = rri - mean(rri);
-[poly, ~, poly_mu] = polyfit(tm_rri, rri, detrend_order);
-rri_trend = polyval(poly, tm_rri, [], poly_mu);
-rri = rri - rri_trend;
+nni = nni - mean(nni);
+[poly, ~, poly_mu] = polyfit(tm_nni, nni, detrend_order);
+rri_trend = polyval(poly, tm_nni, [], poly_mu);
+nni = nni - rri_trend;
 
-%% === Freq domain - Parametric
+%% === NN intervals spectrum calculation
 
-% resample to obtain uniformly sampled signal
-fs_rri = ceil(2*f_max); %Hz
-[rri_uni, tm_rri_uni] = resample(rri, tm_rri, fs_rri, 1, 1);
+% Uniform sampling freq: Take about 5x more than f_max
+fs_uni = f_res * ceil(f_max * 5 / f_res);
 
-% Yule-Walker AR model
-[pxx_ar, f_ar] = psd_yulewalker(rri_uni, fs_rri, ar_order);
-
-%% === Freq domain - Non parametric
-
-% lomb periodogram, evaluated at frequencies in f_ar
-[pxx_lomb, f_lomb] = plomb(rri, tm_rri, f_ar);
-
-%% === Metrics
+% Build a frequency axis as [0, fs_uni]
+f_axis = (0 : f_res : fs_uni/2)';
 
 % Select power spectrum type
 if (strcmp(method, 'lomb') == 1)
-    pxx = pxx_lomb;
+    % lomb periodogram, evaluated at frequencies in f_axis
+    [pxx, ~] = plomb(nni, tm_nni, f_axis);
+
 else
-    pxx = pxx_ar;
+    % resample to obtain uniformly sampled signal
+    [nni_uni, ~] = resample(nni, tm_nni, fs_uni, 1, 1);
+
+    % Yule-Walker AR model Spectrum, evaluated at frequencies in f_axis
+    [pxx, ~] = psd_yulewalker(nni_uni, ar_order, f_axis);
 end
 
+%% === Metrics
+
 % Define freq bands
-TOT_band = [min(f_lomb), f_max];
-ULF_band = [min(f_lomb), 0.003];
+TOT_band = [min(f_axis), f_max];
+ULF_band = [min(f_axis), 0.003];
 VLF_band = [0.003, 0.04];
 LF_band = [0.04, 0.15];
 HF_band = [0.15, f_max];
 
 % Calculate power in bands
 hrv_fd = struct;
-hrv_fd.TOT_PWR = bandpower(pxx, f_lomb, TOT_band,'psd');
-hrv_fd.ULF_PWR = bandpower(pxx, f_lomb, ULF_band,'psd');
-hrv_fd.VLF_PWR = bandpower(pxx, f_lomb, VLF_band,'psd');
-hrv_fd.LF_PWR  = bandpower(pxx, f_lomb, LF_band, 'psd');
-hrv_fd.HF_PWR  = bandpower(pxx, f_lomb, HF_band, 'psd');
+hrv_fd.TOT_PWR = bandpower(pxx, f_axis, TOT_band,'psd');
+hrv_fd.ULF_PWR = bandpower(pxx, f_axis, ULF_band,'psd');
+hrv_fd.VLF_PWR = bandpower(pxx, f_axis, VLF_band,'psd');
+hrv_fd.LF_PWR  = bandpower(pxx, f_axis, LF_band, 'psd');
+hrv_fd.HF_PWR  = bandpower(pxx, f_axis, HF_band, 'psd');
 
 end

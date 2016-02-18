@@ -3,20 +3,24 @@ function [ hrv_td, hrv_fd ] = rhrv( rec_name, varargin )
 %   Detailed explanation goes here
 
 %% === Input
+close all;
 
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
+p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rec_name, varargin{:});
+should_plot = p.Results.plot;
 
 %% === Calculate NN intervals
 [ nni, tnn, rri, trr ] = ecgnn(rec_name, 'gqpost', true);
 
 %% === Pre process intervals to remove outliers
-[ tnn_filtered, nni_filtered ] = filternn(tnn, nni);
+[ tnn_filtered, nni_filtered ] = filternn(tnn, nni, 'plot', should_plot);
+fprintf('    NN/RR: %f\n', length(nni_filtered)/length(rri));
 
 %% === Time Domain
 hrv_td = hrv_time(nni_filtered);
@@ -30,7 +34,6 @@ if (nargout == 0)
     [ ~, pxx_ar, ~ ] = hrv_freq(nni_filtered, tnn_filtered, 'method', 'ar');
 
     % Plot RR and Spectrum
-    close all;
     set(0,'DefaultAxesFontSize',14);
     figure;
     subplot(2,1,1); plot(tnn_filtered, nni_filtered);
