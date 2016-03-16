@@ -22,6 +22,9 @@ should_plot = p.Results.plot;
 [ tnn_filtered, nni_filtered ] = filternn(tnn, nni, 'plot', should_plot);
 fprintf('    NN/RR: %f\n', length(nni_filtered)/length(rri));
 
+%% === Non linear
+[hrv_nl] = hrv_nonlinear(nni_filtered, tnn_filtered);
+
 %% === Time Domain
 hrv_td = hrv_time(nni_filtered);
 
