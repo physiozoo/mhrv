@@ -3,23 +3,42 @@ function [ hrv_nl ] = hrv_nonlinear( nni, tm_nni, varargin )
 %   Detailed explanation goes here
 
 %% === Input
+DEFAULT_ALPHA1_RANGE = [4, 16];
+DEFAULT_ALPHA2_RANGE = [32, 128];
+DEFAULT_NMIN = 3;
+DEFAULT_NMAX = 150;
+
+% Define input
+p = inputParser;
+p.KeepUnmatched = true;
+p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
+p.addRequired('tm_nni', @(x) isnumeric(x) && ~isscalar(x));
+p.addParameter('alpha1_range',  DEFAULT_ALPHA1_RANGE, @(x) isnumeric(x) && numel(x) == 2);
+p.addParameter('alpha2_range',  DEFAULT_ALPHA2_RANGE, @(x) isnumeric(x) && numel(x) == 2);
+p.addParameter('n_min',  DEFAULT_NMIN, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('n_max',  DEFAULT_NMAX, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('plot', nargout == 0, @islogical);
+
+% Get input
+p.parse(nni, tm_nni, varargin{:});
+alpha1_range = p.Results.alpha1_range;
+alpha2_range = p.Results.alpha2_range;
+n_min = p.Results.n_min;
+n_max = p.Results.n_max;
+should_plot = p.Results.plot;
 
 %% === DFA
 
-% Integrate the NN intervals and remove mean
+% Integrate the NN intervals without mean
 nni_int = cumsum(nni - mean(nni));
 
 N = length(nni_int);
-num_win = 1; % current number of windows
-DFA_Fn = ones(N, 1) * NaN;
+DFA_Fn = ones(n_max, 1) * NaN;
 
-while 1
-    % Calculate n, the number of samples in each window
-    n = floor(N / num_win);
-    
-    % Stop iterating if too few samples per window
-    if n < 4; break; end
-    
+for n = n_min:n_max
+    % Calculate the number of windows we need for the current n
+    num_win = floor(N/n);
+
     % Break the signal into num_win windows of n samples each
     nni_windows = reshape(nni_int(1:n*num_win), n, num_win);
     tm_windows  = reshape(tm_nni(1:n*num_win), n, num_win);
@@ -35,25 +54,47 @@ while 1
     end
     
     % Calculate F(n), the value of the DFA for the current n
-    DFA_Fn(n) = sqrt ( 1/N * sum((nni_windows(:) - nni_regressed(:)).^2) ) ;
-    
-    % Increment number of windows for next iteration
-    num_win = num_win + 1;
+    DFA_Fn(n) = sqrt ( 1/N * sum((nni_windows(:) - nni_regressed(:)).^2) );
 end
 
 % Find the indices of all the DFA values we calculated
-dfa_idx = find(~isnan(DFA_Fn));
-DFA_n  = (1:N)';
-DFA_Fn = DFA_Fn(dfa_idx);
-DFA_n  = DFA_n(dfa_idx);
+DFA_Fn = DFA_Fn(n_min:n_max);
+DFA_n  = (n_min:n_max)';
 
-DFA_fit = polyfit(log(DFA_n), log(DFA_Fn), 1)
+%% === Nonlinear metrics (short and long-term scaling exponent)
 
-%% === Display output if no output args
-if (nargout == 0)
+alpha1_idx = find(DFA_n >= alpha1_range(1) & DFA_n <= alpha1_range(2));
+alpha2_idx = find(DFA_n >= alpha2_range(1) & DFA_n <= alpha2_range(2));
+
+DFA_Fn_log = log10(DFA_Fn);
+DFA_n_log = log10(DFA_n);
+
+DFA_fit_alpha1 = polyfit(DFA_n_log(alpha1_idx), DFA_Fn_log(alpha1_idx), 1);
+DFA_fit_alpha2 = polyfit(DFA_n_log(alpha2_idx), DFA_Fn_log(alpha2_idx), 1);
+
+alpha1_line = DFA_fit_alpha1(1) * DFA_n_log(alpha1_idx) + DFA_fit_alpha1(2);
+alpha2_line = DFA_fit_alpha2(1) * DFA_n_log(alpha2_idx) + DFA_fit_alpha2(2);
+
+hrv_nl = struct;
+hrv_nl.alpha1 = DFA_fit_alpha1(1);
+hrv_nl.alpha2 = DFA_fit_alpha2(1);
+
+%% === Display output if requested
+if (should_plot)
+    set(0,'DefaultAxesFontSize',14);
+    lw = 4.0;
     figure; 
-    loglog(DFA_n, DFA_Fn, 'rx'); hold on;
-    % plot(DFA_n, 10.^(DFA_fit(2) + DFA_fit(1)*log(DFA_n)), 'b--');
-    
-    grid on; xlabel('log_{10}(n)'); ylabel('log_{10}(F(n))');
+
+    % Plot the DFA data
+    loglog(DFA_n, DFA_Fn, 'ko'); hold on; grid on;
+
+    % Plot alpha1 line
+    loglog(10.^DFA_n_log(alpha1_idx), 10.^alpha1_line, 'Color', 'blue', 'LineStyle', '--', 'LineWidth', lw);
+
+    % Plot alpha2 line
+    loglog(10.^DFA_n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', '--', 'LineWidth', lw);
+
+    xlabel('Block size (n)'); ylabel('log_{10}(F(n))');
+    legend('DFA', ['\alpha_1=' num2str(hrv_nl.alpha1)], ['\alpha_2=' num2str(hrv_nl.alpha2)]);
+    set(gca, 'XTick', [4, 8, 16, 32, 64, 128]);
 end
