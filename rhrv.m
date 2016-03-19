@@ -20,40 +20,21 @@ should_plot = p.Results.plot;
 
 %% === Pre process intervals to remove outliers
 [ tnn_filtered, nni_filtered ] = filternn(tnn, nni, 'plot', should_plot);
-fprintf('    NN/RR: %f\n', length(nni_filtered)/length(rri));
+
 
 %% === Non linear
 [hrv_nl] = hrv_nonlinear(nni_filtered, tnn_filtered, 'plot', should_plot);
 
 %% === Time Domain
 hrv_td = hrv_time(nni_filtered);
+hrv_td.NN_RR = length(nni_filtered)/length(rri);
 
 %% === Freq domain
-[ hrv_fd, pxx_lomb, f_lomb ] = hrv_freq(nni_filtered, tnn_filtered, 'method', 'lomb');
+[ hrv_fd, pxx_lomb, f_lomb ] = hrv_freq(nni_filtered, tnn_filtered, 'method', 'lomb', 'plot', should_plot);
 
 %% === Display output if no output args
-if (nargout == 0)
-    % Calculate with AR method to plot both
-    [ ~, pxx_ar, ~ ] = hrv_freq(nni_filtered, tnn_filtered, 'method', 'ar');
-
-    % Plot RR and Spectrum
-    set(0,'DefaultAxesFontSize',14);
-    figure;
-    subplot(2,1,1); plot(tnn_filtered, nni_filtered);
-    xlabel('Time [s]'); ylabel('NN-interval [s]');
-    subplot(2,1,2); semilogy(f_lomb, [pxx_lomb, pxx_ar]); grid on; hold on;
-    xlabel('Frequency [hz]'); ylabel('Power Density [s^2/Hz]');
-    
-    % vertical lines
-    f_max = 0.4;
-    LF_band = [0.04, 0.15];
-    HF_band = [0.15, f_max];
-    yrange = get(gca,'ylim');
-    line(LF_band(1) * ones(1,2), yrange, 'LineStyle', ':', 'Color', 'red');
-    line(HF_band(1) * ones(1,2), yrange, 'LineStyle', ':', 'Color', 'red');
-    line(HF_band(2) * ones(1,2), yrange, 'LineStyle', ':', 'Color', 'red');
-    xlim([0,f_max*1.01]); ylim([1e-7, 1]);
-    
+if (nargout == 0)   
+    % Print HRV metrics to user
     disp(hrv_td);
     disp(hrv_fd);
     disp(hrv_nl);

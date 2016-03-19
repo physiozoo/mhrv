@@ -10,7 +10,6 @@ DEFAULT_F_RES = 1e-4; % Frequency resolution in Hz
 DEFAULT_AR_ORDER = 24;
 DEFAULT_DETREND_ORDER = 10;
 DEFAULT_METHOD = 'lomb';
-DEFAULT_WINDOW_MINUTES = 5;
 
 % Define input
 p = inputParser;
@@ -23,7 +22,7 @@ p.addParameter('f_res', DEFAULT_F_RES, @isnumeric);
 p.addParameter('ar_order', DEFAULT_AR_ORDER, @isnumeric);
 p.addParameter('detrend_order', DEFAULT_DETREND_ORDER, @isnumeric);
 p.addParameter('method', DEFAULT_METHOD, @ischar);
-p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @isnumeric);
+p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(nni, tm_nni, varargin{:});
@@ -32,10 +31,10 @@ f_res = p.Results.f_res;
 ar_order = p.Results.ar_order;
 detrend_order = p.Results.detrend_order;
 method = p.Results.method;
-window_minutes = p.Results.window_minutes;
+should_plot = p.Results.plot;
 
 % Validate method
-valid_methods = {'lomb', 'ar', 'fft'};
+valid_methods = {'lomb', 'ar'};
 switch(method)
     case valid_methods
         valid = true;
@@ -91,5 +90,34 @@ hrv_fd.ULF_PWR = bandpower(pxx, f_axis, ULF_band,'psd');
 hrv_fd.VLF_PWR = bandpower(pxx, f_axis, VLF_band,'psd');
 hrv_fd.LF_PWR  = bandpower(pxx, f_axis, LF_band, 'psd');
 hrv_fd.HF_PWR  = bandpower(pxx, f_axis, HF_band, 'psd');
+
+%% === Display output if requested
+if (should_plot)
+    % Get the other type of spectrum so we can plot both
+    if (strcmp(method, 'lomb') == 1)
+        pxx_lomb = pxx;
+        [~, pxx_ar, ~] = hrv_freq(nni, tm_nni, 'f_max', f_max, 'f_res', f_res, 'ar_order', ar_order, 'detrend_order', detrend_order, 'method', 'ar', 'plot', false);
+    else
+        pxx_ar = pxx;
+        [~, pxx_lomb, ~] = hrv_freq(nni, tm_nni, 'f_max', f_max, 'f_res', f_res, 'detrend_order', detrend_order, 'method', 'lomb', 'plot', false);
+    end
+
+    set(0,'DefaultAxesFontSize',14);
+    figure;
+    
+    semilogy(f_axis, [pxx_lomb, pxx_ar]); grid on; hold on;
+    xlabel('Frequency [hz]'); ylabel('Power Density [s^2/Hz]');
+    
+    % vertical lines
+    lw = 2.0; ls = ':'; lc = 'black';
+    f_max = 0.4;
+    LF_band = [0.04, 0.15];
+    HF_band = [0.15, f_max];
+    yrange = get(gca,'ylim');
+    line(LF_band(1) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
+    line(HF_band(1) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
+    line(HF_band(2) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
+    xlim([0,f_max*1.01]); ylim([1e-7, 1]);
+end
 
 end
