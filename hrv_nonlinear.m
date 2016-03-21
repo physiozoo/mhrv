@@ -7,6 +7,8 @@ DEFAULT_ALPHA1_RANGE = [4, 16];
 DEFAULT_ALPHA2_RANGE = [32, 128];
 DEFAULT_NMIN = 3;
 DEFAULT_NMAX = 150;
+DEFAULT_BETA_BAND = [0.003, 0.15]; % hz
+
 
 % Define input
 p = inputParser;
@@ -17,6 +19,7 @@ p.addParameter('alpha1_range',  DEFAULT_ALPHA1_RANGE, @(x) isnumeric(x) && numel
 p.addParameter('alpha2_range',  DEFAULT_ALPHA2_RANGE, @(x) isnumeric(x) && numel(x) == 2);
 p.addParameter('n_min',  DEFAULT_NMIN, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('n_max',  DEFAULT_NMAX, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('beta_band',  DEFAULT_BETA_BAND, @(x) isnumeric(x) && numel(x) == 2);
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -25,6 +28,7 @@ alpha1_range = p.Results.alpha1_range;
 alpha2_range = p.Results.alpha2_range;
 n_min = p.Results.n_min;
 n_max = p.Results.n_max;
+beta_band = p.Results.beta_band;
 should_plot = p.Results.plot;
 
 %% === DFA
@@ -61,7 +65,7 @@ end
 DFA_Fn = DFA_Fn(n_min:n_max);
 DFA_n  = (n_min:n_max)';
 
-%% === Nonlinear metrics (short and long-term scaling exponent)
+%% === Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
 
 alpha1_idx = find(DFA_n >= alpha1_range(1) & DFA_n <= alpha1_range(2));
 alpha2_idx = find(DFA_n >= alpha2_range(1) & DFA_n <= alpha2_range(2));
@@ -72,29 +76,57 @@ DFA_n_log = log10(DFA_n);
 DFA_fit_alpha1 = polyfit(DFA_n_log(alpha1_idx), DFA_Fn_log(alpha1_idx), 1);
 DFA_fit_alpha2 = polyfit(DFA_n_log(alpha2_idx), DFA_Fn_log(alpha2_idx), 1);
 
-alpha1_line = DFA_fit_alpha1(1) * DFA_n_log(alpha1_idx) + DFA_fit_alpha1(2);
-alpha2_line = DFA_fit_alpha2(1) * DFA_n_log(alpha2_idx) + DFA_fit_alpha2(2);
-
 hrv_nl = struct;
 hrv_nl.alpha1 = DFA_fit_alpha1(1);
 hrv_nl.alpha2 = DFA_fit_alpha2(1);
+
+%% === Nonlinear metrics (spectral power-law exponent, beta)
+
+% Calculate spectrum
+[ ~, pxx, f_axis ] = hrv_freq(nni, tm_nni, 'method', 'lomb');
+
+% Take the log of the spectrum in the beta frequency band
+beta_band_idx = find(f_axis >= beta_band(1) & f_axis <= beta_band(2));
+pxx_log = log10(pxx(beta_band_idx));
+f_axis_log = log10(f_axis(beta_band_idx));
+
+% Fit a line and get the slope
+pxx_fit_beta = polyfit(f_axis_log, pxx_log, 1);
+hrv_nl.beta = pxx_fit_beta(1);
+
+%figure; plot(f_axis_log, [pxx_log, beta_line]);
 
 %% === Display output if requested
 if (should_plot)
     set(0,'DefaultAxesFontSize',14);
     lw = 3.8; ls = ':';
-    figure; 
+    figure;
 
     % Plot the DFA data
-    loglog(DFA_n, DFA_Fn, 'ko', 'MarkerSize', 7); hold on; grid on;
+    subplot(2, 1, 1);
+    loglog(DFA_n, DFA_Fn, 'ko', 'MarkerSize', 7);
+    hold on; grid on;
 
     % Plot alpha1 line
+    alpha1_line = DFA_fit_alpha1(1) * DFA_n_log(alpha1_idx) + DFA_fit_alpha1(2);
     loglog(10.^DFA_n_log(alpha1_idx), 10.^alpha1_line, 'Color', 'blue', 'LineStyle', ls, 'LineWidth', lw);
 
     % Plot alpha2 line
+    alpha2_line = DFA_fit_alpha2(1) * DFA_n_log(alpha2_idx) + DFA_fit_alpha2(2);
     loglog(10.^DFA_n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', ls, 'LineWidth', lw);
 
     xlabel('Block size (n)'); ylabel('log_{10}(F(n))');
     legend('DFA', ['\alpha_1=' num2str(hrv_nl.alpha1)], ['\alpha_2=' num2str(hrv_nl.alpha2)]);
     set(gca, 'XTick', [4, 8, 16, 32, 64, 128]);
+
+    % Plot the spectrum
+    subplot(2, 1, 2);
+    loglog(f_axis(beta_band_idx), pxx(beta_band_idx), 'ko', 'MarkerSize', 7);
+    hold on; grid on;
+
+    % Plot the beta line
+    beta_line = pxx_fit_beta(1) * f_axis_log + pxx_fit_beta(2);
+    loglog(10.^f_axis_log, 10.^beta_line, 'Color', 'magenta', 'LineStyle', ls, 'LineWidth', lw);
+    xlabel('log(frequency [hz])'); ylabel('log(PSD [s^2/Hz])');
+    legend('PSD', ['\beta=' num2str(hrv_nl.beta)]);
 end
