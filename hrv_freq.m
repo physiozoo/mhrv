@@ -102,22 +102,28 @@ if (should_plot)
         [~, pxx_lomb, ~] = hrv_freq(nni, tm_nni, 'f_max', f_max, 'f_res', f_res, 'detrend_order', detrend_order, 'method', 'lomb', 'plot', false);
     end
 
-    set(0,'DefaultAxesFontSize',14);
+    fontsize = 14;
+    set(0,'DefaultAxesFontSize',fontsize);
     figure;
     
-    semilogy(f_axis, [pxx_lomb, pxx_ar]); grid on; hold on;
+    semilogy(f_axis, [pxx_lomb, pxx_ar]);
+    grid on; hold on;
     xlabel('Frequency [hz]'); ylabel('Power Density [s^2/Hz]');
     
-    % vertical lines
-    lw = 2.0; ls = ':'; lc = 'black';
-    f_max = 0.4;
-    LF_band = [0.04, 0.15];
-    HF_band = [0.15, f_max];
-    yrange = get(gca,'ylim');
-    line(LF_band(1) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
-    line(HF_band(1) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
-    line(HF_band(2) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
-    xlim([0,f_max*1.01]); ylim([1e-7, 1]);
+    % Vertical lines of frequency ranges
+    lw = 3; ls = ':'; lc = 'black';
+    xrange = [0,f_max*1.01];
+    yrange = [1e-6, 1];
+    line(VLF_band(1) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
+    line(LF_band(1)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
+    line(HF_band(1)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
+    line(HF_band(2)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
+    xlim(xrange); ylim(yrange);
+
+    % Names of frequency ranges
+    text(VLF_band(1), yrange(2) * 0.5, ' VLF', 'FontSize', fontsize+1);
+    text( LF_band(1), yrange(2) * 0.5,  ' LF', 'FontSize', fontsize+1);
+    text( HF_band(1), yrange(2) * 0.5,  ' HF', 'FontSize', fontsize+1);
 end
 
 end

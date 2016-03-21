@@ -82,17 +82,17 @@ hrv_nl.alpha2 = DFA_fit_alpha2(1);
 %% === Display output if requested
 if (should_plot)
     set(0,'DefaultAxesFontSize',14);
-    lw = 4.0;
+    lw = 3.8; ls = ':';
     figure; 
 
     % Plot the DFA data
-    loglog(DFA_n, DFA_Fn, 'ko'); hold on; grid on;
+    loglog(DFA_n, DFA_Fn, 'ko', 'MarkerSize', 7); hold on; grid on;
 
     % Plot alpha1 line
-    loglog(10.^DFA_n_log(alpha1_idx), 10.^alpha1_line, 'Color', 'blue', 'LineStyle', '--', 'LineWidth', lw);
+    loglog(10.^DFA_n_log(alpha1_idx), 10.^alpha1_line, 'Color', 'blue', 'LineStyle', ls, 'LineWidth', lw);
 
     % Plot alpha2 line
-    loglog(10.^DFA_n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', '--', 'LineWidth', lw);
+    loglog(10.^DFA_n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', ls, 'LineWidth', lw);
 
     xlabel('Block size (n)'); ylabel('log_{10}(F(n))');
     legend('DFA', ['\alpha_1=' num2str(hrv_nl.alpha1)], ['\alpha_2=' num2str(hrv_nl.alpha2)]);

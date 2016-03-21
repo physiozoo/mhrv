@@ -27,10 +27,13 @@ should_plot = p.Results.plot;
 
 %% === Time Domain
 hrv_td = hrv_time(nni_filtered);
+
+% Add NN to RR ratio
 hrv_td.NN_RR = length(nni_filtered)/length(rri);
+hrv_td = orderfields(hrv_td, circshift(transpose(1:length(fieldnames(hrv_td))), 1)); % moves the new field to the top
 
 %% === Freq domain
-[ hrv_fd, pxx_lomb, f_lomb ] = hrv_freq(nni_filtered, tnn_filtered, 'method', 'lomb', 'plot', should_plot);
+[ hrv_fd, ~, ~ ] = hrv_freq(nni_filtered, tnn_filtered, 'method', 'lomb', 'plot', should_plot);
 
 %% === Display output if no output args
 if (nargout == 0)   
