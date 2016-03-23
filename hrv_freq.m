@@ -91,6 +91,12 @@ hrv_fd.VLF_PWR = bandpower(pxx, f_axis, VLF_band,'psd');
 hrv_fd.LF_PWR  = bandpower(pxx, f_axis, LF_band, 'psd');
 hrv_fd.HF_PWR  = bandpower(pxx, f_axis, HF_band, 'psd');
 
+% Calculate ratio of power in each band
+hrv_fd.ULF_to_TOT = hrv_fd.ULF_PWR / hrv_fd.TOT_PWR;
+hrv_fd.VLF_to_TOT = hrv_fd.VLF_PWR / hrv_fd.TOT_PWR;
+hrv_fd.LF_to_TOT  = hrv_fd.LF_PWR  / hrv_fd.TOT_PWR;
+hrv_fd.HF_to_TOT  = hrv_fd.HF_PWR  / hrv_fd.TOT_PWR;
+
 %% === Display output if requested
 if (should_plot)
     % Get the other type of spectrum so we can plot both
