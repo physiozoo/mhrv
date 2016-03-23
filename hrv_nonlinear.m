@@ -3,8 +3,8 @@ function [ hrv_nl ] = hrv_nonlinear( nni, tm_nni, varargin )
 %   Detailed explanation goes here
 
 %% === Input
-DEFAULT_ALPHA1_RANGE = [4, 16];
-DEFAULT_ALPHA2_RANGE = [32, 128];
+DEFAULT_ALPHA1_RANGE = [4, 15];
+DEFAULT_ALPHA2_RANGE = [16, 128];
 DEFAULT_NMIN = 3;
 DEFAULT_NMAX = 150;
 DEFAULT_BETA_BAND = [0.003, 0.15]; % hz
