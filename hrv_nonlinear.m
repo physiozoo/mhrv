@@ -83,7 +83,7 @@ hrv_nl.alpha2 = DFA_fit_alpha2(1);
 %% === Nonlinear metrics (spectral power-law exponent, beta)
 
 % Calculate spectrum
-[ ~, pxx, f_axis ] = hrv_freq(nni, tm_nni, 'method', 'lomb');
+[ ~, pxx, f_axis ] = hrv_freq(nni, tm_nni, 'method', 'ar');
 
 % Take the log of the spectrum in the beta frequency band
 beta_band_idx = find(f_axis >= beta_band(1) & f_axis <= beta_band(2));
@@ -116,17 +116,20 @@ if (should_plot)
     loglog(10.^DFA_n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', ls, 'LineWidth', lw);
 
     xlabel('Block size (n)'); ylabel('log_{10}(F(n))');
-    legend('DFA', ['\alpha_1=' num2str(hrv_nl.alpha1)], ['\alpha_2=' num2str(hrv_nl.alpha2)]);
+    legend('DFA', ['\alpha_1 = ' num2str(hrv_nl.alpha1)], ['\alpha_2 = ' num2str(hrv_nl.alpha2)]);
     set(gca, 'XTick', [4, 8, 16, 32, 64, 128]);
 
-    % Plot the spectrum
+    % Plot the spectrum (only plot every x samples)
+    f_beta_plot = f_axis(beta_band_idx);
+    pxx_beta_plot = pxx(beta_band_idx);
+    decimation_factor = 50;
     subplot(2, 1, 2);
-    loglog(f_axis(beta_band_idx), pxx(beta_band_idx), 'ko', 'MarkerSize', 7);
+    loglog(f_beta_plot(1:decimation_factor:end), pxx_beta_plot(1:decimation_factor:end), 'ko', 'MarkerSize', 7);
     hold on; grid on;
 
     % Plot the beta line
     beta_line = pxx_fit_beta(1) * f_axis_log + pxx_fit_beta(2);
     loglog(10.^f_axis_log, 10.^beta_line, 'Color', 'magenta', 'LineStyle', ls, 'LineWidth', lw);
     xlabel('log(frequency [hz])'); ylabel('log(PSD [s^2/Hz])');
-    legend('PSD', ['\beta=' num2str(hrv_nl.beta)]);
+    legend('PSD', ['\beta = ' num2str(hrv_nl.beta)]);
 end
