@@ -6,7 +6,7 @@ close all;
 
 %% === Input
 % Defaults
-DEFAULT_WINDOW_MINUTES = [];
+DEFAULT_WINDOW_MINUTES = Inf;
 
 % Define input
 p = inputParser;
@@ -28,29 +28,27 @@ should_plot = p.Results.plot;
 
 %% === Break into windows
 
-% Set a window on the entire signal in case no window is needed, and convert window size to seconds
-if (isempty(window_minutes))
-    window_seconds = tnn_filtered(end);
-else
-    window_seconds = window_minutes * 60;
-end
+% Convert window size to seconds, and make sure the windw isn't longer than the signal itself
+t_max = tnn_filtered(end);
+t_win = min([window_minutes * 60, t_max]);
+num_win = floor(t_max / t_win);
 
-% Output table
-hrv_metrics = table;
+% Output initialization
+hrv_metrics_tables = cell(num_win, 1);
 
 % Loop over all windows
-curr_win_idx = [0, 1];
-while true
-    % Calculate time range of the current window and exit loop if the window "exited" the signal.
-    curr_win = curr_win_idx * window_seconds; % [min, max] times of the window
-    if (curr_win(2) > tnn_filtered(end)); break; end;
+parfor curr_win_idx = 0:(num_win-1)
+    % Calculate time range of the current window
+    t_win_min = curr_win_idx * t_win;
+    t_win_max = (curr_win_idx+1) * t_win;
 
-    window_samples_idx = find(tnn_filtered >= curr_win(1) & tnn_filtered <= curr_win(2));
+    % Get the samples that fall in the window and their times
+    window_samples_idx = find(tnn_filtered >= t_win_min & tnn_filtered <= t_win_max);
     tnn_window = tnn_filtered(window_samples_idx);
     nni_window = nni_filtered(window_samples_idx);
 
     %% === Non linear metrics
-    [hrv_nl] = hrv_nonlinear(nni_window, tnn_window, 'plot', should_plot);
+    hrv_nl = hrv_nonlinear(nni_window, tnn_window, 'plot', should_plot);
 
     %% === Time Domain metrics
     hrv_td = hrv_time(nni_window);
@@ -59,24 +57,29 @@ while true
     [ hrv_fd, ~, ~ ] = hrv_freq(nni_window, tnn_window, 'method', 'lomb', 'plot', should_plot);
 
     %% === Create metrics table
-    curr_metrics = [struct2table(hrv_td), struct2table(hrv_fd), struct2table(hrv_nl)];
-    hrv_metrics = [hrv_metrics; curr_metrics];
-    curr_win_idx = curr_win_idx + 1;
+    hrv_metrics_tables{curr_win_idx+1} = [struct2table(hrv_td), struct2table(hrv_fd), struct2table(hrv_nl)];
 end
 
-%% === Set table output rows
+%% === Create output table
+
+% Concatenate the tables from each window into one final table
+hrv_metrics = table;
+for ii = 1:num_win
+    hrv_metrics = [hrv_metrics; hrv_metrics_tables{ii}];
+end
 
 % Add an average values row if there is more than one window
 [num_windows, ~] = size(hrv_metrics);
+row_names = cellstr(num2str(transpose(1:num_windows)));
 if (num_windows > 1)
     mean_values = num2cell(mean(hrv_metrics{:, 1:end}));
     mean_table = table(mean_values{1:end});
     mean_table.Properties.VariableNames = hrv_metrics.Properties.VariableNames;
     hrv_metrics = [hrv_metrics; mean_table];
+    row_names{end+1} = 'Avg.';
 end
 
-row_names = cellstr(num2str(transpose(1:num_windows)));
-row_names{end+1} = 'Avg.';
+% Set the row names of the final table
 hrv_metrics.Properties.RowNames = row_names;
 
 %% === Display output if no output args
