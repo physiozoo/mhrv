@@ -111,11 +111,12 @@ if (should_plot)
     fontsize = 14;
     set(0,'DefaultAxesFontSize',fontsize);
     figure;
-    
+
     semilogy(f_axis, [pxx_lomb, pxx_ar]);
     grid on; hold on;
     xlabel('Frequency [hz]'); ylabel('Power Density [s^2/Hz]');
-    
+    legend('Lomb', 'Auto-regressive');
+
     % Vertical lines of frequency ranges
     lw = 3; ls = ':'; lc = 'black';
     xrange = [0,f_max*1.01];
