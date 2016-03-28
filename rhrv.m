@@ -7,16 +7,19 @@ close all;
 %% === Input
 % Defaults
 DEFAULT_WINDOW_MINUTES = Inf;
+DEFAULT_SHOULD_PREPROCESS = true;
 
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2);
-p.addParameter('plot', nargout == 0, @islogical);
+p.addParameter('should_preprocess', DEFAULT_SHOULD_PREPROCESS, @(x) isscalar(x) && islogical(x));
+p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
 p.parse(rec_name, varargin{:});
+should_preprocess = p.Results.should_preprocess;
 window_minutes = p.Results.window_minutes;
 should_plot = p.Results.plot;
 
@@ -24,7 +27,11 @@ should_plot = p.Results.plot;
 [ nni, tnn, rri, ~ ] = ecgnn(rec_name, 'gqpost', true);
 
 %% === Pre process intervals to remove outliers
-[ tnn_filtered, nni_filtered ] = filternn(tnn, nni, 'plot', should_plot);
+if (should_preprocess)
+    [ tnn_filtered, nni_filtered ] = filternn(tnn, nni, 'plot', should_plot);
+else
+    tnn_filtered = tnn; nni_filtered = nni;
+end
 
 %% === Break into windows
 
@@ -82,8 +89,8 @@ end
 % Set the row names of the final table
 hrv_metrics.Properties.RowNames = row_names;
 
-%% === Display output if no output args
-if (nargout == 0)   
+%% === Display output if no output args or plot requested
+if (should_plot)
     % Print some of the HRV metrics to user
     disp(hrv_metrics(:, {'AVNN','SDNN','RMSSD','pNN50','ULF_to_TOT','VLF_to_TOT','LF_to_TOT','HF_to_TOT','alpha1','alpha2','beta'}));
 end
