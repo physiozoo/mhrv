@@ -24,7 +24,7 @@ window_minutes = p.Results.window_minutes;
 should_plot = p.Results.plot;
 
 %% === Calculate NN intervals
-[ nni, tnn, rri, ~ ] = ecgnn(rec_name, 'gqpost', true);
+[ nni, tnn, rri, ~ ] = ecgnn(rec_name, 'gqpost', true, 'use_rqrs', true);
 
 %% === Pre process intervals to remove outliers
 if (should_preprocess)
@@ -89,8 +89,8 @@ end
 % Set the row names of the final table
 hrv_metrics.Properties.RowNames = row_names;
 
-%% === Display output if no output args or plot requested
-if (should_plot)
+%% === Display output if no output args
+if (nargout == 0)
     % Print some of the HRV metrics to user
     disp(hrv_metrics(:, {'AVNN','SDNN','RMSSD','pNN50','ULF_to_TOT','VLF_to_TOT','LF_to_TOT','HF_to_TOT','alpha1','alpha2','beta'}));
 end

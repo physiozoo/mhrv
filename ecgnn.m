@@ -10,19 +10,33 @@ function [ nni, tnn, rri, trr ] = ecgnn(rec_name, varargin)
 
 % Defaults
 DEFAULT_GQPOST = true;
+DEFAULT_USE_RQRS = true;
 
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
-p.addParameter('gqpost', DEFAULT_GQPOST, @islogical);
+p.addParameter('gqpost', DEFAULT_GQPOST, @(x) islogical(x) && isscalar(x));
+p.addParameter('use_rqrs', DEFAULT_USE_RQRS, @(x) islogical(x) && isscalar(x));
 
 % Get input
 p.parse(rec_name, varargin{:});
 gqpost = p.Results.gqpost;
+use_rqrs = p.Results.use_rqrs;
 
-%% Find R peaks
-[ qrs, tm, ~, ~, qrs_outliers ] = rqrs(rec_name, 'gqpost', gqpost, varargin{:});
+% === Read the signal
+ecg_col = get_signal_channel(rec_name);
+[tm, sig, ~] = rdsamp(rec_name, ecg_col);
+
+%% === Find QRS in the signal
+
+% Use gqrs to find QRS complex locations
+[qrs, qrs_outliers] = gqrs(rec_name, 'ecg_col', ecg_col, 'gqpost', gqpost);
+
+% Use rqrs to find the r-peaks based on the qrs complex locations
+if (use_rqrs)
+    [qrs, qrs_outliers] = rqrs_augment(qrs, qrs_outliers, tm, sig);
+end
 
 %% Find RR intervals
 
