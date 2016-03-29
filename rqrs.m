@@ -1,4 +1,4 @@
-function [ qrs, tm, sig, Fs, outliers ] = rqrs( rec_name, varargin )
+function [ qrs, outliers ] = rqrs( rec_name, varargin )
 %RQRS R-peak detection in ECG signals, based on 'gqrs'
 %   Detailed explanation goes here
 
@@ -22,37 +22,10 @@ ecg_col = get_signal_channel(rec_name);
 [gqrs_detections, gqrs_outliers] = gqrs(rec_name, 'ecg_col', ecg_col, varargin{:});
 
 % === Read Signal
-[tm, sig, Fs] = rdsamp(rec_name, ecg_col);
+[tm, sig, ~] = rdsamp(rec_name, ecg_col);
 
 % === Augment gqrs detections
-window_size_samples = ceil(window_size_sec * Fs);
-if (~isempty(gqrs_outliers))
-    outliers_map = containers.Map(gqrs_outliers, ones(size(gqrs_outliers))); % put outliers in a map to easily check if an index is an outlier
-else
-    outliers_map = containers.Map;
-end
-
-if (window_size_samples > 0)
-    qrs = arrayfun(@rqrs_helper, gqrs_detections);
-else
-    qrs = gqrs_detections;
-end
-
-    function [new_qrs_idx] = rqrs_helper(qrs_idx)
-        max_win_idx = min(length(sig), qrs_idx + window_size_samples);
-        sig_win = sig(qrs_idx:max_win_idx);
-        [~, win_max_idx] = max(sig_win);
-        new_qrs_idx = qrs_idx + win_max_idx - 1;
-        
-        % Move the outlier index if current detection is an outlier
-        if (outliers_map.isKey(qrs_idx))
-            outliers_map.remove(qrs_idx);
-            outliers_map(new_qrs_idx) = 1;
-        end
-    end
-
-% Get the updated outlier indices
-outliers = cell2mat(outliers_map.keys);
+[ qrs, outliers ] = rqrs_augment(gqrs_detections, gqrs_outliers, tm, sig, 'window_size_sec', window_size_sec);
 
 % Plot if no output arguments
 if (nargout == 0)
