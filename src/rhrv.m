@@ -50,7 +50,8 @@ parfor curr_win_idx = 0:(num_win-1)
     t_win_max = (curr_win_idx+1) * t_win;
 
     % Get the samples that fall in the window and their times
-    window_samples_idx = find(tnn_filtered >= t_win_min & tnn_filtered <= t_win_max);
+    [window_samples_idx_low, window_samples_idx_high] = findInSorted(tnn_filtered, [t_win_min, t_win_max]);
+    window_samples_idx = window_samples_idx_low:window_samples_idx_high;
     tnn_window = tnn_filtered(window_samples_idx);
     nni_window = nni_filtered(window_samples_idx);
 
