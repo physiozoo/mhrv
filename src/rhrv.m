@@ -23,12 +23,21 @@ should_preprocess = p.Results.should_preprocess;
 window_minutes = p.Results.window_minutes;
 should_plot = p.Results.plot;
 
+% Save processing start time
+t0 = cputime;
+
 %% === Calculate NN intervals
+fprintf('[%.3f] >> rhrv: Reading ECG signal from record %s...\n', cputime-t0, rec_name);
 [ nni, tnn, rri, ~ ] = ecgnn(rec_name, 'gqpost', true, 'use_rqrs', true);
+
+fprintf('[%.3f] >> rhrv: Signal duration: %f [min] (%d samples)\n', cputime-t0, tnn(end)/60, length(tnn));
 
 %% === Pre process intervals to remove outliers
 if (should_preprocess)
+    fprintf('[%.3f] >> rhrv: Pre-processing signal...\n', cputime-t0);
     [ tnn_filtered, nni_filtered ] = filternn(tnn, nni, 'plot', should_plot);
+    
+    fprintf('[%.3f] >> rhrv: %d intervals were filtered out\n', cputime-t0, length(tnn)-length(tnn_filtered));
 else
     tnn_filtered = tnn; nni_filtered = nni;
 end
@@ -45,6 +54,8 @@ hrv_metrics_tables = cell(num_win, 1);
 
 % Loop over all windows
 parfor curr_win_idx = 0:(num_win-1)
+    fprintf('[%.3f] >> rhrv: Analyzing window %d of %d...\n', cputime-t0, curr_win_idx+1, num_win);
+
     % Calculate time range of the current window
     t_win_min = curr_win_idx * t_win;
     t_win_max = (curr_win_idx+1) * t_win;
@@ -69,6 +80,7 @@ parfor curr_win_idx = 0:(num_win-1)
 end
 
 %% === Create output table
+fprintf('[%.3f] >> rhrv: Building output table...\n', cputime-t0);
 
 % Concatenate the tables from each window into one final table
 hrv_metrics = table;
@@ -95,3 +107,5 @@ if (nargout == 0)
     % Print some of the HRV metrics to user
     disp(hrv_metrics(:, {'AVNN','SDNN','RMSSD','pNN50','ULF_to_TOT','VLF_to_TOT','LF_to_TOT','HF_to_TOT','alpha1','alpha2','beta'}));
 end
+fprintf('[%.3f] >> rhrv: Finished processing record %s.\n', cputime-t0, rec_name);
+
