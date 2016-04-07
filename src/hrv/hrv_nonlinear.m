@@ -7,8 +7,7 @@ DEFAULT_ALPHA1_RANGE = [4, 15];
 DEFAULT_ALPHA2_RANGE = [16, 128];
 DEFAULT_NMIN = 3;
 DEFAULT_NMAX = 150;
-DEFAULT_BETA_BAND = [0.003, 0.15]; % hz
-
+DEFAULT_BETA_BAND = [0.003, 0.04]; % hz
 
 % Define input
 p = inputParser;
@@ -47,7 +46,7 @@ for n = n_min:n_max
     nni_windows = reshape(nni_int(1:n*num_win), n, num_win);
     tm_windows  = reshape(tm_nni(1:n*num_win), n, num_win);
     nni_regressed = zeros(size(nni_windows));
-    
+
     % Perform linear regression in each window
     for ii = 1:num_win
         y = nni_windows(:, ii);
@@ -56,7 +55,7 @@ for n = n_min:n_max
         yn = x * b;
         nni_regressed(:, ii) = yn;
     end
-    
+
     % Calculate F(n), the value of the DFA for the current n
     DFA_Fn(n) = sqrt ( 1/N * sum((nni_windows(:) - nni_regressed(:)).^2) );
 end
@@ -83,7 +82,7 @@ hrv_nl.alpha2 = DFA_fit_alpha2(1);
 %% === Nonlinear metrics (spectral power-law exponent, beta)
 
 % Calculate spectrum
-[ ~, pxx, f_axis ] = hrv_freq(nni, tm_nni, 'method', 'ar');
+[ ~, pxx, f_axis ] = hrv_freq(nni, tm_nni, 'method', 'lomb');
 
 % Take the log of the spectrum in the beta frequency band
 beta_band_idx = find(f_axis >= beta_band(1) & f_axis <= beta_band(2));
@@ -93,8 +92,6 @@ f_axis_log = log10(f_axis(beta_band_idx));
 % Fit a line and get the slope
 pxx_fit_beta = polyfit(f_axis_log, pxx_log, 1);
 hrv_nl.beta = pxx_fit_beta(1);
-
-%figure; plot(f_axis_log, [pxx_log, beta_line]);
 
 %% === Display output if requested
 if (should_plot)
@@ -122,7 +119,7 @@ if (should_plot)
     % Plot the spectrum (only plot every x samples)
     f_beta_plot = f_axis(beta_band_idx);
     pxx_beta_plot = pxx(beta_band_idx);
-    decimation_factor = 50;
+    decimation_factor = 10;
     subplot(2, 1, 2);
     loglog(f_beta_plot(1:decimation_factor:end), pxx_beta_plot(1:decimation_factor:end), 'ko', 'MarkerSize', 7);
     hold on; grid on;
