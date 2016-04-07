@@ -36,7 +36,7 @@ fprintf('[%.3f] >> rhrv: Signal duration: %f [min] (%d samples)\n', cputime-t0, 
 if (should_preprocess)
     fprintf('[%.3f] >> rhrv: Pre-processing signal...\n', cputime-t0);
     [ tnn_filtered, nni_filtered ] = filternn(tnn, nni, 'plot', should_plot);
-    
+
     fprintf('[%.3f] >> rhrv: %d intervals were filtered out\n', cputime-t0, length(tnn)-length(tnn_filtered));
 else
     tnn_filtered = tnn; nni_filtered = nni;
@@ -105,7 +105,10 @@ hrv_metrics.Properties.RowNames = row_names;
 %% === Display output if no output args
 if (nargout == 0)
     % Print some of the HRV metrics to user
-    disp(hrv_metrics(:, {'AVNN','SDNN','RMSSD','pNN50','ULF_to_TOT','VLF_to_TOT','LF_to_TOT','HF_to_TOT','alpha1','alpha2','beta'}));
+    disp(hrv_metrics(:, {'AVNN','SDNN','RMSSD','pNN50', 'VLF_to_TOT','LF_to_TOT','HF_to_TOT', 'LF_to_HF', 'alpha1','alpha2','beta'}));
+end
+if (should_plot)
+    tilefigs;
 end
 fprintf('[%.3f] >> rhrv: Finished processing record %s.\n', cputime-t0, rec_name);
 

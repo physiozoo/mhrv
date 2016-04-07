@@ -97,6 +97,9 @@ hrv_fd.VLF_to_TOT = hrv_fd.VLF_PWR / hrv_fd.TOT_PWR;
 hrv_fd.LF_to_TOT  = hrv_fd.LF_PWR  / hrv_fd.TOT_PWR;
 hrv_fd.HF_to_TOT  = hrv_fd.HF_PWR  / hrv_fd.TOT_PWR;
 
+% Calculate LF/HF ratio
+hrv_fd.LF_to_HF  = hrv_fd.LF_PWR  / hrv_fd.HF_PWR;
+
 %% === Display output if requested
 if (should_plot)
     % Get the other type of spectrum so we can plot both
