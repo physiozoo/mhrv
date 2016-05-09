@@ -21,7 +21,7 @@ sig_list = p.Results.sig_list;
 temp_file = sprintf('%s.rdsamp', rec_name);
 
 % Command to run rdann with natural units
-command = sprintf('rdsamp -r %s -P', rec_name);
+command = sprintf('rdsamp -P -c -r %s', rec_name);
 
 % Check if we only need part of the signals
 if (~isempty(sig_list))
@@ -40,13 +40,12 @@ if(res ~= 0)
     error('rdann error: %s', out);
 end
 
-M = dlmread(temp_file);
+M = dlmread(temp_file, ',');
 t = M(:,1);
 sig = M(:,2:end);
 Fs = floor(size(sig,1) / max(t)); % since tm is in seconds
 
 % Delete the temp file
 delete(temp_file);
-
 end
 
