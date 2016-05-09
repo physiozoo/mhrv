@@ -105,7 +105,10 @@ hrv_metrics.Properties.RowNames = row_names;
 %% === Display output if no output args
 if (nargout == 0)
     % Print some of the HRV metrics to user
-    disp(hrv_metrics(:, {'AVNN','SDNN','RMSSD','pNN50', 'VLF_to_TOT','LF_to_TOT','HF_to_TOT', 'LF_to_HF', 'alpha1','alpha2','beta'}));
+    disp(hrv_metrics(:,...
+        {'AVNN','SDNN','RMSSD','pNN50',...
+         'LF_to_TOT','HF_to_TOT', 'LF_to_HF',...
+         'alpha1','alpha2','beta', 'mse_a', 'mse_b'}));
 end
 if (should_plot)
     tilefigs;

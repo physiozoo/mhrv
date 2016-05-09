@@ -9,6 +9,7 @@ DEFAULT_NMIN = 3;
 DEFAULT_NMAX = 150;
 DEFAULT_BETA_BAND = [0.003, 0.04]; % hz
 DEFAULT_MSE_MAX_SCALE = 20;
+DEFAULT_MSE_FIT_SCALE = 7;
 DEFAULT_SAMPEN_R = 0.15; % percent of std. dev.
 DEFAULT_SAMPEN_M = 2;
 
@@ -23,6 +24,7 @@ p.addParameter('n_min',  DEFAULT_NMIN, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('n_max',  DEFAULT_NMAX, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('beta_band',  DEFAULT_BETA_BAND, @(x) isnumeric(x) && numel(x) == 2);
 p.addParameter('mse_max_scale', DEFAULT_MSE_MAX_SCALE, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('mse_fit_scale', DEFAULT_MSE_FIT_SCALE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('sampen_r', DEFAULT_SAMPEN_R, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('sampen_m', DEFAULT_SAMPEN_M, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('plot', nargout == 0, @islogical);
@@ -35,6 +37,7 @@ n_min = p.Results.n_min;
 n_max = p.Results.n_max;
 beta_band = p.Results.beta_band;
 mse_max_scale = p.Results.mse_max_scale;
+mse_fit_scale = p.Results.mse_fit_scale;
 sampen_r = p.Results.sampen_r;
 sampen_m = p.Results.sampen_m;
 should_plot = p.Results.plot;
@@ -104,9 +107,16 @@ hrv_nl.beta = pxx_fit_beta(1);
 
 %% === Nonlinear metrics (Multiscale sample entropy)
 
+% Calculate the MSE graph
 [ mse_values, scale_axis ] = mse(nni, 'mse_max_scale', mse_max_scale, 'sampen_m', sampen_m, 'sampen_r',sampen_r);
 
-% TODO: Decide what metric to calculate from the mse values.
+% Fit a straight line to the tail of the MSE graph
+fit_idx = mse_fit_scale:length(scale_axis);
+mse_fit = polyfit(scale_axis(fit_idx), mse_values(fit_idx), 1);
+
+% Calculate metrics: The slope and intercept of the linefit to the MSE graph
+hrv_nl.mse_a = mse_fit(1);
+hrv_nl.mse_b = mse_fit(2);
 
 %% === Display output if requested
 if (should_plot)
@@ -145,9 +155,10 @@ if (should_plot)
     xlabel('log(frequency [hz])'); ylabel('log(PSD [s^2/Hz])');
     legend('PSD', ['\beta = ' num2str(hrv_nl.beta)]);
 
-    % Plot MSE
+    % Plot MSE & linefit
     subplot(3, 1, 3);
-    plot(scale_axis, mse_values, '--ko', 'MarkerSize', 7); grid on;
+    plot(scale_axis, mse_values, '--ko', 'MarkerSize', 7); hold on; grid on;
+    plot(scale_axis(fit_idx), scale_axis(fit_idx).*mse_fit(1) + mse_fit(2), 'Color', 'green', 'LineStyle', ls, 'LineWidth', lw);
     xlabel('Scale factor'); ylabel('Sample Entropy');
-    legend(['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)]);
+    legend(['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)], ['Fit, slope=' num2str(mse_fit(1))]);
 end
