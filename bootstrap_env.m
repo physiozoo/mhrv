@@ -20,5 +20,9 @@ addpath(genpath(src_dir_));
 global db_dir
 db_dir = [basepath_ '/db/'];
 
+% Add wfdb location to path
+global jsystem_path;
+jsystem_path = {'/usr/local/bin'};
+
 %% Clean up
 clear -regexp _$
