@@ -24,5 +24,10 @@ db_dir = [basepath_ '/db/'];
 global jsystem_path;
 jsystem_path = {'/usr/local/bin'};
 
+%% misc setup
+
+% Default font size for figres
+set(0,'DefaultAxesFontSize',14);
+
 %% Clean up
 clear -regexp _$
