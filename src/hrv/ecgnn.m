@@ -18,11 +18,13 @@ p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
 p.addParameter('gqpost', DEFAULT_GQPOST, @(x) islogical(x) && isscalar(x));
 p.addParameter('use_rqrs', DEFAULT_USE_RQRS, @(x) islogical(x) && isscalar(x));
+p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rec_name, varargin{:});
 gqpost = p.Results.gqpost;
 use_rqrs = p.Results.use_rqrs;
+should_plot = p.Results.plot;
 
 % === Read the signal
 ecg_col = get_signal_channel(rec_name);
@@ -68,5 +70,12 @@ nanidx = [nanidx; nanidx-1];
 
 % Take RR interval times and remove the marked indexes
 tnn(nanidx) = [];
+
+%% Plot if no output args or if requested
+if (should_plot)
+    figure; hold on; grid on;
+    xlabel('time [s]'); ylabel('ECG [mV]');
+    plot(tm, sig);
+end
 
 end

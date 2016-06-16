@@ -54,9 +54,7 @@ tnn_filtered(outlier_idx) = [];
 
 %% Plot if no output args
 if (should_plot)
-    fontsize = 14;
     markersize = 10.0;
-    set(0,'DefaultAxesFontSize',fontsize);
     figure; hold on; grid on;
     xlabel('time [s]'); ylabel('RR Interval length [s]');
 
