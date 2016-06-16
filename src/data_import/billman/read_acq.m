@@ -1,10 +1,10 @@
-function [t, data, info] = read_acq(filename)
+function [t, data, fs, info] = read_acq(filename)
 
 % Read raw data (use 'acqread' from matlab file exchange)
 [info,data] = acqread(filename);
 n_channels = double(info.nChannels);
 
-% Calculate sampling frequency [hz] and offset [sec]
+% Calculate sampling frequency [hz]
 fs = 1000 / double(info.dSampleTime); % dSampleTime is in millisec per sample
 
 % Pre allocate time cell array
@@ -18,7 +18,7 @@ for chan_idx = 1:n_channels
     offset = double(info.dAmplOffset(chan_idx));
     data{chan_idx} = double(data{chan_idx}) .* scale + offset;
 
-    % Create time axis
+    % Create time axis (in seconds)
     t{chan_idx} = (1/fs) .* (0:(n-1));
 end
 

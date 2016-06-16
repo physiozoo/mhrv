@@ -3,14 +3,15 @@ function files = billman(folder)
 files = dir([folder '*.acq']);
 
 for ii = 1:length(files)
-    [t,data,info] = read_acq([folder files(ii).name]);
+    [t, data, fs, info] = read_acq([folder files(ii).name]);
     if (isempty(info.szText)); info.szText = {}; end
     %fprintf('#%02d. %s: %s\n', ii, files(ii).name, strjoin(info.szText, ', '));
     
     % Add the data to the results structure
     files(ii).t = t;
     files(ii).data = data;
-    
+    files(ii).fs = fs;
+
     % Find the channel with ECG data
     ecg_channel = 0;
     for jj = 1:length(data)
