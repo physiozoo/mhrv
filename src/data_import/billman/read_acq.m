@@ -1,4 +1,6 @@
 function [t, data, fs, info] = read_acq(filename)
+%READ_ACQ Load/plot data files in *.acq format into matlab.
+%   Detailed explanation goes here
 
 % Read raw data (use 'acqread' from matlab file exchange)
 [info,data] = acqread(filename);

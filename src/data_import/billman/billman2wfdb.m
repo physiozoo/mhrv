@@ -1,17 +1,24 @@
-function files = billman(folder)
+function files = billman2wfdb(input_path, output_rec_prefix)
+%BILLMAN 2WFDB Convert records from Billman's 2013 study to wfdb format.
+%   input_path: Folder continaing files in *.acq format.
+%   output_rec_prefix: folder and prefix record name to use for the output
+%   files. Example: if  output_rec_prefix='db/billman/2013/canine' then
+%   output file records might be 'db/billman/2013/01-int',
+%   'db/billman/2013/01-dbk'...
 
-files = dir([folder '*.acq']);
+% Create output folder
+[out_path,rec_name,~] = fileparts(output_rec_prefix);
+if (~exist(out_path, 'dir'))
+    mkdir(out_path);
+end
+
+% Load input files
+files = dir([input_path '*.acq']);
 
 for ii = 1:length(files)
-    [t, data, fs, info] = read_acq([folder files(ii).name]);
+    [t, data, fs, info] = read_acq([input_path files(ii).name]);
     if (isempty(info.szText)); info.szText = {}; end
-    %fprintf('#%02d. %s: %s\n', ii, files(ii).name, strjoin(info.szText, ', '));
     
-    % Add the data to the results structure
-    files(ii).t = t;
-    files(ii).data = data;
-    files(ii).fs = fs;
-
     % Find the channel with ECG data
     ecg_channel = 0;
     for jj = 1:length(data)
@@ -33,10 +40,10 @@ for ii = 1:length(files)
         label_text = info.szText{jj};
 
         % look for matches in the label text (take into account the spelling mistakes that exist in the files...
-        if (atropine_segment == 0 && ~isempty(regexp(label_text, 'atropine|atopine', 'ignorecase')))
+        if (atropine_segment == 0 && ~isempty(regexpi(label_text, 'atropine|atopine')))
             atropine_segment = jj;
         end
-        if (propranolol_segment == 0 && ~isempty(regexp(label_text, 'propranolol|prorpanolol|proprnaolol', 'ignorecase')))
+        if (propranolol_segment == 0 && ~isempty(regexpi(label_text, 'propranolol|prorpanolol|proprnaolol')))
             propranolol_segment = jj;
         end
         
@@ -65,15 +72,44 @@ for ii = 1:length(files)
                 idx_intrinsic_low, idx_intrinsic_high, idx_blockade_low, idx_blockade_high,...
                 strjoin(info.szText, ', '));
 
-            % Update the result structure
-            files(ii).idx_intrinsic_low = idx_intrinsic_low;
-            files(ii).idx_intrinsic_high = idx_intrinsic_high;
-            files(ii).idx_blockade_low = idx_blockade_low;
-            files(ii).idx_blockade_high = idx_blockade_high;
+            % Write result files
+            output_rec = sprintf('%s/%s%02d', out_path, rec_name, ii);
+            write_record(output_rec, data,...
+                         idx_intrinsic_low:idx_intrinsic_high, idx_blockade_low:idx_blockade_high,...
+                         fs, info);
             
             % Skip next segments for this file
             break;
         end
     end
 end
+
+    % Helper function to write the data to file
+    function write_record(output_rec, data, intrinsic_idx, blockade_idx, fs, info)
+            %mat2wfdb(data_intrinsic, [output_rec num2str(ii) '-int'], fs, [], );
+            
+            % Extract intrinsic and blockade segments
+            data_mat = cell2mat(data);
+            data_intrinsic = data_mat(intrinsic_idx, :);
+            data_blockade  = data_mat(blockade_idx,  :);
+
+            % Handle units
+            units = cell(1, size(data_mat,2));
+            for kk = 1:size(data_mat,2)
+                units_text = info.szUnitsText{kk};
+                % Convert volts to mV (default physionet units)
+                if (~isempty(regexpi(units_text, '^volt|^V$')))
+                    data_mat(:, kk) = data_mat(:, kk) * 1000;
+                    units_text = 'mV';
+                end
+                % Remove whitespace from units
+                units{kk} = strrep(units_text, ' ', '');
+            end
+            
+            % Write to wfdb file format
+            file_comment = ['Original filename: ' files(ii).name];
+            channel_comments = info.szCommentText;
+            mat2wfdb(data_intrinsic, [output_rec, '-int'], fs, [], units, file_comment, [], channel_comments);
+            mat2wfdb(data_blockade,  [output_rec, '-dbk'], fs, [], units, file_comment, [], channel_comments);
+    end
 end
