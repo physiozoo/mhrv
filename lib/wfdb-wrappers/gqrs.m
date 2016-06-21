@@ -63,7 +63,7 @@ end
 
 % append command for gqpost (use '&&' to make it conditional on gqrs's success)
 if (gqpost)
-    gqpost_cmdline = strrep(cmdline, 'gqrs', 'gqpost'); % replace 'gqrs' with 'gqpost'
+    gqpost_cmdline = regexprep(cmdline, '^gqrs', 'gqpost'); % replace 'gqrs' with 'gqpost'
     gqpost_cmdline = regexprep(gqpost_cmdline, ' -[so] \S+', ''); % remove '-s X'/'-o X' flags but keep others
     cmdline = [cmdline, ' && ', gqpost_cmdline];
 end
