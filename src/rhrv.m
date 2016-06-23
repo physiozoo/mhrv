@@ -8,6 +8,7 @@ close all;
 % Defaults
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_SHOULD_PREPROCESS = true;
+DEFAULT_GQCONF = 'cfg/gqrs.default.conf';
 
 % Define input
 p = inputParser;
@@ -15,12 +16,14 @@ p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2);
 p.addParameter('should_preprocess', DEFAULT_SHOULD_PREPROCESS, @(x) isscalar(x) && islogical(x));
+p.addParameter('gqconf', DEFAULT_GQCONF, @isstr);
 p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
 p.parse(rec_name, varargin{:});
 should_preprocess = p.Results.should_preprocess;
 window_minutes = p.Results.window_minutes;
+gqconf = p.Results.gqconf;
 should_plot = p.Results.plot;
 
 % Save processing start time
@@ -28,7 +31,7 @@ t0 = cputime;
 
 %% === Calculate NN intervals
 fprintf('[%.3f] >> rhrv: Reading ECG signal from record %s...\n', cputime-t0, rec_name);
-[ nni, tnn, rri, ~ ] = ecgnn(rec_name, 'gqpost', true, 'use_rqrs', true);
+[ nni, tnn, rri, ~ ] = ecgnn(rec_name, 'gqpost', true, 'gqconf', gqconf, 'use_rqrs', true);
 
 fprintf('[%.3f] >> rhrv: Signal duration: %f [min] (%d samples)\n', cputime-t0, tnn(end)/60, length(tnn));
 

@@ -17,12 +17,14 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
 p.addParameter('gqpost', DEFAULT_GQPOST, @(x) islogical(x) && isscalar(x));
+p.addParameter('gqconf', '', @isstr);
 p.addParameter('use_rqrs', DEFAULT_USE_RQRS, @(x) islogical(x) && isscalar(x));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rec_name, varargin{:});
 gqpost = p.Results.gqpost;
+gqconf = p.Results.gqconf;
 use_rqrs = p.Results.use_rqrs;
 should_plot = p.Results.plot;
 
@@ -33,7 +35,7 @@ ecg_col = get_signal_channel(rec_name);
 %% === Find QRS in the signal
 
 % Use gqrs to find QRS complex locations
-[qrs, qrs_outliers] = gqrs(rec_name, 'ecg_col', ecg_col, 'gqpost', gqpost);
+[qrs, qrs_outliers] = gqrs(rec_name, 'ecg_col', ecg_col, 'gqpost', gqpost, 'config', gqconf);
 
 % Use rqrs to find the r-peaks based on the qrs complex locations
 if (use_rqrs)
