@@ -75,9 +75,19 @@ tnn(nanidx) = [];
 
 %% Plot if no output args or if requested
 if (should_plot)
-    figure; hold on; grid on;
-    xlabel('time [s]'); ylabel('ECG [mV]');
-    plot(tm, sig);
+    figure; %hold on; grid on;
+    p1 = subplot(2,1,1);
+    plot(tm, sig); hold on; grid on;
+    set( get(p1,'XLabel'), 'String', 'time [s]' );
+    set( get(p1,'YLabel'), 'String', 'ECG [mV]' );
+
+    ihr = 60 ./ nni;
+    ihr_avg = mean(ihr);
+    p2 = subplot(2,1,2);
+    plot(tnn, ihr, tnn, ones(size(ihr)) .* ihr_avg); hold on; grid on;
+    set( get(p2,'XLabel'), 'String', 'time [s]' );
+    set( get(p2,'YLabel'), 'String', 'IHR [BPM]' );
+    legend('IHR', sprintf('Avg.=%f', ihr_avg));
 end
 
 end

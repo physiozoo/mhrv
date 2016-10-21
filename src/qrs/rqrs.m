@@ -32,7 +32,8 @@ if (nargout == 0)
     figure;
     plot(tm, sig); hold on; grid on;
     plot(tm(qrs), sig(qrs,1), 'rx');
-        
+    xlabel('time [s]'); ylabel ('ECG [mV]');
+
     if (~isempty(outliers))
         plot(tm(outliers), sig(outliers,1), 'ko');
         legend('signal', 'qrs detections', 'suspected outliers');
