@@ -19,6 +19,7 @@ Using matlab's built in `system` command can be extremely slow, especially if yo
        ./src:
        jsystem.m
   ```
+
 - Use shell built-ins, pipes and redirects:
   ```
   >> [res, out] = jsystem('echo "YES" && ls -al | grep src > /dev/null')
@@ -27,6 +28,7 @@ Using matlab's built in `system` command can be extremely slow, especially if yo
   out =
        YES
   ```
+
 - Specify your own custom shell to use:
   ```
   >> [res, out] = jsystem('echo "My shell is $SHELL"', '/usr/local/bin/zsh')
@@ -35,6 +37,7 @@ Using matlab's built in `system` command can be extremely slow, especially if yo
   out =
        My shell is /usr/local/bin/zsh
   ```
+
 - Execute a program directly, without a shell (even faster, since there's no shell startup overhead)
   ```
   >> [res, out] = jsystem('/usr/bin/du -h ./src', 'noshell')
@@ -49,11 +52,11 @@ Run the included benchmarks in `test/jsystem_benchmak.m` to get an indication of
 Here's a representative result (on my machine - late 2012 macbook pro).
 
 * `jsystem` vs matlab's built-in `system`:
-  > Benchmark #1 - Command: "echo OK > /dev/null", 50 iterations \
-  > **system**: 17.000 [ms] average \
+  > Benchmark #1 - Command: "echo OK > /dev/null", 50 iterations <br>
+  > **system**: 17.000 [ms] average <br>
   > **jsystem**: 3.400 [ms] average
 
 * `jsystem` with and without a shell
-  > Benchmark #2 - Command: "/bin/ls -al", 50 iterations \
-  > **jsystem**:           3.600 [ms] average \
+  > Benchmark #2 - Command: "/bin/ls -al", 50 iterations <br>
+  > **jsystem**:           3.600 [ms] average <br>
   > **jsystem (noshell)**: 2.600 [ms] average
