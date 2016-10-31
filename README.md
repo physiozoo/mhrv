@@ -1,8 +1,9 @@
 # matlab-jsystem
-###### A fast drop-in replacement for matlab's `system` command
+
+***A fast drop-in replacement for matlab's `system` command.***
 
 Ever need to run a shell command or external process from matlab code?
-Using matlab's built in `system` command can be extremely slow, especially if you're calling it many times.
+Using matlab's built in `system` command can be extremely slow, causing severe overhead if you're calling it many times.
 `jsystem` is a drop-in replacement for `system` which is both much faster and also has some extra convenience features.
 
 ## Usage
@@ -60,3 +61,9 @@ Here's a representative result (on my machine - late 2012 macbook pro).
   > Benchmark #2 - Command: "/bin/ls -al", 50 iterations <br>
   > **jsystem**:           3.600 [ms] average <br>
   > **jsystem (noshell)**: 2.600 [ms] average
+
+## Contributing
+PRs would be greatly appreciated.
+
+## License
+MIT.
