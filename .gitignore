@@ -24,6 +24,10 @@ db/
 .AppleDouble
 .LSOverride
 
+### Local helper scripts ###
+# A folder for local scripts that use the rhrv tools.
+scripts/
+
 # Icon must end with two \r
 Icon
 
