@@ -1,5 +1,5 @@
 function [ data_bsl, data_dbk, metadata ] = billman2mat( input_file_path )
-%BILLMAN2MAT Read data from Billman's 2013/2015 studies [1,2] data into matlab variables. 
+%BILLMAN2MAT Read data from Billman's 2013/2015 studies [1,2] data into matlab variables.
 %   Reads data in ACQ format from the study and extracts the basal and
 %   double blockade data segments.
 %
@@ -61,12 +61,12 @@ if (isempty(info.szText)); info.szText = {}; end
 %% Find the channels with ECG and HR data
 ecg_channel = 0; hr_channel = 0;
 
-for jj = 1:info.nChannels
-    if (~isempty(regexpi(info.szCommentText{jj}, 'ecg')))
-        ecg_channel = jj;
+for chan_idx = 1:info.nChannels
+    if (~isempty(regexpi(info.szCommentText{chan_idx}, 'ecg')))
+        ecg_channel = chan_idx;
     end
-    if (~isempty(regexpi(info.szCommentText{jj}, 'hr|heart rate|heartrate')))
-        hr_channel = jj;
+    if (~isempty(regexpi(info.szCommentText{chan_idx}, 'hr|heart rate|heartrate')))
+        hr_channel = chan_idx;
     end
 end
 
@@ -82,18 +82,18 @@ end
 
 atropine_segment = 0; propranolol_segment  = 0;
 % Go over segment labels to find if and when atropine and propranolol were administered
-for jj = 1:length(info.szText)
-    label_text = info.szText{jj};
-    
+for seg_idx = 1:length(info.szText)
+    label_text = info.szText{seg_idx};
+
     % look for matches in the label text (take into account the spelling mistakes that exist in the files...
     if (atropine_segment == 0 && ~isempty(regexpi(label_text, 'atropine|atopine')))
-        atropine_segment = jj;
+        atropine_segment = seg_idx;
     end
-    
+
     if (propranolol_segment == 0 && ~isempty(regexpi(label_text, 'propranolol|prorpanolol|proprnaolol|prortpanolol|bb')))
-        propranolol_segment = jj;
+        propranolol_segment = seg_idx;
     end
-    
+
     % Skip next segments for this file if both segments were found
     if (atropine_segment > 0 && propranolol_segment > 0)
         break;
@@ -133,8 +133,8 @@ end
 
 % Print the filename and data indices we've found
 fprintf('%s: [%d~%d], [%d~%d] - %s\n', input_file_name,...
-    idx_basal_low, idx_basal_high, idx_blockade_low, idx_blockade_high,...
-    strjoin(info.szText, ', '));
+        idx_basal_low, idx_basal_high, idx_blockade_low, idx_blockade_high,...
+        strjoin(info.szText, ', '));
 
 %% Extract the data from the segments
 
@@ -157,6 +157,34 @@ metadata.channels = {'ECG', 'Heart Rate'};
 
 % Add units to metadata
 metadata.units = {info.szUnitsText{ecg_channel}, info.szUnitsText{hr_channel}};
+
+%% Plot if no ouput args
+if (nargout == 0)
+    figure;
+
+    data_description = {'Basal', 'Double Blockade'};
+    data_all = {data_bsl, data_dbk};
+
+    n_sigs = size(data_all,2);
+    n_chans = size(metadata.channels,2);
+
+    % Loop over signals
+    for sig_idx = 1:n_sigs
+
+        % Loop over channels
+        for chan_idx = 1:n_chans
+            subplot(n_chans, n_sigs, sub2ind([n_chans, n_sigs], chan_idx, sig_idx));
+
+            curr_channel_data = data_all{sig_idx}(:, chan_idx);
+            t_axis = (1/fs) .* (0 : size(curr_channel_data,1)-1);
+            plot(t_axis, curr_channel_data);
+
+            xlabel('Seconds'); ylabel(metadata.units{chan_idx});
+            legend(metadata.channels{chan_idx});
+            title(data_description{sig_idx});
+        end
+    end
+end
 
 end
 
