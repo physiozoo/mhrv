@@ -65,7 +65,7 @@ for chan_idx = 1:info.nChannels
     if (~isempty(regexpi(info.szCommentText{chan_idx}, 'ecg')))
         ecg_channel = chan_idx;
     end
-    if (~isempty(regexpi(info.szCommentText{chan_idx}, 'hr|heart rate|heartrate')))
+    if (~isempty(regexpi(info.szCommentText{chan_idx}, 'hr|heart\s+rate|heartrate')))
         hr_channel = chan_idx;
     end
 end
@@ -80,9 +80,11 @@ end
 
 %% Find atropine and propranolol segments
 
+nsegments = length(info.szText);
 atropine_segment = 0; propranolol_segment  = 0;
-% Go over segment labels to find if and when atropine and propranolol were administered
-for seg_idx = 1:length(info.szText)
+
+% Loop over segment labels to find if and when atropine and propranolol were administered
+for seg_idx = 1:nsegments
     label_text = info.szText{seg_idx};
 
     % look for matches in the label text (take into account the spelling mistakes that exist in the files...
@@ -100,14 +102,48 @@ for seg_idx = 1:length(info.szText)
     end
 end
 
-% Make sure we found both segments
-if (atropine_segment == 0 || propranolol_segment == 0)
-    error('Failed to find both atropine and propranolol segments');
+% Make sure we found at least one segment
+if (atropine_segment == 0 && propranolol_segment == 0)
+    error(['Failed to find both atropine and propranolol segments in file ' input_file_name,...
+           '. Segments: ' strjoin(info.szText, ', ')]);
+end
+
+if (atropine_segment == 0)
+    % If we didn't find an atropine segment but we did find propranolol, check if one of
+    % the adjacent segments has no label
+    prev_seg = max(1, propranolol_segment-1);
+    next_seg = min(nsegments, propranolol_segment+1);
+
+    if (isempty(info.szText{prev_seg}))
+        atropine_segment = prev_seg;
+    elseif (isempty(info.szText{next_seg}))
+        atropine_segment = next_seg;
+    else
+        error(['Failed to find atropine segment in file ' input_file_name,...
+            '. Segments: ' strjoin(info.szText, ', ')]);
+    end
+end
+
+if (propranolol_segment == 0)
+    % If we didn't find a propranolol segment but we did find atropine, check if one of
+    % the adjacent segments has no label
+    prev_seg = max(1, atropine_segment-1);
+    next_seg = min(nsegments, atropine_segment+1);
+
+    if (isempty(info.szText{prev_seg}))
+        propranolol_segment = prev_seg;
+    elseif (isempty(info.szText{next_seg}))
+        propranolol_segment = next_seg;
+    else
+        error(['Failed to find propranolol segment in file ' input_file_name,...
+            '. Segments: ' strjoin(info.szText, ', ')]);
+    end
 end
 
 % Make sure the segments we found are adjacent
 if (abs(propranolol_segment - atropine_segment) ~= 1)
-    error('Non-adjacent atropine and propranolol segments found');
+    error(['Non-adjacent atropine and propranolol segments found in file ' input_file_name,...
+           '. Segments: ' strjoin(info.szText, ', ')]);
 end
 
 %% Create index ranges for the basal and double blockade data
@@ -132,8 +168,9 @@ else
 end
 
 % Print the filename and data indices we've found
-fprintf('%s: [%d~%d], [%d~%d] - %s\n', input_file_name,...
-        idx_basal_low, idx_basal_high, idx_blockade_low, idx_blockade_high,...
+fprintf('%s:\tbsl %d~%d, %.1f[min]; dbk %d~%d, %.1f[min];\t%s\n', input_file_name,...
+        idx_basal_low, idx_basal_high, (idx_basal_high-idx_basal_low)/fs/60,...
+        idx_blockade_low, idx_blockade_high, (idx_blockade_high - idx_blockade_low)/fs/60,...
         strjoin(info.szText, ', '));
 
 %% Extract the data from the segments
