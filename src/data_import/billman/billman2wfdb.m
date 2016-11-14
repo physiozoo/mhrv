@@ -1,115 +1,78 @@
-function files = billman2wfdb(input_path, output_rec_prefix)
-%BILLMAN 2WFDB Convert records from Billman's 2013 study to wfdb format.
-%   input_path: Folder continaing files in *.acq format.
-%   output_rec_prefix: folder and prefix record name to use for the output
-%   files. Example: if  output_rec_prefix='db/billman/2013/canine' then
-%   output file records might be 'db/billman/2013/01-int',
-%   'db/billman/2013/01-dbk'...
+function [ bsl_rec, dbk_rec ] = billman2wfdb( input_file_path, output_dir, output_rec_prefix )
+%BILLMAN2WFDB Convert a record from Billman's 2013/2015 studies [1,2] to wfdb format.
+%   Reads data in ACQ format from the study, extracts the basal and
+%   double blockade data segments and writes them to wfdb format files (each segment
+%   into a separate wfdb record).
+%
+%   inputs:
+%       - input_file_path: path to input file (.acq).
+%       - output_dir: Optional. Folder to write output record to. Will be
+%         current dir if not supplied.
+%       - output_rec_prefix: Optional. A prefix for the records. Will be
+%         the first word in the input filename if not supplied.
+%   outputs:
+%       - bsl_rec: path to wfdb record containing the basal data.
+%       - dbk_rec: path to wfdb record containing the double blockade data.
+%
+%   [1] Billman, G. E. (2013). The effect of heart rate on the heart rate variability response to autonomic interventions.
+%       Frontiers in Physiology, 4 AUG(August), 1?9.
+%       http://doi.org/10.3389/fphys.2013.00222
+%
+%   [2] Billman, G. E., Cagnoli, K. L., Csepe, T., Li, N., Wright, P., Mohler, P. J., & Fedorov, V. V. (2015).
+%       Exercise training-induced bradycardia: evidence for enhanced parasympathetic regulation without changes in
+%       intrinsic sinoatrial node function.
+%       Journal of Applied Physiology (Bethesda, Md. : 1985), 118(11), 1344?55.
+%       http://doi.org/10.1152/japplphysiol.01111.2014
 
-% Create output folder
-[out_path,rec_name,~] = fileparts(output_rec_prefix);
-if (~exist(out_path, 'dir'))
-    mkdir(out_path);
+%% Validate input
+if (nargin < 1)
+    error('No input filename supplied');
+elseif (nargin < 2)
+    output_dir = pwd;
+elseif (nargin < 3)
+    [~, input_file_name ,~] = fileparts(input_file_path);
+    output_rec_prefix = strsplit(input_file_name);
+    output_rec_prefix = output_rec_prefix{1};
 end
 
-% Load input files
-files = dir([input_path '*.acq']);
-
-for ii = 1:length(files)
-    [t, data, fs, info] = read_acq([input_path files(ii).name]);
-    if (isempty(info.szText)); info.szText = {}; end
-    
-    % Find the channel with ECG data
-    ecg_channel = 0;
-    for jj = 1:length(data)
-        if (~isempty(regexp(info.szCommentText{jj}, 'ecg', 'ignorecase')))
-            ecg_channel = jj;
-        end
-    end
-    if (ecg_channel == 0)
-        warn(['No ECG channel found for file ', files(ii).name, ', skipping...']);
-        continue;
-    end
-    
-    % Save the ecg_channel number into the result structure
-    files(ii).ecg_channel = ecg_channel;
-    
-    atropine_segment = 0; propranolol_segment  = 0;
-    % Go over segment labels to find if and when atropine and propranolol were administered
-    for jj = 1:length(info.szText)
-        label_text = info.szText{jj};
-
-        % look for matches in the label text (take into account the spelling mistakes that exist in the files...
-        if (atropine_segment == 0 && ~isempty(regexpi(label_text, 'atropine|atopine')))
-            atropine_segment = jj;
-        end
-        if (propranolol_segment == 0 && ~isempty(regexpi(label_text, 'propranolol|prorpanolol|proprnaolol')))
-            propranolol_segment = jj;
-        end
-        
-        % If both are found, take the first data segment (intrinsic), and the current data segment
-        % (which has both atropine and propranolol). However make sure one of the segments immediately
-        % follows the other.
-        if (atropine_segment > 0 && propranolol_segment > 0 && abs(propranolol_segment - atropine_segment) == 1)
-            
-            % Get intrinsic data indices: This is all the data until the second marker.
-            % Add 1 because the indices in the file start from zero
-            idx_intrinsic_low = 1;
-            idx_intrinsic_high = 1 + double(info.lSample(2));
-            
-            % Get double-blockade data indices: This is the data from the segment with both atropine and propranolol
-            % until the next segment (if exists) or until end of data.
-            % Add 1 because the indices in the file start from zero.
-            max_seg = max([atropine_segment, propranolol_segment]);
-            idx_blockade_low = 1 + double(info.lSample(max_seg));
-            if (max_seg == length(info.szText))
-                idx_blockade_high = length(t{ecg_channel});
-            else
-                idx_blockade_high = 1 + double(info.lSample(max_seg+1));
-            end
-            
-            fprintf('#%02d. %s: [%d~%d], [%d~%d] - %s\n', ii, files(ii).name,...
-                idx_intrinsic_low, idx_intrinsic_high, idx_blockade_low, idx_blockade_high,...
-                strjoin(info.szText, ', '));
-
-            % Write result files
-            output_rec = sprintf('%s/%s%02d', out_path, rec_name, ii);
-            write_record(output_rec, data,...
-                         idx_intrinsic_low:idx_intrinsic_high, idx_blockade_low:idx_blockade_high,...
-                         fs, info);
-            
-            % Skip next segments for this file
-            break;
-        end
-    end
+% Make sure output dir exists
+if (~exist(output_dir, 'dir'))
+    mkdir(output_dir);
 end
 
-    % Helper function to write the data to file
-    function write_record(output_rec, data, intrinsic_idx, blockade_idx, fs, info)
-            %mat2wfdb(data_intrinsic, [output_rec num2str(ii) '-int'], fs, [], );
-            
-            % Extract intrinsic and blockade segments
-            data_mat = cell2mat(data);
-            data_intrinsic = data_mat(intrinsic_idx, :);
-            data_blockade  = data_mat(blockade_idx,  :);
+% Append a file separator to output dir if necessary
+if (output_dir(end) ~= filesep)
+    output_dir = [output_dir filesep];
+end
 
-            % Handle units
-            units = cell(1, size(data_mat,2));
-            for kk = 1:size(data_mat,2)
-                units_text = info.szUnitsText{kk};
-                % Convert volts to mV (default physionet units)
-                if (~isempty(regexpi(units_text, '^volt|^V$')))
-                    data_mat(:, kk) = data_mat(:, kk) * 1000;
-                    units_text = 'mV';
-                end
-                % Remove whitespace from units
-                units{kk} = strrep(units_text, ' ', '');
-            end
-            
-            % Write to wfdb file format
-            file_comment = ['Original filename: ' files(ii).name];
-            channel_comments = info.szCommentText;
-            mat2wfdb(data_intrinsic, [output_rec, '-int'], fs, [], units, file_comment, [], channel_comments);
-            mat2wfdb(data_blockade,  [output_rec, '-dbk'], fs, [], units, file_comment, [], channel_comments);
+% Extract basal and blockade segments
+[data_basal, data_blockade, metadata] = billman2mat(input_file_path);
+
+% Handle units
+units = metadata.units;
+for kk = 1:size(units, 2)
+    units_text = units{kk};
+
+    % Convert volts to mV (default physionet units)
+    if (~isempty(regexpi(units_text, '^volt|^V$')))
+        data_basal(:, kk) = data_basal(:, kk) * 1000;
+        data_blockade(:, kk) = data_blockade(:, kk) * 1000;
+        units_text = 'mV';
     end
+    % Remove whitespace from units
+    units{kk} = strrep(units_text, ' ', '');
+end
+
+% Build output record paths
+output_rec = [output_dir, output_rec_prefix];
+bsl_rec = [output_rec, '-bsl'];
+dbk_rec = [output_rec, '-dbk'];
+
+% Use original filename as a comment in the output record header
+[~, input_file_name ,~] = fileparts(input_file_path);
+file_comment = ['Original filename: ' input_file_name];
+
+% Write to wfdb file format
+mat2wfdb(data_basal,    bsl_rec, metadata.fs, [], units, file_comment, [], metadata.channels);
+mat2wfdb(data_blockade, dbk_rec, metadata.fs, [], units, file_comment, [], metadata.channels);
 end
