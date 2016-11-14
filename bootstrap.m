@@ -15,6 +15,9 @@ lib_dir_ = [basepath_ '/lib/'];
 src_dir_ = [basepath_ '/src/'];
 cfg_dir_ = [basepath_ '/cfg/'];
 
+% Change directory to the root of project
+cd(basepath_);
+
 % Add them to matlab's path including subfolders
 addpath(genpath(lib_dir_));
 addpath(genpath(src_dir_));
