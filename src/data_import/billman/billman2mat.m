@@ -214,7 +214,7 @@ if (nargout == 0)
 
             curr_channel_data = data_all{sig_idx}(:, chan_idx);
             t_axis = (1/fs) .* (0 : size(curr_channel_data,1)-1);
-            plot(t_axis, curr_channel_data);
+            plot(t_axis, curr_channel_data); grid on;
 
             xlabel('Seconds'); ylabel(metadata.units{chan_idx});
             legend(metadata.channels{chan_idx});
