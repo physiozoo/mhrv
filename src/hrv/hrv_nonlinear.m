@@ -120,7 +120,6 @@ hrv_nl.mse_b = mse_fit(2);
 
 %% === Display output if requested
 if (should_plot)
-    set(0,'DefaultAxesFontSize',14);
     lw = 3.8; ls = ':';
     figure;
 

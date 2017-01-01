@@ -111,8 +111,6 @@ if (should_plot)
         [~, pxx_lomb, ~] = hrv_freq(nni, tm_nni, 'f_max', f_max, 'f_res', f_res, 'detrend_order', detrend_order, 'method', 'lomb', 'plot', false);
     end
 
-    fontsize = 14;
-    set(0,'DefaultAxesFontSize',fontsize);
     figure;
 
     semilogy(f_axis, [pxx_lomb, pxx_ar]);
@@ -131,9 +129,10 @@ if (should_plot)
     xlim(xrange); ylim(yrange);
 
     % Names of frequency ranges
-    text(VLF_band(1), yrange(2) * 0.5, ' VLF', 'FontSize', fontsize+1);
-    text( LF_band(1), yrange(2) * 0.5,  ' LF', 'FontSize', fontsize+1);
-    text( HF_band(1), yrange(2) * 0.5,  ' HF', 'FontSize', fontsize+1);
+    fontsize = get(0,'DefaultAxesFontSize') + 1;
+    text(VLF_band(1), yrange(2) * 0.5, ' VLF', 'FontSize', fontsize);
+    text( LF_band(1), yrange(2) * 0.5,  ' LF', 'FontSize', fontsize);
+    text( HF_band(1), yrange(2) * 0.5,  ' HF', 'FontSize', fontsize);
 end
 
 end
