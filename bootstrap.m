@@ -29,9 +29,15 @@ run([cfg_dir_ '/rhrv_config.m']);
 global jsystem_path;
 jsystem_path = {rhrv_cfg_.paths.wfdb_path};
 
+% Make sure WFDB tools are installed
+wfdb_config_bin_ = [rhrv_cfg_.paths.wfdb_path '/' 'wfdb-config'];
+if exist(wfdb_config_bin_, 'file') == 0
+    error('WFDB tools not found. Make sure ''wfdb_path'' variable is properly configured.')
+end
+
 % Check WFDB tools version
 supported_version_ = '10.5.24';
-[~, wfdb_version_] = jsystem([rhrv_cfg_.paths.wfdb_path '/' 'wfdb-config --version'], 'noshell');
+[~, wfdb_version_] = jsystem([wfdb_config_bin_ ' --version'], 'noshell');
 ver_cmp_ = vercmp(wfdb_version_, supported_version_);
 if ver_cmp_ < 0
     warning('Detected WFDB version (%s) is older than the tested version, please use %s or newer', wfdb_version_, supported_version_);
