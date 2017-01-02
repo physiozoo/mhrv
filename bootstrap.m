@@ -29,6 +29,16 @@ run([cfg_dir_ '/rhrv_config.m']);
 global jsystem_path;
 jsystem_path = {rhrv_cfg_.paths.wfdb_path};
 
+% Check WFDB tools version
+supported_version_ = '10.5.24';
+[~, wfdb_version_] = jsystem([rhrv_cfg_.paths.wfdb_path '/' 'wfdb-config --version'], 'noshell');
+ver_cmp_ = vercmp(wfdb_version_, supported_version_);
+if ver_cmp_ < 0
+    warning('Detected WFDB version (%s) is older than the tested version, please use %s or newer', wfdb_version_, supported_version_);
+elseif ver_cmp_ > 0
+    disp('Notice: Detected WFDB version (%s) is newer than the tested version (%s)', wfdb_version_, supported_version_);
+end
+
 % Default font size for figres
 set(0,'DefaultAxesFontSize', rhrv_cfg_.plots.font_size);
 
