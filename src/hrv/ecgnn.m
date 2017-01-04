@@ -35,7 +35,7 @@ ecg_col = get_signal_channel(rec_name);
 %% === Find QRS in the signal
 
 % Use gqrs to find QRS complex locations
-[qrs, qrs_outliers] = gqrs(rec_name, 'ecg_col', ecg_col, 'gqpost', gqpost, 'config', gqconf);
+[qrs, qrs_outliers] = gqrs(rec_name, 'ecg_col', ecg_col, 'gqpost', gqpost, 'gqconf', gqconf);
 
 % Use rqrs to find the r-peaks based on the qrs complex locations
 if (use_rqrs)

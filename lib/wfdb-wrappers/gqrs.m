@@ -20,7 +20,7 @@ p.addParameter('N', DEFAULT_N, @isnumeric);
 p.addParameter('N0', DEFAULT_N0, @isnumeric);
 p.addParameter('out_ext', DEFAULT_OUT_EXT, @isstr);
 p.addParameter('ecg_col', DEFAULT_ECG_COL, @isnumeric);
-p.addParameter('config', DEFAULT_CONFIG, @isstr);
+p.addParameter('gqconf', DEFAULT_CONFIG, @isstr);
 p.addParameter('gqpost', DEFAULT_GQPOST, @islogical);
 
 % Get input
@@ -29,14 +29,14 @@ N = p.Results.N;
 N0 = p.Results.N0;
 out_ext = p.Results.out_ext;
 ecg_col = p.Results.ecg_col;
-config = p.Results.config;
+gqconf = p.Results.gqconf;
 gqpost = p.Results.gqpost;
 
 %% === Input validation
 
 % Make sure config file exists (if specified)
-if (~isempty(config) && ~exist(config, 'file'))
-    error('Config file not found: %s', config);
+if (~isempty(gqconf) && ~exist(gqconf, 'file'))
+    error('Config file not found: %s', gqconf);
 end
 
 %% === Find ECG signal index if it wasn't specified
@@ -57,8 +57,8 @@ cmdline = sprintf('gqrs -r %s -s %d -f s%d -o %s', rec_name, ecg_col, N0, out_ex
 if (~isempty(N))
     cmdline = sprintf('%s -t s%d', cmdline, N);
 end
-if (~isempty(config))
-        cmdline = sprintf('%s -c %s', cmdline, config);
+if (~isempty(gqconf))
+        cmdline = sprintf('%s -c %s', cmdline, gqconf);
 end
 
 % append command for gqpost (use '&&' to make it conditional on gqrs's success)
