@@ -45,8 +45,10 @@ elseif ver_cmp_ > 0
     disp('Notice: Detected WFDB version (%s) is newer than the tested version (%s)', wfdb_version_, supported_version_);
 end
 
-% Default font size for figres
+% Default sizes for figres
 set(0,'DefaultAxesFontSize', rhrv_cfg_.plots.font_size);
+set(0,'DefaultLineLineWidth', rhrv_cfg_.plots.line_width);
+set(0,'DefaultLineMarkerSize', rhrv_cfg_.plots.marker_size);
 
 %% Clean up
 clear -regexp _$

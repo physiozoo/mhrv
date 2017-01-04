@@ -10,5 +10,7 @@ rhrv_cfg_.paths.wfdb_path = '/usr/local/bin';
 
 %% Configure plots
 
-% Specify desired font size for figures.
-rhrv_cfg_.plots.font_size = 16;
+% Specify desired object sizes for figures.
+rhrv_cfg_.plots.font_size = 12;
+rhrv_cfg_.plots.line_width = 1.5;
+rhrv_cfg_.plots.marker_size = 8;
