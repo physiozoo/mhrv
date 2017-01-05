@@ -55,7 +55,12 @@ set(all_axes, ...
     'FontName', font, ...
     'LineWidth', axes_line_width);
 
+% Set font for all text objects
+all_text = findall(fig_handle, 'type', 'text');
+set(all_text, 'FontName', font);
+
 % Print figure as EPS
+out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
 print(fig_handle, out_filename, '-depsc2');
 
 end
