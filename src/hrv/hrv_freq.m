@@ -116,7 +116,6 @@ if (should_plot)
     semilogy(f_axis, [pxx_lomb, pxx_ar]);
     grid on; hold on;
     xlabel('Frequency [hz]'); ylabel('Power Density [s^2/Hz]');
-    legend('Lomb', 'Auto-regressive');
 
     % Vertical lines of frequency ranges
     lw = 3; ls = ':'; lc = 'black';
@@ -129,10 +128,11 @@ if (should_plot)
     xlim(xrange); ylim(yrange);
 
     % Names of frequency ranges
-    fontsize = get(0,'DefaultAxesFontSize') + 1;
-    text(VLF_band(1), yrange(2) * 0.5, ' VLF', 'FontSize', fontsize);
-    text( LF_band(1), yrange(2) * 0.5,  ' LF', 'FontSize', fontsize);
-    text( HF_band(1), yrange(2) * 0.5,  ' HF', 'FontSize', fontsize);
+    text(VLF_band(1), yrange(2) * 0.5, ' VLF');
+    text( LF_band(1), yrange(2) * 0.5,  ' LF');
+    text( HF_band(1), yrange(2) * 0.5,  ' HF');
+
+    legend('Lomb', 'Auto-regressive', 'Freq. Band Limit');
 end
 
 end
