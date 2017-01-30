@@ -6,7 +6,9 @@
 % All paths here can be relaive (to the root of the repo), or absolute.
 
 % Specify a path on this system that contains the physionet wfdb executables.
-rhrv_cfg_.paths.wfdb_path = '/usr/local/bin';
+% If left blank, the current matlab directory will be searched recursively, followed
+% by the directories in the $PATH environment variable.
+rhrv_cfg_.paths.wfdb_path = '';
 
 %% Configure plots
 
