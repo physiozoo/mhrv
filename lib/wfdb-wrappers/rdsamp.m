@@ -21,7 +21,8 @@ sig_list = p.Results.sig_list;
 temp_file = sprintf('%s.rdsamp', rec_name);
 
 % Command to run rdann with natural units
-command = sprintf('rdsamp -P -c -r %s', rec_name);
+rdsamp_path = get_wfdb_tool_path('rdsamp');
+command = sprintf('%s -P -c -r %s', rdsamp_path, rec_name);
 
 % Check if we only need part of the signals
 if (~isempty(sig_list))

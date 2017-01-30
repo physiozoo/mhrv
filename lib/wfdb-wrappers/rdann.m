@@ -20,7 +20,8 @@ ann_types = p.Results.ann_types;
 %% === Run rdann
 
 % Command to run rdann and cut only the annotation samples out
-command = sprintf('rdann -e -r %s -a %s', rec_name, ann_ext);
+rdann_path = get_wfdb_tool_path('rdann');
+command = sprintf('%s -e -r %s -a %s', rdann_path, rec_name, ann_ext);
 
 % Add annotation types flag if necessary
 if (~isempty(ann_types))

@@ -53,7 +53,8 @@ if (~isempty(N)); N = N-1; end
 %% === Create commandline arguments
 
 % commanline for gqrs
-cmdline = sprintf('gqrs -r %s -s %d -f s%d -o %s', rec_name, ecg_col, N0, out_ext);
+gqrs_path = get_wfdb_tool_path('gqrs');
+cmdline = sprintf('%s -r %s -s %d -f s%d -o %s', gqrs_path, rec_name, ecg_col, N0, out_ext);
 if (~isempty(N))
     cmdline = sprintf('%s -t s%d', cmdline, N);
 end
@@ -63,7 +64,7 @@ end
 
 % append command for gqpost (use '&&' to make it conditional on gqrs's success)
 if (gqpost)
-    gqpost_cmdline = regexprep(cmdline, '^gqrs', 'gqpost'); % replace 'gqrs' with 'gqpost'
+    gqpost_cmdline = regexprep(cmdline, 'gqrs ', 'gqpost '); % replace 'gqrs' with 'gqpost'
     gqpost_cmdline = regexprep(gqpost_cmdline, ' -[so] \S+', ''); % remove '-s X'/'-o X' flags but keep others
     cmdline = [cmdline, ' && ', gqpost_cmdline];
 end
