@@ -73,7 +73,7 @@ parfor curr_win_idx = 0:(num_win-1)
     hrv_nl = hrv_nonlinear(nni_window, tnn_window, 'plot', should_plot);
 
     %% === Time Domain metrics
-    hrv_td = hrv_time(nni_window);
+    hrv_td = hrv_time(nni_window, varargin{:});
 
     %% === Freq domain metrics
     [ hrv_fd, ~, ~ ] = hrv_freq(nni_window, tnn_window, 'method', 'lomb', 'plot', should_plot);
@@ -109,7 +109,7 @@ hrv_metrics.Properties.RowNames = row_names;
 if (nargout == 0)
     % Print some of the HRV metrics to user
     disp(hrv_metrics(:,...
-        {'AVNN','SDNN','RMSSD','pNN50',...
+        {'AVNN','SDNN','RMSSD','pNNx',...
          'LF_to_TOT','HF_to_TOT', 'LF_to_HF',...
          'alpha1','alpha2','beta', 'mse_a', 'mse_b'}));
 end
