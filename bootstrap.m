@@ -25,15 +25,8 @@ addpath(genpath(src_dir_));
 %% Load user configuration
 run([cfg_dir_ '/rhrv_config.m']);
 
-% Add wfdb location to jsystem path
-global jsystem_path;
-jsystem_path = {rhrv_cfg_.paths.wfdb_path};
-
 % Make sure WFDB tools are installed
-wfdb_config_bin_ = [rhrv_cfg_.paths.wfdb_path '/' 'wfdb-config'];
-if exist(wfdb_config_bin_, 'file') == 0
-    error('WFDB tools not found. Make sure ''wfdb_path'' variable is properly configured.')
-end
+wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config');
 
 % Check WFDB tools version
 supported_version_ = '10.5.24';
