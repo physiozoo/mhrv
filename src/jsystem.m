@@ -24,16 +24,26 @@ function [ res, out ] = jsystem( cmd, shell, dir )
 %   will be prefixed to the PATH enviroment variable of the process running
 %   the command. Example: global jsystem_path; jsystem_path = {'/foo', '/bar/baz'};
 
+%% Platform-specific initialization
+if (ispc)
+    DEFAULT_SHELL       = 'cmd.exe /c';
+else
+    DEFAULT_SHELL       = '/bin/sh -c';
+end
+
+%% Handle input
 global jsystem_path;
 if (nargin == 0)
     error('No command specified');
 end
 if (~exist('shell', 'var'))
-    shell = '/bin/sh';
+    shell = DEFAULT_SHELL;
 end
 if (~exist('dir', 'var'))
     dir = pwd;
 end
+
+%% Run the command
 
 % Create a java ProcessBuilder instance
 pb = java.lang.ProcessBuilder({''});
@@ -50,11 +60,11 @@ pb.redirectErrorStream(true);
 if (strcmpi(shell, 'noshell'))
     shellcmd = strsplit(cmd);
 else
-    shellcmd = {shell, '-c', cmd};
+    shellcmd = [strsplit(shell), cmd];
 
     % Setup path for process (only relevant if using a shell)
     if (~isempty(jsystem_path) && iscellstr(jsystem_path))
-        path = [strjoin(jsystem_path, ':') ':' char(pb.environment.get('PATH'))];
+        path = [strjoin(jsystem_path, pathsep()), pathsep(), char(pb.environment.get('PATH'))];
         pb.environment.put('PATH', path);
     end
 end
@@ -65,7 +75,7 @@ pb.command(shellcmd);
 % Start running the new process (non blocking)
 process = pb.start();
 
-% Read output from the process
+%% Read output from the process
 is = process.getInputStream();
 scanner = java.util.Scanner(is).useDelimiter('\\A'); % '\A' is the start of input token
 if scanner.hasNext() % blocks until start of stream
