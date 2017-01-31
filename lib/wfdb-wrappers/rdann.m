@@ -28,19 +28,16 @@ if (~isempty(ann_types))
     command = sprintf('%s -p %s', command, ann_types);
 end
 
-% Pipe to awk to cut the second column of the output (sample numbers)
- command =[command, ' | awk ''{print $2}'''];
-
 [res, out] = jsystem(command);
 if(res ~= 0)
     error('rdann error: %s', out);
 end
 
-% Convert string of numbers to vector
+% Extract just the sample numbers from the rdann output
 if (~isempty(out))
-    [ann, conversion_ok] = str2num(out);
-    if (conversion_ok == 0)
-        error('Failed to convert rdann output to samples');
+    [ann, ~, errmsg] = sscanf(out, '%*s %d %*[^\n]');
+    if ~isempty(errmsg)
+        error(['Failed to convert rdann output to samples: ' errmsg]);
     end
 else
     ann = [];
