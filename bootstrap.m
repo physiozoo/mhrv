@@ -25,8 +25,14 @@ addpath(genpath(src_dir_));
 %% Load user configuration
 run([cfg_dir_ '/rhrv_config.m']);
 
-% Make sure WFDB tools are installed
-wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config');
+% Make sure WFDB tools are installed. If not, download them now.
+try
+    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config');
+catch e
+    warning('WFDB binaries not detected, attempting to download...');
+    download_wfdb();
+    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config');
+end
 
 % Check WFDB tools version
 supported_version_ = '10.5.24';
