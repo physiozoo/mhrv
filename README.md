@@ -31,12 +31,18 @@ Currently this project is in a very early iteration and is intended for my perso
 ## Requirements
 * The Pysionet WFDB tools.
 * Matlab. Only tested on 2015b, but should work on any other version.
-* Linux or OSX.
 
 ## Installation
-* This repo contains a submodule as one of it's dependencies. After cloning, please run `git submodule update --init` to also clone the dependency into your local repo.
-* Install the [Physionet WFDB tools](https://www.physionet.org/physiotools/wfdb.shtml). If you're on OSX, you can use [homebrew](http://brew.sh) to install it easily with `brew install homebrew/science/wfdb`. Otherwise, install WFDB from source using the instructions on their website.
-* Edit [`cfg/rhrv_config.m`](https://github.com/avivrosenberg/rhrv/blob/master/cfg/rhrv_config.m). Make sure the `wfdb_path` variable points to the directory where you installed the WFDB binaries.
+
+1. Clone the repo. This repo contains a submodule as one of it's dependencies so either clone it with `git clone --recursive <repo-url>` or, after cloning,  run `git submodule update --init` to also clone the dependency into your local repo.
+
+2. Install the [Physionet WFDB tools](https://www.physionet.org/physiotools/wfdb.shtml).
+  * If you're on OSX, you can use [homebrew](http://brew.sh) to install it easily with `brew install homebrew/science/wfdb`.
+  * On Windows and Linux, you should either [download the WFDB binaries](https://physionet.org/physiotools/binaries/) for your OS or compile them [from source](https://physionet.org/physiotools/wfdb.shtml#downloading) using the instructions on their website.
+  * Once you have the binaries, place them in some folder under the repo's root folder and they will be found and used automatically.
+  * If you would like to manually specify a path outside the repo which contains the WFDB binaries (e.g. `/usr/local/bin` for a homebrew install), you can edit [`cfg/rhrv_config.m`](https://github.com/avivrosenberg/rhrv/blob/master/cfg/rhrv_config.m) and set the `wfdb_path` variable to the desired path.
+
+3. From MATLAB, run the `bootstrap.m` script. This will check for the presence of the WFDB tools and set up your MATLAB path to include the code in this toolbox.
 
 ## Usage
 Exaple of calculating HRV measures for a PhysioNet record (in this case from [`mitdb`](https://www.physionet.org/physiobank/database/mitdb/)):
