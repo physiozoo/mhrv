@@ -19,6 +19,8 @@ db/
 *.atr
 *.qrs*
 
+bin/wfdb/
+
 ### OSX ###
 .DS_Store
 .AppleDouble
