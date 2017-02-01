@@ -14,6 +14,7 @@ basepath_ = fileparts(mfilename('fullpath'));
 lib_dir_ = [basepath_ '/lib/'];
 src_dir_ = [basepath_ '/src/'];
 cfg_dir_ = [basepath_ '/cfg/'];
+bin_dir_ = [basepath_ '/bin/'];
 
 % Change directory to the root of project
 cd(basepath_);
@@ -30,7 +31,7 @@ try
     wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config');
 catch e
     warning('WFDB binaries not detected, attempting to download...');
-    download_wfdb();
+    download_wfdb(bin_dir_);
     wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config');
 end
 
