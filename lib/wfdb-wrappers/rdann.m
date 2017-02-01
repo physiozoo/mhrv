@@ -1,6 +1,17 @@
 function [ ann ] = rdann( rec_name, ann_ext, varargin )
-%RDANN Wrapper for WFDB's 'rdann'
-%   Detailed explanation goes here
+%RDANN Wrapper for WFDB's 'rdann' tool.
+%   Reads annotation files in PhysioNet format and returns them as a MATLAB vector.
+%   Inputs:
+%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
+%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
+%       - ann_ext: Extension of annotation file. E.g. use 'qrs' is the annotation file is
+%                  mitdb/100.qrs.
+%       - varargin: Pass in name-value pairs to configure advanced options:
+%           - 'ann_types': A double-quoted string of PhysioNet annotation types that should be read,
+%                          e.g. '"N|"' to read both annotations of type 'N' and type '|'. Default is
+%                          empty, i.e. return annotations of any type.
+%   Output:
+%       - ann: A vector with the sample numbers containing the annotations.
 
 %% === Input
 

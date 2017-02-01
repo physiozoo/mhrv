@@ -1,6 +1,6 @@
 function [ tool_path ] = get_wfdb_tool_path( tool_name )
 %GET_WFDB_TOOL_PATH Returns the path to a wfdb tool, takes OS into account
-%   This function looks for the given tool in the path specified by the
+%   Looks for the given tool in the path specified by the
 %   global variable 'wfdb_path', if it exists. If it doesn't exist, it
 %   looks recursively under the current folder, and then recursively under
 %   the folders in the $PATH environment variable. In case the tool is found,
