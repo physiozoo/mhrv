@@ -16,8 +16,6 @@ t0 = cputime;
 
 %% Determine Download URL for the current OS
 
-% Currently this function doesn't support linux becuase
-
 % OSX
 if (ismac)
     url = 'https://homebrew.bintray.com/bottles-science/wfdb-10.5.24.yosemite.bottle.1.tar.gz';
