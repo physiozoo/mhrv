@@ -30,7 +30,8 @@ Currently this project is in a very early iteration and is intended for my perso
 
 ## Requirements
 * The Pysionet WFDB tools.
-* Matlab. Only tested on 2015b, but should work on any other recent versions.
+* Matlab with Signal Processing toolbox. Only tested on R2015b, but should work
+  on R2014b or newer.
 
 ## Installation
 
