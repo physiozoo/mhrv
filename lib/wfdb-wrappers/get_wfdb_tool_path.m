@@ -1,10 +1,8 @@
 function [ tool_path ] = get_wfdb_tool_path( tool_name )
 %GET_WFDB_TOOL_PATH Returns the path to a wfdb tool, takes OS into account
-%   Looks for the given tool in the path specified by the
-%   global variable 'wfdb_path', if it exists. If it doesn't exist, it
-%   looks recursively under the current folder, and then recursively under
-%   the folders in the $PATH environment variable. In case the tool is found,
-%   the 'wfdb_path' variable will be updated to speed up the next search.
+%   Looks for the given tool recursively under the current MATLAB directory, and then recursively
+%   under the folders in the $PATH environment variable. In case the tool is found,
+%   the containing directory path will be persisted to speed up the next search.
 %
 %   Inputs:
 %       tool_name - A string containg the name of the wfdb tool, e.g. 'gqrs',
@@ -24,15 +22,16 @@ if (ispc)
     tool_name = [tool_name '.exe'];
 end
 
-% Check for a globally defined wfdb_path variable, if it exists only search that
-global wfdb_path;
+% Check for a persisted wfdb_path variable, if it exists only search that
+persistent wfdb_path;
 if ~isempty(wfdb_path)
     tool_path = [wfdb_path, filesep(), tool_name];
     if exist(tool_path, 'file')
         return;
     else
         % Issue warning but don't exit so that we also look under pwd and $PATH
-        warning(['Could not find the wfdb tool ''', tool_name, '''. Searched in: ', wfdb_path,'. Will now search under pwd and $PATH']);
+        warning(['Could not find the wfdb tool ''', tool_name, ...
+                 '''. Searched in: ', wfdb_path,'. Will now search under pwd and $PATH']);
     end
 end
 
@@ -56,6 +55,6 @@ for path_idx = 1:length(search_path)
 end
 
 % Print an error with the path in case we didn't find anything
-error(['Could not find the wfdb tool ''', tool_name, '''. Searched in: ', strjoin(search_path,pathsep())]);
-
+error(['Could not find the wfdb tool ''', tool_name, ...
+       '''. Searched in: ', strjoin(search_path, pathsep())]);
 end
