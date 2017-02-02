@@ -56,7 +56,7 @@ num_win = floor(t_max / t_win);
 hrv_metrics_tables = cell(num_win, 1);
 
 % Loop over all windows
-parfor curr_win_idx = 0:(num_win-1)
+for curr_win_idx = 0:(num_win-1)
     fprintf('[%.3f] >> rhrv: Analyzing window %d of %d...\n', cputime-t0, curr_win_idx+1, num_win);
 
     % Calculate time range of the current window
