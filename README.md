@@ -27,6 +27,7 @@ Currently this project is in a very early iteration and is intended for my perso
         * Detrended fluctuation analysis (DFA), with short- and long-term scaling exponents (alpha1, alpha2).
         * Spectral power-law scaling exponent (beta).
         * Multiscale sample entropy (MSE).
+        * Poincaré plot metrics (SD1, SD2).
 
 ## Requirements
 * The Pysionet WFDB tools.
