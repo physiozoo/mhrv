@@ -38,8 +38,8 @@ end
 % Search under pwd and $PATH for the tool.
 search_path = [strsplit(genpath('.'), pathsep()), strsplit(getenv('PATH'), pathsep())];
 
-% Remove anything under .git/
-filter_ind = cellfun(@(x) isempty(regexp(x, '^./.git', 'once')), search_path);
+% Remove anything under .git/ and remove empty entries
+filter_ind = cellfun(@(x) ~isempty(x) && isempty(regexp(x, '[.]git', 'once')), search_path);
 search_path = search_path(filter_ind);
 
 % Search for the tool
