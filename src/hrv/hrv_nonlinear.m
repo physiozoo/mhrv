@@ -42,6 +42,15 @@ sampen_r = p.Results.sampen_r;
 sampen_m = p.Results.sampen_m;
 should_plot = p.Results.plot;
 
+% Create output struct
+hrv_nl = struct;
+
+%% Poincar? plot
+
+[sd1, sd2, ~] = poincare(nni, 'plot', should_plot);
+hrv_nl.SD1 = sd1;
+hrv_nl.SD2 = sd2;
+
 %% === DFA-based Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
 
 % Calcualte DFA
@@ -58,11 +67,10 @@ DFA_fit_alpha1 = polyfit(DFA_n_log(alpha1_idx), DFA_Fn_log(alpha1_idx), 1);
 DFA_fit_alpha2 = polyfit(DFA_n_log(alpha2_idx), DFA_Fn_log(alpha2_idx), 1);
 
 % Save the slopes of the lines
-hrv_nl = struct;
 hrv_nl.alpha1 = DFA_fit_alpha1(1);
 hrv_nl.alpha2 = DFA_fit_alpha2(1);
 
-%% === Nonlinear metrics (spectral power-law exponent, beta)
+%% === Beta: Spectral power-law exponent
 
 % Calculate spectrum
 [ ~, pxx, f_axis ] = hrv_freq(nni, tm_nni, 'method', 'lomb');
@@ -76,7 +84,7 @@ f_axis_log = log10(f_axis(beta_band_idx));
 pxx_fit_beta = polyfit(f_axis_log, pxx_log, 1);
 hrv_nl.beta = pxx_fit_beta(1);
 
-%% === Nonlinear metrics (Multiscale sample entropy)
+%% === Multiscale sample entropy
 
 % Calculate the MSE graph
 [ mse_values, scale_axis ] = mse(nni, 'mse_max_scale', mse_max_scale, 'sampen_m', sampen_m, 'sampen_r',sampen_r);
