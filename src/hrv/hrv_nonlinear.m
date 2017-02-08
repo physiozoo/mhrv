@@ -5,8 +5,8 @@ function [ hrv_nl ] = hrv_nonlinear( nni, tm_nni, varargin )
 %% === Input
 DEFAULT_ALPHA1_RANGE = [4, 15];
 DEFAULT_ALPHA2_RANGE = [16, 128];
-DEFAULT_NMIN = 3;
-DEFAULT_NMAX = 150;
+DEFAULT_DFA_NMIN = 4;
+DEFAULT_DFA_NMAX = 150;
 DEFAULT_BETA_BAND = [0.003, 0.04]; % hz
 DEFAULT_MSE_MAX_SCALE = 20;
 DEFAULT_MSE_FIT_SCALE = 7;
@@ -20,8 +20,8 @@ p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addRequired('tm_nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('alpha1_range',  DEFAULT_ALPHA1_RANGE, @(x) isnumeric(x) && numel(x) == 2);
 p.addParameter('alpha2_range',  DEFAULT_ALPHA2_RANGE, @(x) isnumeric(x) && numel(x) == 2);
-p.addParameter('n_min',  DEFAULT_NMIN, @(x) isnumeric(x) && isscalar(x));
-p.addParameter('n_max',  DEFAULT_NMAX, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('dfa_n_min',  DEFAULT_DFA_NMIN, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('dfa_n_max',  DEFAULT_DFA_NMAX, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('beta_band',  DEFAULT_BETA_BAND, @(x) isnumeric(x) && numel(x) == 2);
 p.addParameter('mse_max_scale', DEFAULT_MSE_MAX_SCALE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('mse_fit_scale', DEFAULT_MSE_FIT_SCALE, @(x) isnumeric(x) && isscalar(x));
@@ -33,8 +33,8 @@ p.addParameter('plot', nargout == 0, @islogical);
 p.parse(nni, tm_nni, varargin{:});
 alpha1_range = p.Results.alpha1_range;
 alpha2_range = p.Results.alpha2_range;
-n_min = p.Results.n_min;
-n_max = p.Results.n_max;
+dfa_n_min = p.Results.dfa_n_min;
+dfa_n_max = p.Results.dfa_n_max;
 beta_band = p.Results.beta_band;
 mse_max_scale = p.Results.mse_max_scale;
 mse_fit_scale = p.Results.mse_fit_scale;
@@ -42,51 +42,22 @@ sampen_r = p.Results.sampen_r;
 sampen_m = p.Results.sampen_m;
 should_plot = p.Results.plot;
 
-%% === DFA
+%% === DFA-based Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
 
-% Integrate the NN intervals without mean
-nni_int = cumsum(nni - mean(nni));
+% Calcualte DFA
+[DFA_n, DFA_Fn] = dfa(tm_nni, nni, 'n_min', dfa_n_min, 'n_max', dfa_n_max, 'n_incr', 2);
 
-N = length(nni_int);
-DFA_Fn = ones(n_max, 1) * NaN;
-
-for n = n_min:n_max
-    % Calculate the number of windows we need for the current n
-    num_win = floor(N/n);
-
-    % Break the signal into num_win windows of n samples each
-    nni_windows = reshape(nni_int(1:n*num_win), n, num_win);
-    tm_windows  = reshape(tm_nni(1:n*num_win), n, num_win);
-    nni_regressed = zeros(size(nni_windows));
-
-    % Perform linear regression in each window
-    for ii = 1:num_win
-        y = nni_windows(:, ii);
-        x = [ones(n, 1), tm_windows(:, ii)];
-        b = x\y;
-        yn = x * b;
-        nni_regressed(:, ii) = yn;
-    end
-
-    % Calculate F(n), the value of the DFA for the current n
-    DFA_Fn(n) = sqrt ( 1/N * sum((nni_windows(:) - nni_regressed(:)).^2) );
-end
-
-% Find the indices of all the DFA values we calculated
-DFA_Fn = DFA_Fn(n_min:n_max);
-DFA_n  = (n_min:n_max)';
-
-%% === Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
-
+% Find DFA values in each of the alpha ranges
 alpha1_idx = find(DFA_n >= alpha1_range(1) & DFA_n <= alpha1_range(2));
 alpha2_idx = find(DFA_n >= alpha2_range(1) & DFA_n <= alpha2_range(2));
 
+% Fit a line to the log-log DFA in each alpha range
 DFA_Fn_log = log10(DFA_Fn);
 DFA_n_log = log10(DFA_n);
-
 DFA_fit_alpha1 = polyfit(DFA_n_log(alpha1_idx), DFA_Fn_log(alpha1_idx), 1);
 DFA_fit_alpha2 = polyfit(DFA_n_log(alpha2_idx), DFA_Fn_log(alpha2_idx), 1);
 
+% Save the slopes of the lines
 hrv_nl = struct;
 hrv_nl.alpha1 = DFA_fit_alpha1(1);
 hrv_nl.alpha2 = DFA_fit_alpha2(1);
@@ -126,7 +97,7 @@ if (should_plot)
     % Plot the DFA data
     subplot(3, 1, 1);
     loglog(DFA_n, DFA_Fn, 'ko', 'MarkerSize', 7);
-    hold on; grid on;
+    hold on; grid on; axis tight;
 
     % Plot alpha1 line
     alpha1_line = DFA_fit_alpha1(1) * DFA_n_log(alpha1_idx) + DFA_fit_alpha1(2);
@@ -137,7 +108,7 @@ if (should_plot)
     loglog(10.^DFA_n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', ls, 'LineWidth', lw);
 
     xlabel('Block size (n)'); ylabel('log_{10}(F(n))');
-    legend('DFA', ['\alpha_1 = ' num2str(hrv_nl.alpha1)], ['\alpha_2 = ' num2str(hrv_nl.alpha2)]);
+    legend('DFA', ['\alpha_1 = ' num2str(hrv_nl.alpha1)], ['\alpha_2 = ' num2str(hrv_nl.alpha2)], 'Location', 'northwest');
     set(gca, 'XTick', [4, 8, 16, 32, 64, 128]);
 
     % Plot the spectrum (only plot every x samples)
@@ -146,13 +117,13 @@ if (should_plot)
     decimation_factor = 10;
     subplot(3, 1, 2);
     loglog(f_beta_plot(1:decimation_factor:end), pxx_beta_plot(1:decimation_factor:end), 'ko', 'MarkerSize', 7);
-    hold on; grid on;
+    hold on; grid on;  axis tight;
 
     % Plot the beta line
     beta_line = pxx_fit_beta(1) * f_axis_log + pxx_fit_beta(2);
     loglog(10.^f_axis_log, 10.^beta_line, 'Color', 'magenta', 'LineStyle', ls, 'LineWidth', lw);
     xlabel('log(frequency [hz])'); ylabel('log(PSD [s^2/Hz])');
-    legend('PSD', ['\beta = ' num2str(hrv_nl.beta)]);
+    legend('PSD', ['\beta = ' num2str(hrv_nl.beta)], 'Location', 'southwest');
 
     % Plot MSE & linefit
     subplot(3, 1, 3);
