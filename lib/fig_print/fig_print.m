@@ -1,7 +1,7 @@
 function [] = fig_print( fig_handle, out_filename, varargin )
-%FIG_PRINT Prints a figure to EPS format.
-%   This function sets various figure properties and then prints
-%   it to EPS format. The resulting EPS file can be imported into
+%FIG_PRINT Prints a figure to file.
+%   This function sets various figure properties and then prints it to a specified format.
+%   Default format is EPS which can then be imported into
 %   a LaTeX document and will maintain it's properties.
 %   Note that A4 size is 21.0 x 29.7 cm.
 
@@ -12,6 +12,7 @@ DEFAULT_WIDTH = 15; % cm
 DEFAULT_HEIGHT = 10; % cm
 DEFAULT_FONT_SIZE = 10; % pt
 DEFAULT_FONT = 'Times New Roman';
+DEFAULT_OUTPUT_FORMAT = 'epsc2';
 DEFAULT_AXES_LINE_WIDTH = 1.0; % pt
 
 % Define input
@@ -22,6 +23,7 @@ p.addParameter('width', DEFAULT_WIDTH, @isscalar);
 p.addParameter('height', DEFAULT_HEIGHT, @isscalar);
 p.addParameter('font_size', DEFAULT_FONT_SIZE, @isscalar);
 p.addParameter('font', DEFAULT_FONT, @ischar);
+p.addParameter('output_format', DEFAULT_OUTPUT_FORMAT, @ischar);
 p.addParameter('axes_line_width', DEFAULT_AXES_LINE_WIDTH, @isscalar);
 
 % Get input
@@ -30,6 +32,7 @@ width = p.Results.width;
 height = p.Results.height;
 font_size = p.Results.font_size;
 font = p.Results.font;
+output_format = p.Results.output_format;
 axes_line_width = p.Results.axes_line_width;
 
 %% Update the figure and axes
@@ -61,7 +64,7 @@ set(all_text, 'FontName', font);
 
 % Print figure as EPS
 out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
-print(fig_handle, out_filename, '-depsc2');
+print(fig_handle, out_filename, ['-d' output_format]);
 
 end
 
