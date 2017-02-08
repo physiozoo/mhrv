@@ -45,7 +45,7 @@ should_plot = p.Results.plot;
 % Create output struct
 hrv_nl = struct;
 
-%% Poincar? plot
+%% Poincare plot
 
 [sd1, sd2, ~] = poincare(nni, 'plot', should_plot);
 hrv_nl.SD1 = sd1;
