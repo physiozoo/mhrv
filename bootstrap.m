@@ -7,6 +7,10 @@
 close all;
 clear variables;
 
+% Remove rhrv-realted variables
+clearvars -global rhrv_basepath;
+clear get_wfdb_tool_path;
+
 %% Set up matlab path
 
 % Find source and dependencies directories
@@ -16,8 +20,9 @@ src_dir_ = [basepath_ '/src/'];
 cfg_dir_ = [basepath_ '/cfg/'];
 bin_dir_ = [basepath_ '/bin/'];
 
-% Change directory to the root of project
-cd(basepath_);
+% Save the root toolbox dir as a global variable
+global rhrv_basepath;
+rhrv_basepath = basepath_;
 
 % Add them to matlab's path including subfolders
 addpath(genpath(lib_dir_));
@@ -28,11 +33,11 @@ run([cfg_dir_ '/rhrv_config.m']);
 
 % Make sure WFDB tools are installed. If not, download them now.
 try
-    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config');
+    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', basepath_);
 catch e
     warning('WFDB binaries not detected, attempting to download...');
     download_wfdb(bin_dir_);
-    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config');
+    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', basepath_);
 end
 
 % Check WFDB tools version
