@@ -1,15 +1,29 @@
 function [ nni, tnn, rri, trr ] = ecgnn(rec_name, varargin)
 %ECGNN Calculate an NN-interval time series from ECG signal.
-%   rec_name - ECG signal record (physionet format)
-%   nni      - NN-intervals
-%   tnn      - NN-interval times
-%   rri      - RR-intervals
-%   trr      - RR-interval times
+% Detects QRS in a given sigal, performs outlier detection and removal and calculates the beat intervals.
+%   Inputs:
+%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
+%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
+%       - varargin: Pass in name-value pairs to configure advanced options:
+%           - 'gqpost': true/false whether to use gqpost to post-process QRS detections and find
+%                       potentially wrong detections (suspected outliers).
+%           - 'gqconf': Path to a config file for gqrs. E.g. for analyzing non-human data it's
+%                       necessary to provide gqrs with an appropriate config file for the data.
+%           - 'use_rqrs': true/false whether to use the rqrs algorithm to detect R-peaks (gqrs
+%                         detects the onset of the QRS complex).
+%           - 'plot': true/false whether to generate a plot. Defaults to true if no output
+%                     arguments were specified.
+%   Outputs:
+%       - nni: NN-intervals values in seconds
+%       - tnn: NN-interval times in seconds
+%       - rri: RR-intervals values in seconds (Original intervals, before outlier removal)
+%       - trr: RR-interval times in seconds
 
 %% === Input
 
 % Defaults
 DEFAULT_GQPOST = true;
+DEFAULT_GQCONF = '';
 DEFAULT_USE_RQRS = true;
 
 % Define input
@@ -17,7 +31,7 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
 p.addParameter('gqpost', DEFAULT_GQPOST, @(x) islogical(x) && isscalar(x));
-p.addParameter('gqconf', '', @isstr);
+p.addParameter('gqconf', DEFAULT_GQCONF, @isstr);
 p.addParameter('use_rqrs', DEFAULT_USE_RQRS, @(x) islogical(x) && isscalar(x));
 p.addParameter('plot', nargout == 0, @islogical);
 

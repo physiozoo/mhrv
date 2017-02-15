@@ -4,6 +4,21 @@ function [ tnn_filtered, nni_filtered, nni_lp, tresh_low, thresh_high ] = filter
 %   If an interval is greater (abs) than X percent of the average in a
 %   window around it, excludes the interval. The window average is
 %   calculated without the sample itself.
+%   Inputs:
+%       - tnn: NN-interval times in seconds
+%       - nni: NN-interval values in seconds
+%       - varargin: Pass in name-value pairs to configure advanced options:
+%           - win_samples: Number of samples in the filter window on each side of the current sample
+%                          (total window size will be 2*win_samples+1)
+%           - win_percent: The percentage above/below the average to use for filtering.
+%           - plot: true/false whether to generate a plot. Defaults to true if no output
+%                   arguments were specified.
+%   Outputs:
+%       - tnn_filtered: NN-interval times in seconds of the filtered intervals
+%       - nni_filtered: NN-interval values in seconds of the filtered intervals
+%       - nni_lp: Values of averaging filter
+%       - tresh_low: Values of lower-filtering threshold
+%       - tresh_high: Values of higher-filtering threshold
 %
 %   Based on:
 %   1) PhysioNet HRV toolkit: https://physionet.org/tutorials/hrv-toolkit/
