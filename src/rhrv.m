@@ -3,12 +3,13 @@ function [ hrv_metrics ] = rhrv( rec_name, varargin )
 %   Detailed explanation goes here
 
 close all;
+global rhrv_basepath;
 
 %% === Input
 % Defaults
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_SHOULD_PREPROCESS = true;
-DEFAULT_GQCONF = 'cfg/gqrs.default.conf';
+DEFAULT_GQCONF = [rhrv_basepath filesep 'cfg/gqrs.default.conf'];
 
 % Define input
 p = inputParser;
