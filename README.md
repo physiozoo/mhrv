@@ -58,13 +58,12 @@ install them yourself.
     for your OS or compile them [from source](https://physionet.org/physiotools/wfdb.shtml#downloading)
     using the instructions on their website.
 
-Once you have the binaries, place them in some folder under the repo's root
-folder (`bin/wfdb` would be a good choice as it's `.gitignore`d) and they will
-be found and used automatically. Or, if you would like to manually specify a path
-outside the repo which contains the WFDB binaries (e.g. `/usr/local/bin` for a
-homebrew install), you can edit
-[`cfg/rhrv_config.m`](https://github.com/avivrosenberg/rhrv/blob/master/cfg/rhrv_config.m)
-and set the `wfdb_path` variable to the desired path.
+Once you have the binaries, place them in some folder on your `$PATH` or somewere under the repo's
+root folder (`bin/wfdb` would be a good choice as it's `.gitignore`d) and they will be found and
+used automatically. Or, if you would like to manually specify a path outside the repo which contains
+the WFDB binaries (e.g. `/usr/local/bin` for a homebrew install), you can edit
+[`cfg/rhrv_config.m`](https://github.com/avivrosenberg/rhrv/blob/master/cfg/rhrv_config.m) and set
+the `wfdb_path` variable to the desired path.
 
 For linux users it's recommended to install from source as the binaries
 provided on the PhysioNet website are very outdated.
