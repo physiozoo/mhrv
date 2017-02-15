@@ -15,10 +15,10 @@ clear get_wfdb_tool_path;
 
 % Find source and dependencies directories
 basepath_ = fileparts(mfilename('fullpath'));
-lib_dir_ = [basepath_ '/lib/'];
-src_dir_ = [basepath_ '/src/'];
-cfg_dir_ = [basepath_ '/cfg/'];
-bin_dir_ = [basepath_ '/bin/'];
+lib_dir_ = [basepath_ filesep 'lib'];
+src_dir_ = [basepath_ filesep 'src'];
+cfg_dir_ = [basepath_ filesep 'cfg'];
+bin_dir_ = [basepath_ filesep 'bin'];
 
 % Save the root toolbox dir as a global variable
 global rhrv_basepath;
@@ -29,7 +29,7 @@ addpath(genpath(lib_dir_));
 addpath(genpath(src_dir_));
 
 %% Load user configuration
-run([cfg_dir_ '/rhrv_config.m']);
+run([cfg_dir_ filesep 'rhrv_config.m']);
 
 % Make sure WFDB tools are installed. If not, download them now.
 try
