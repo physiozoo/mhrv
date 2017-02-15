@@ -1,4 +1,4 @@
-function [ tnn_filtered, nni_filtered ] = filternn( tnn, nni, varargin )
+function [ tnn_filtered, nni_filtered, nni_lp, tresh_low, thresh_high ] = filternn( tnn, nni, varargin )
 %FILTERNN Filters NN intervals to remove possible outliers
 %   Performs filtering of NN intervals using an averaging filter.
 %   If an interval is greater (abs) than X percent of the average in a
@@ -52,6 +52,12 @@ outlier_idx = find( abs(nni - nni_lp) > (win_percent/100) .* nni_lp );
 nni_filtered(outlier_idx) = [];
 tnn_filtered(outlier_idx) = [];
 
+% Save threshold lines if necessary
+if (nargout > 3 || should_plot)
+    tresh_low   = nni_lp.*(1.0-win_percent/100);
+    thresh_high = nni_lp.*(1.0+win_percent/100);
+end
+
 %% Plot if no output args
 if (should_plot)
     markersize = 10.0;
@@ -69,9 +75,7 @@ if (should_plot)
     end
 
     % Plot window average and thresholds
-    lower_threshold = nni_lp.*(1.0-win_percent/100);
-    upper_threshold = nni_lp.*(1.0+win_percent/100);
-    plot(tnn, nni_lp, 'k', tnn, lower_threshold, 'k--', tnn, upper_threshold, 'k--');
+    plot(tnn, nni_lp, 'k', tnn, tresh_low, 'k--', tnn, thresh_high, 'k--');
     legend_labels = [legend_labels, {'window average', 'window threshold'}];
     
     legend(legend_labels);
