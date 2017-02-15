@@ -31,13 +31,20 @@ addpath(genpath(src_dir_));
 %% Load user configuration
 run([cfg_dir_ filesep 'rhrv_config.m']);
 
+% Check if user specified a custom wfdb path. If not, use rhrv root folder.
+if (isempty(rhrv_cfg_.paths.wfdb_path))
+    wfdb_search_path_ = basepath_;
+else
+    wfdb_search_path_ = rhrv_cfg_.paths.wfdb_path;
+end
+
 % Make sure WFDB tools are installed. If not, download them now.
 try
-    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', basepath_);
+    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', wfdb_search_path_);
 catch e
     warning('WFDB binaries not detected, attempting to download...');
     download_wfdb(bin_dir_);
-    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', basepath_);
+    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', wfdb_search_path_);
 end
 
 % Check WFDB tools version
