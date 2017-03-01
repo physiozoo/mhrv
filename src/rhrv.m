@@ -8,6 +8,8 @@ global rhrv_basepath;
 %% === Input
 % Defaults
 DEFAULT_WINDOW_MINUTES = Inf;
+DEFAULT_WINDOW_INDEX_LIMIT = Inf;
+DEFAULT_WINDOW_INDEX_OFFSET = 0;
 DEFAULT_SHOULD_PREPROCESS = true;
 DEFAULT_GQCONF = [rhrv_basepath filesep 'cfg/gqrs.default.conf'];
 
@@ -15,7 +17,9 @@ DEFAULT_GQCONF = [rhrv_basepath filesep 'cfg/gqrs.default.conf'];
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
-p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2);
+p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
+p.addParameter('window_index_limit', DEFAULT_WINDOW_INDEX_LIMIT, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
+p.addParameter('window_index_offset', DEFAULT_WINDOW_INDEX_OFFSET, @(x) isnumeric(x) && numel(x) < 2 && x >= 0);
 p.addParameter('should_preprocess', DEFAULT_SHOULD_PREPROCESS, @(x) isscalar(x) && islogical(x));
 p.addParameter('gqconf', DEFAULT_GQCONF, @isstr);
 p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
@@ -24,6 +28,8 @@ p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 p.parse(rec_name, varargin{:});
 should_preprocess = p.Results.should_preprocess;
 window_minutes = p.Results.window_minutes;
+window_index_limit = p.Results.window_index_limit;
+window_index_offset = p.Results.window_index_offset;
 gqconf = p.Results.gqconf;
 should_plot = p.Results.plot;
 
@@ -53,11 +59,18 @@ t_max = tnn_filtered(end);
 t_win = min([window_minutes * 60, t_max]);
 num_win = floor(t_max / t_win);
 
+% Account for window index offset and limit
+if (window_index_offset >= num_win)
+    error('Invalid window index offset: was %d, but there are only %d %d-minute windows',...
+           window_index_offset, num_win, window_minutes);
+end
+window_max_index = min(num_win, window_index_offset + window_index_limit) - 1;
+
 % Output initialization
 hrv_metrics_tables = cell(num_win, 1);
 
 % Loop over all windows
-for curr_win_idx = 0:(num_win-1)
+for curr_win_idx = window_index_offset : window_max_index
     fprintf('[%.3f] >> rhrv: Analyzing window %d of %d...\n', cputime-t0, curr_win_idx+1, num_win);
 
     % Calculate time range of the current window
