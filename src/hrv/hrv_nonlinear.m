@@ -47,7 +47,7 @@ hrv_nl = struct;
 
 %% Poincare plot
 
-[sd1, sd2, ~] = poincare(nni, 'plot', should_plot);
+[sd1, sd2] = poincare(nni, 'plot', false);
 hrv_nl.SD1 = sd1;
 hrv_nl.SD2 = sd2;
 

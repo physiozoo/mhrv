@@ -10,7 +10,6 @@ global rhrv_basepath;
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_WINDOW_INDEX_LIMIT = Inf;
 DEFAULT_WINDOW_INDEX_OFFSET = 0;
-DEFAULT_SHOULD_PREPROCESS = true;
 DEFAULT_GQCONF = [rhrv_basepath filesep 'cfg/gqrs.default.conf'];
 
 % Define input
@@ -20,13 +19,11 @@ p.addRequired('rec_name', @isrecord);
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_limit', DEFAULT_WINDOW_INDEX_LIMIT, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_offset', DEFAULT_WINDOW_INDEX_OFFSET, @(x) isnumeric(x) && numel(x) < 2 && x >= 0);
-p.addParameter('should_preprocess', DEFAULT_SHOULD_PREPROCESS, @(x) isscalar(x) && islogical(x));
 p.addParameter('gqconf', DEFAULT_GQCONF, @isstr);
 p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
 p.parse(rec_name, varargin{:});
-should_preprocess = p.Results.should_preprocess;
 window_minutes = p.Results.window_minutes;
 window_index_limit = p.Results.window_index_limit;
 window_index_offset = p.Results.window_index_offset;
@@ -37,25 +34,17 @@ should_plot = p.Results.plot;
 t0 = cputime;
 
 %% === Calculate NN intervals
-fprintf('[%.3f] >> rhrv: Reading ECG signal from record %s...\n', cputime-t0, rec_name);
-[ nni, tnn, rri, ~ ] = ecgnn(rec_name, 'gqpost', true, 'gqconf', gqconf, 'use_rqrs', true);
+fprintf('[%.3f] >> rhrv: Processing ECG signal from record %s...\n', cputime-t0, rec_name);
 
-fprintf('[%.3f] >> rhrv: Signal duration: %f [min] (%d samples)\n', cputime-t0, tnn(end)/60, length(tnn));
+[ nni, tnn, ~, trr ] = ecgnn(rec_name, 'gqconf', gqconf, 'use_rqrs', true, 'plot', true);
 
-%% === Pre process intervals to remove outliers
-if (should_preprocess)
-    fprintf('[%.3f] >> rhrv: Pre-processing signal...\n', cputime-t0);
-    [ tnn_filtered, nni_filtered ] = filternn(tnn, nni, 'plot', should_plot);
-
-    fprintf('[%.3f] >> rhrv: %d intervals were filtered out\n', cputime-t0, length(tnn)-length(tnn_filtered));
-else
-    tnn_filtered = tnn; nni_filtered = nni;
-end
+fprintf('[%.3f] >> rhrv: Signal duration: %f [min]\n', cputime-t0, tnn(end)/60);
+fprintf('[%.3f] >> rhrv: %d intervals were filtered out (%d intervals remain)\n', cputime-t0, length(trr)-length(tnn), length(tnn));
 
 %% === Break into windows
 
 % Convert window size to seconds, and make sure the windw isn't longer than the signal itself
-t_max = tnn_filtered(end);
+t_max = tnn(end);
 t_win = min([window_minutes * 60, t_max]);
 num_win = floor(t_max / t_win);
 
@@ -78,10 +67,10 @@ for curr_win_idx = window_index_offset : window_max_index
     t_win_max = (curr_win_idx+1) * t_win;
 
     % Get the samples that fall in the window and their times
-    [window_samples_idx_low, window_samples_idx_high] = findInSorted(tnn_filtered, [t_win_min, t_win_max]);
+    [window_samples_idx_low, window_samples_idx_high] = findInSorted(tnn, [t_win_min, t_win_max]);
     window_samples_idx = window_samples_idx_low:window_samples_idx_high;
-    tnn_window = tnn_filtered(window_samples_idx);
-    nni_window = nni_filtered(window_samples_idx);
+    tnn_window = tnn(window_samples_idx);
+    nni_window = nni(window_samples_idx);
 
     %% === Non linear metrics
     hrv_nl = hrv_nonlinear(nni_window, tnn_window, 'plot', should_plot);
