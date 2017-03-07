@@ -25,6 +25,7 @@ function [ nni, tnn, rri, trr ] = ecgnn(rec_name, varargin)
 DEFAULT_GQPOST = true;
 DEFAULT_GQCONF = '';
 DEFAULT_USE_RQRS = true;
+DEFAULT_USE_POINCARE = false;
 
 % Define input
 p = inputParser;
@@ -33,6 +34,7 @@ p.addRequired('rec_name', @isrecord);
 p.addParameter('gqpost', DEFAULT_GQPOST, @(x) islogical(x) && isscalar(x));
 p.addParameter('gqconf', DEFAULT_GQCONF, @isstr);
 p.addParameter('use_rqrs', DEFAULT_USE_RQRS, @(x) islogical(x) && isscalar(x));
+p.addParameter('use_poincare', DEFAULT_USE_POINCARE, @(x) islogical(x) && isscalar(x));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -40,6 +42,7 @@ p.parse(rec_name, varargin{:});
 gqpost = p.Results.gqpost;
 gqconf = p.Results.gqconf;
 use_rqrs = p.Results.use_rqrs;
+use_poincare = p.Results.use_poincare;
 should_plot = p.Results.plot;
 
 % === Read the signal
@@ -86,6 +89,14 @@ nanidx = [nanidx; nanidx-1];
 
 % Take RR interval times and remove the marked indexes
 tnn(nanidx) = [];
+
+%% Poincare-based outlier detection
+
+if (use_poincare)
+    [~, ~, poincare_outliers] = poincare(nni);
+    nni(poincare_outliers) = [];
+    tnn(poincare_outliers) = [];
+end
 
 %% Plot if no output args or if requested
 if (should_plot)
