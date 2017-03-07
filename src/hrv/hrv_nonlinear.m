@@ -115,7 +115,7 @@ if (should_plot)
     alpha2_line = DFA_fit_alpha2(1) * DFA_n_log(alpha2_idx) + DFA_fit_alpha2(2);
     loglog(10.^DFA_n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', ls, 'LineWidth', lw);
 
-    xlabel('Block size (n)'); ylabel('log_{10}(F(n))');
+    xlabel('log(n)'); ylabel('log(F(n))');
     legend('DFA', ['\alpha_1 = ' num2str(hrv_nl.alpha1)], ['\alpha_2 = ' num2str(hrv_nl.alpha2)], 'Location', 'northwest');
     set(gca, 'XTick', [4, 8, 16, 32, 64, 128]);
 
