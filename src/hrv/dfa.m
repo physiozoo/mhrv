@@ -86,17 +86,18 @@ intercept = fit_params(2);
 %% Plot
 if should_plot
     figure;
-    loglog(n, fn, 'ko', 'MarkerSize', 6);
+    h1 = loglog(n, fn, 'ko', 'MarkerSize', 6);
     
     grid on; hold on; axis tight;
-    xlabel('Block size (n)'); ylabel('log_{10}(F(n))');
+    xlabel('log(n)'); ylabel('log(F(n))');
     set(gca, 'XTick', [4, 8, 16, 32, 64, 128]);
     
     % Plot alpha line
     alpha_line = alpha * n_log + intercept;
     loglog(10.^n_log, 10.^alpha_line, 'Color', 'blue', 'LineStyle', '--', 'LineWidth', 3);
     
-    legend('DFA', sprintf('alpha=%.3f', alpha), 'Location', 'northwest');
+    legend({'DFA', sprintf('\\alpha = %.3f', alpha)}, 'Location', 'northwest');
+    uistack(h1, 'top');
 end
 
 end
