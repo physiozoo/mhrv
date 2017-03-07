@@ -11,8 +11,8 @@ function [ qrs, outliers ] = gqrs( rec_name, varargin )
 %                       different signal and/or animal types (default is '', i.e. no config file).
 %           - 'gqpost': Whether to run the 'gqpost' tool to find erroneous detections (default
 %                       false).
-%           - 'N0': Number of first sample to start detecting from (default 1)
-%           - 'N': Number of last sample to detect until (default [], i.e. end of signal)
+%           - 'from': Number of first sample to start detecting from (default 1)
+%           - 'to': Number of last sample to detect until (default [], i.e. end of signal)
 %
 %   Output:
 %       - qrs: Vector of sample numbers where the an onset of a QRS complex was found.
@@ -24,8 +24,8 @@ function [ qrs, outliers ] = gqrs( rec_name, varargin )
 %% === Input
 
 % Defaults
-DEFAULT_N = [];
-DEFAULT_N0 = 1;
+DEFAULT_TO_SAMPLE = [];
+DEFAULT_FROM_SAMPLE = 1;
 DEFAULT_OUT_EXT = 'qrs';
 DEFAULT_ECG_COL = [];
 DEFAULT_CONFIG = '';
@@ -35,21 +35,23 @@ DEFAULT_GQPOST = false;
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
-p.addParameter('N', DEFAULT_N, @isnumeric);
-p.addParameter('N0', DEFAULT_N0, @isnumeric);
+p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
 p.addParameter('out_ext', DEFAULT_OUT_EXT, @isstr);
 p.addParameter('ecg_col', DEFAULT_ECG_COL, @isnumeric);
 p.addParameter('gqconf', DEFAULT_CONFIG, @isstr);
 p.addParameter('gqpost', DEFAULT_GQPOST, @islogical);
+p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rec_name, varargin{:});
-N = p.Results.N;
-N0 = p.Results.N0;
+from_sample = p.Results.from;
+to_sample = p.Results.to;
 out_ext = p.Results.out_ext;
 ecg_col = p.Results.ecg_col;
 gqconf = p.Results.gqconf;
 gqpost = p.Results.gqpost;
+should_plot = p.Results.plot;
 
 %% === Input validation
 
@@ -64,18 +66,13 @@ if (isempty(ecg_col))
     if (isempty(ecg_col)); error('can''t find ECG signal in record'); end;
 end
 
-% Subtract one from all indices since wfdb is zero-based
-ecg_col = ecg_col-1;
-N0 = N0-1;
-if (~isempty(N)); N = N-1; end
-
 %% === Create commandline arguments
 
 % commanline for gqrs
 gqrs_path = get_wfdb_tool_path('gqrs');
-cmdline = sprintf('%s -r %s -s %d -f s%d -o %s', gqrs_path, rec_name, ecg_col, N0, out_ext);
-if (~isempty(N))
-    cmdline = sprintf('%s -t s%d', cmdline, N);
+cmdline = sprintf('%s -r %s -s %d -f s%d -o %s', gqrs_path, rec_name, ecg_col-1, from_sample-1, out_ext);
+if (~isempty(to_sample))
+    cmdline = sprintf('%s -t s%d', cmdline, to_sample-1);
 end
 if (~isempty(gqconf))
         cmdline = sprintf('%s -c %s', cmdline, gqconf);
@@ -103,6 +100,12 @@ try
     else
         outliers = [];
     end
+
+    % it's possible for some detections to be outside the range we requested, so make sure they are
+    to_sample_scalar = to_sample;
+    if (isempty(to_sample_scalar)); to_sample_scalar = Inf; end;
+    qrs = qrs(qrs >= from_sample & qrs <= to_sample_scalar) - from_sample + 1;
+    outliers = outliers(outliers >= from_sample & outliers <= to_sample_scalar) - from_sample + 1;
 catch e
     warning('%s: Failed to read gqrs results - %s', rec_name, e.message);
     qrs = [];
@@ -112,16 +115,17 @@ end
 delete([rec_name, '.', out_ext]);
 if (gqpost); delete([rec_name, '.', 'gqp']); end
 
-% Plot if no output arguments
-if (nargout == 0)
+%% Plot
+if (should_plot)
     ecg_col = get_signal_channel(rec_name);
-    [tm, sig, ~] = rdsamp(rec_name, ecg_col);
+    [tm, sig, ~] = rdsamp(rec_name, ecg_col, 'from', from_sample, 'to', to_sample);
     figure;
     plot(tm, sig); hold on; grid on;
-    plot(tm(qrs), sig(qrs,1), 'rx');
+    plot(tm(qrs), sig(qrs,1), 'rx', 'MarkerSize', 6);
+    xlabel('time [s]'); ylabel('ECG [mV]');
     
     if (~isempty(outliers))
-        plot(tm(outliers), sig(outliers,1), 'ko');
+        plot(tm(outliers), sig(outliers,1), 'ko', 'MarkerSize', 6);
         legend('signal', 'qrs detections', 'suspected outliers');
     else
         legend('signal', 'qrs detections');

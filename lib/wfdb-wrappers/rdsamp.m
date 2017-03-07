@@ -8,6 +8,8 @@ function [ t, sig, Fs ] = rdsamp( rec_name, varargin )
 %           - 'sig_list': A list of channel numbers (starting from 1) to read from the record, e.g.
 %                        to read the first three channels use [1, 2, 3]. Default is [], i.e. read
 %                        all channels from the record.
+%           - 'from': Number of first sample to start detecting from (default 1)
+%           - 'to': Number of last sample to detect until (default [], i.e. end of signal)
 %   Output:
 %       - t: A vector with the sample times in seconds.
 %       - sig: A matrix where is column is a different channel from the signal.
@@ -17,15 +19,21 @@ function [ t, sig, Fs ] = rdsamp( rec_name, varargin )
 
 % Defaults
 DEFAULT_SIG_LIST = [];
+DEFAULT_FROM_SAMPLE = 1;
+DEFAULT_TO_SAMPLE = [];
 
 % Define input
 p = inputParser;
 p.addRequired('rec_name', @isrecord);
 p.addOptional('sig_list', DEFAULT_SIG_LIST, @isvector);
+p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
 
 % Get input
 p.parse(rec_name, varargin{:});
 sig_list = p.Results.sig_list;
+from_sample = p.Results.from;
+to_sample = p.Results.to;
 
 %% === Run rdsamp
 
@@ -33,7 +41,10 @@ temp_file = sprintf('%s.rdsamp', rec_name);
 
 % Command to run rdann with natural units
 rdsamp_path = get_wfdb_tool_path('rdsamp');
-command = sprintf('%s -P -c -r %s', rdsamp_path, rec_name);
+command = sprintf('%s -P -c -r %s -f s%d', rdsamp_path, rec_name, from_sample-1);
+if (~isempty(to_sample))
+    command = sprintf('%s -t s%d', command, to_sample-1);
+end
 
 % Check if we only need part of the signals
 if (~isempty(sig_list))
