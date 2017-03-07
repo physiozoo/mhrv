@@ -46,6 +46,7 @@ end
 
 if (should_plot)
     % Plot MSE of the signal
+    figure;
     plot(scale_axis, mse_result, '--ko', 'MarkerSize', 7); hold on;
     
     % Also plot the MSE of a shuffled version of the signal for comparison
