@@ -1,6 +1,6 @@
 function [ sd1, sd2, outlier_idx ] = poincare( rri, varargin )
 %POINCARE Poincare-plot HRV metrics and outlier detection
-%   Calculates HRV statistics from a poincar? plot of the input data. In adition, this function fits
+%   Calculates HRV statistics from a poincare plot of the input data. In adition, this function fits
 %   an ellipse to the data and finds suspected outliers, i.e. intervals that lie outside the
 %   ellipse.
 %
@@ -8,18 +8,19 @@ function [ sd1, sd2, outlier_idx ] = poincare( rri, varargin )
 %       - rri: Row vector of RR-interval lengths in seconds.
 %       - varargin: Pass in name-value pairs to configure advanced options:
 %           - r_factor: Factor to multiply the standard devations to get the radii of the ellipse.
+%                       Default is 2 (so over 95% of points will be inside the ellipse).
 %           - plot: true/false whether to generate a plot. Defaults to true if no output
 %                   arguments were specified.
 %   Output
 %       - sd1: Standard deviation of RR intervals along the axis perpendicular to the line of
 %              identity.
 %       - sd2: Standard deviation of RR intervals along the line of identity.
-%       - outlier_idx: Logical vector of suspected outlier indices.
+%       - outlier_idx: Vector of suspected outlier indices.
 
 %% === Input
 
 % Defaults
-DEFAULT_R_FACTOR = 2.5; % Selected because 2.5 * std means over 95% of points should be
+DEFAULT_R_FACTOR = 2.0; % Selected because 2 * std means over 95% of points should be
 % inside the ellipse (if an ellipse fits the data well).
 
 % Define input
@@ -73,7 +74,13 @@ ellipse_old = rotation_matrix(-alpha) * [xt; yt];
 
 %% Find outliers
 % Use ellipse cannonical equation to find all points outside the ellipse
-outlier_idx = (x_new - c_x).^2 / r_x^2 + (y_new - c_y).^2 / r_y^2 > 1;
+outlier_idx_logical = (x_new - c_x).^2 / r_x^2 + (y_new - c_y).^2 / r_y^2 > 1;
+
+% Since the original input vector is longer by 1, we need to append another value
+outlier_idx_logical = [outlier_idx_logical, false];
+
+% Convert logical indeices to regular
+outlier_idx = find(outlier_idx_logical);
 
 %% Lines for ellipse axes
 ellipse_center_new = [c_x; c_y];
@@ -99,10 +106,6 @@ if (should_plot)
     plot(sd2_line_old(1,:), sd2_line_old(2,:), 'g-', 'LineWidth', lw2);
     legend({'RR intervals', 'Outliers', 'Ellipse fit', sprintf('SD1=%.4f', sd1), sprintf('SD2=%.4f', sd2)}, 'Location', 'southeast');
 end
-%% Augment outliers to fix the input (rri)
-
-% Since the original input vector is longer by 1, we need to append another value
-outlier_idx = [outlier_idx, false];
 
 %% Helper functions
 
