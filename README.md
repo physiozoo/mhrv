@@ -15,8 +15,7 @@ Currently this project is in a very early iteration and is intended for my perso
     * `qrs_compare` - Comparison of QRS detections to reference annotations and calculation of quality indices like Sensitivity, PPV.
 
 * ECG signal processing
-     * `egcnn` - Construction of NN time series (adjacent "normal" beats).
-     * `filternn` - Filtering ECG to removing ectopic (out of place) beats.
+     * `egcnn` - Construction of RR intervals from ECG and filtering them to detect ectopic (out of place) beats.
 
 * HRV Metrics: Calculating quantative measures that indicate the activity of the heart.
     * `hrv_time` - Time Domain: AVNN, SDNN, p50NN.
