@@ -66,9 +66,16 @@ if (isempty(ecg_channel))
     error('No ECG channel found in record %s', rec_name);
 end
 
-% Duration of signal
+% Length of signal in seconds
 t_max = ecg_N / ecg_Fs;
-fprintf('[%.3f] >> rhrv: Signal duration: %.2f [min]\n', cputime-t0, t_max/60);
+
+% Duration of signal
+duration_h  = mod(floor(t_max / 3600), 60);
+duration_m  = mod(floor(t_max / 60), 60);
+duration_s  = mod(floor(t_max), 60);
+duration_ms = floor(mod(t_max, 1)*1000);
+fprintf('[%.3f] >> rhrv: Signal duration: %02d:%02d:%02d.%03d [HH:mm:ss.ms]\n', cputime-t0,...
+        duration_h, duration_m, duration_s, duration_ms);
 
 % Length of each window in seconds and samples (make sure the window is not longer than the signal)
 t_win = min([window_minutes * 60, t_max]);
