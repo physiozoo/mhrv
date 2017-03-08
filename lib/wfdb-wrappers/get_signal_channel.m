@@ -1,7 +1,6 @@
-function [ chan ] = get_signal_channel( rec_name, varargin )
+function [ chan, Fs, N ] = get_signal_channel( rec_name, varargin )
 %GET_SIGNAL_CHANNEL Find the channel of a signal in the record matching a description.
-%   By default, if no description is specified it looks for
-%   ECG signal channels.
+%   By default, if no description is specified it looks for ECG signal channels.
 %   Inputs:
 %       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
 %                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
@@ -12,6 +11,8 @@ function [ chan ] = get_signal_channel( rec_name, varargin )
 %   Output:
 %       - chan: Number of the first channel in the signal that matches the description regex, or an
 %               empty array if no signals match.
+%       - Fs: Sampling frequency
+%       - N: Number of samples
 
 % DEFAULTS
 DEFAULT_SIG_REGEX = 'ECG|lead\si+|MLI+|v\d'; % Default is a regex for finding SCG signals in the Physionet files
@@ -47,6 +48,9 @@ while ischar(line)
         % Skip the first non-comment line because it's the 'record line'
         if first_line
             first_line = false;
+            record_line = strsplit(line, ' ');
+            Fs = str2double(record_line{3});
+            N  = str2double(record_line{4});
         else
             
             % if line matches the description (partial match), return it's index
