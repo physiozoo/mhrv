@@ -22,6 +22,8 @@ function [ nni, tnn, rri, trr, rri_lp, tresh_low, thresh_high ] = ecgnn(rec_name
 %           - win_samples: Number of samples in the filter window on each side of the current sample
 %                          (total window size will be 2*win_samples+1)
 %           - win_percent: The percentage above/below the average to use for filtering.
+%           - 'from': Number of first sample to start detecting from (default 1)
+%           - 'to': Number of last sample to detect until (default [], i.e. end of signal)
 %           - plot: true/false whether to generate a plot. Defaults to true if no output arguments
 %                   were specified.
 %   Outputs:
@@ -43,6 +45,9 @@ DEFAULT_FILTER_POINCARE = true;
 DEFAULT_FILTER_LOWPASS = true;
 DEFAULT_WIN_SAMPLES = 20; % samples
 DEFAULT_WIN_PERCENT = 20; % percentage [0-100]
+DEFAULT_FROM_SAMPLE = 1;
+DEFAULT_TO_SAMPLE = [];
+DEFAULT_ECG_CHANNEL = [];
 
 % Define input
 p = inputParser;
@@ -55,6 +60,9 @@ p.addParameter('filter_poincare', DEFAULT_FILTER_POINCARE, @(x) islogical(x) && 
 p.addParameter('filter_lowpass', DEFAULT_FILTER_LOWPASS, @(x) islogical(x) && isscalar(x));
 p.addParameter('win_samples', DEFAULT_WIN_SAMPLES, @isnumeric);
 p.addParameter('win_percent', DEFAULT_WIN_PERCENT, @(x) x >= 0 && x <= 100);
+p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
+p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -66,6 +74,9 @@ filter_poincare = p.Results.filter_poincare;
 filter_lowpass = p.Results.filter_lowpass;
 win_samples = p.Results.win_samples;
 win_percent = p.Results.win_percent;
+from_sample = p.Results.from;
+to_sample = p.Results.to;
+ecg_channel = p.Results.ecg_channel;
 should_plot = p.Results.plot;
 
 % Check output
@@ -75,12 +86,20 @@ end
 
 %% QRS detection
 
+% Make sure we have an ECG channel in the record
+if (isempty(ecg_channel))
+    ecg_channel = get_signal_channel(rec_name);
+    if (isempty(ecg_channel))
+        error('Failed to find an ECG channel in the record %s', rec_name);
+    end
+end
+
 % Read the signal
-ecg_col = get_signal_channel(rec_name);
-[tm, sig, ~] = rdsamp(rec_name, ecg_col);
+[tm, sig, ~] = rdsamp(rec_name, ecg_channel, 'from', from_sample, 'to', to_sample);
 
 % Use gqrs to find QRS complex locations
-[qrs, qrs_outliers] = gqrs(rec_name, 'ecg_col', ecg_col, 'gqpost', filter_gqpost, 'gqconf', gqconf);
+[qrs, qrs_outliers] = gqrs(rec_name, 'ecg_col', ecg_channel, 'gqpost', filter_gqpost, 'gqconf', gqconf,...
+                           'from', from_sample, 'to', to_sample);
 
 % Use rqrs to find the R-peaks based on the qrs complex locations
 if (use_rqrs)
