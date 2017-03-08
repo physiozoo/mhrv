@@ -1,11 +1,35 @@
 function [ hrv_metrics ] = rhrv( rec_name, varargin )
 %RHRV Heart Rate Variability metrics
-%   Detailed explanation goes here
+% Analyzes an ECG signal, detects and filters R-peaks and calculates various heart-rate variability
+% (HRV) metrics on them.
+%   Inputs:
+%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
+%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
+%       - varargin: Pass in name-value pairs to configure advanced options:
+%           - window_minutes: Split ECG signal into windows of the specified length (in minutes)
+%                             and perform the analysis on each window separately.
+%           - window_index_offset: Number of windows to skip from the beginning.
+%           - window_index_limit: Maximal number of windows to process. Combined with the above,
+%                                 this allows control of which window to start from and how many
+%                                 windows to process from there.
+%           - gqconf: Path to a config file for gqrs. E.g. for analyzing non-human data it's
+%                     necessary to provide gqrs with an appropriate config file for the data.
+%           - plot: true/false whether to generate plots. Defaults to true if no output arguments
+%                   were specified.
+%   Outputs:
+%       - hrv_metrics: A table where each row is a window and each column is an HRV metrics that was
+%                      calculated in that window.
 
+%% Make sure environment is set up
 close all;
-global rhrv_basepath;
 
-%% === Input
+global rhrv_basepath;
+if (isempty(rhrv_basepath))
+    error('Please run bootstrap.m before using the rhrv tools');
+end
+
+%% Handle input
+
 % Defaults
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_WINDOW_INDEX_LIMIT = Inf;
@@ -33,20 +57,25 @@ should_plot = p.Results.plot;
 % Save processing start time
 t0 = cputime;
 
-%% === Calculate NN intervals
+%% Process ECG Signal
 fprintf('[%.3f] >> rhrv: Processing ECG signal from record %s...\n', cputime-t0, rec_name);
 
-[ nni, tnn, ~, trr ] = ecgnn(rec_name, 'gqconf', gqconf, 'use_rqrs', true, 'plot', true);
+% Get data about the ECG channel in the signal
+[ecg_channel, ecg_Fs, ecg_N] = get_signal_channel(rec_name);
+if (isempty(ecg_channel))
+    error('No ECG channel found in record %s', rec_name);
+end
 
-fprintf('[%.3f] >> rhrv: Signal duration: %f [min]\n', cputime-t0, tnn(end)/60);
-fprintf('[%.3f] >> rhrv: %d intervals were filtered out (%d intervals remain)\n', cputime-t0, length(trr)-length(tnn), length(tnn));
+% Duration of signal
+t_max = ecg_N / ecg_Fs;
+fprintf('[%.3f] >> rhrv: Signal duration: %.2f [min]\n', cputime-t0, t_max/60);
 
-%% === Break into windows
-
-% Convert window size to seconds, and make sure the windw isn't longer than the signal itself
-t_max = tnn(end);
+% Length of each window in seconds and samples (make sure the window is not longer than the signal)
 t_win = min([window_minutes * 60, t_max]);
-num_win = floor(t_max / t_win);
+window_samples = t_win * ecg_Fs;
+
+% Number of windows
+num_win = floor(ecg_N / window_samples);
 
 % Account for window index offset and limit
 if (window_index_offset >= num_win)
@@ -62,30 +91,37 @@ hrv_metrics_tables = cell(num_win, 1);
 for curr_win_idx = window_index_offset : window_max_index
     fprintf('[%.3f] >> rhrv: Analyzing window %d of %d...\n', cputime-t0, curr_win_idx+1, num_win);
 
-    % Calculate time range of the current window
-    t_win_min = curr_win_idx * t_win;
-    t_win_max = (curr_win_idx+1) * t_win;
+    % Calculate sample indices of the current window
+    window_start_sample = curr_win_idx * window_samples + 1;
+    window_end_sample   = window_start_sample + window_samples - 1;
 
-    % Get the samples that fall in the window and their times
-    [window_samples_idx_low, window_samples_idx_high] = findInSorted(tnn, [t_win_min, t_win_max]);
-    window_samples_idx = window_samples_idx_low:window_samples_idx_high;
-    tnn_window = tnn(window_samples_idx);
-    nni_window = nni(window_samples_idx);
+    % Read & process RR intervals from ECG signal
+    fprintf('[%.3f] >> rhrv: [%d/%d] Processing RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
+    [nni_window, tnn_window, ~, trr_window] = ...
+        ecgnn(rec_name, 'ecg_channel', ecg_channel, 'gqconf', gqconf, 'use_rqrs', true,...
+                        'filter_gqpost', false, 'filter_lowpass', false, 'filter_poincare', true,...
+                        'from', window_start_sample, 'to', window_end_sample, 'plot', should_plot);
 
-    %% === Non linear metrics
-    hrv_nl = hrv_nonlinear(nni_window, tnn_window, 'plot', should_plot);
+    fprintf('[%.3f] >> rhrv: [%d/%d] %d total intervals, %d were filtered out\n',...
+            cputime-t0, curr_win_idx+1, num_win, length(trr_window), length(trr_window)-length(tnn_window));
 
-    %% === Time Domain metrics
+    % Time Domain metrics
+    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating time-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
     hrv_td = hrv_time(nni_window, varargin{:});
 
-    %% === Freq domain metrics
+    % Freq domain metrics
+    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating frequency-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
     [ hrv_fd, ~, ~ ] = hrv_freq(nni_window, tnn_window, 'method', 'lomb', 'plot', should_plot);
 
-    %% === Create metrics table
+    % Non linear metrics
+    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+    hrv_nl = hrv_nonlinear(nni_window, tnn_window, 'plot', should_plot);
+
+    % Update metrics table
     hrv_metrics_tables{curr_win_idx+1} = [struct2table(hrv_td), struct2table(hrv_fd), struct2table(hrv_nl)];
 end
 
-%% === Create output table
+%% Create output table
 fprintf('[%.3f] >> rhrv: Building output table...\n', cputime-t0);
 
 % Concatenate the tables from each window into one final table
@@ -108,7 +144,7 @@ end
 % Set the row names of the final table
 hrv_metrics.Properties.RowNames = row_names;
 
-%% === Display output if no output args
+%% Display output if no output args
 if (nargout == 0)
     % Print some of the HRV metrics to user
     disp(hrv_metrics(:,...
