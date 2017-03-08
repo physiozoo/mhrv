@@ -102,6 +102,11 @@ for curr_win_idx = window_index_offset : window_max_index
                         'filter_gqpost', false, 'filter_lowpass', false, 'filter_poincare', true,...
                         'from', window_start_sample, 'to', window_end_sample, 'plot', should_plot);
 
+    if (isempty(nni_window))
+        warning('[%.3f] >> rhrv: [%d/%d] No R-peaks detected in window, skipping\n', cputime-t0, curr_win_idx+1, num_win);
+        continue;
+    end
+
     fprintf('[%.3f] >> rhrv: [%d/%d] %d total intervals, %d were filtered out\n',...
             cputime-t0, curr_win_idx+1, num_win, length(trr_window), length(trr_window)-length(tnn_window));
 

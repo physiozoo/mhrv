@@ -10,7 +10,7 @@ DEFAULT_WINDOW_SIZE_SECONDS = 0.1;
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
-p.addRequired('gqrs_detections', @isvector);
+p.addRequired('gqrs_detections', @(x) isempty(x) || isvector(x));
 p.addRequired('gqrs_outliers', @(x) isempty(x) || isvector(x));
 p.addRequired('t_sig', @isvector);
 p.addRequired('sig', @isvector);

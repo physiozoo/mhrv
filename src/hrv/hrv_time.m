@@ -19,7 +19,7 @@ DEFAULT_PNN_THRESH_MS = 50; % millisec
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
-p.addRequired('nni', @isvector);
+p.addRequired('nni', @(x) isempty(x) || isvector(x));
 p.addParameter('pnn_thresh_ms', DEFAULT_PNN_THRESH_MS, @isscalar);
 
 % Get input

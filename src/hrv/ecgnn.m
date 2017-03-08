@@ -106,6 +106,13 @@ if (use_rqrs)
     [qrs, qrs_outliers] = rqrs_augment(qrs, qrs_outliers, tm, sig);
 end
 
+% Make sure we got detections before continuing (it's possible to get none in e.g. very noisy
+% parts of a signal)
+if (isempty(qrs))
+    nni=[]; tnn=[]; rri=[]; trr=[]; rri_lp=[]; tresh_low=[]; thresh_high=[];
+    return;
+end
+
 %% RR intervals
 
 % RR-intervals are the time-difference between R-Peaks
