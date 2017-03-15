@@ -72,8 +72,21 @@ hrv_nl.alpha2 = DFA_fit_alpha2(1);
 
 %% === Beta: Spectral power-law exponent
 
+% Select window size for spectrum calculation. Since we need a minimal frequency resolution of
+% beta_band(1), so the minimal window we need to resolve this frequency is
+t_win_minimum = 1/beta_band(1);
+
+% Take twice the minimal window for better resolution. We'll average the spectrums from each window
+% to reduce noise.
+window_minutes = floor(2 * t_win_minimum / 60);
+
+% Make sure the window isn't longer than the signal
+if ((tm_nni(end) / 60) < window_minutes)
+    window_minutes = [];
+end
+
 % Calculate spectrum
-[ ~, pxx, f_axis ] = hrv_freq(nni, tm_nni, 'method', 'lomb');
+[ ~, pxx, f_axis ] = hrv_freq(nni, tm_nni, 'methods', {'lomb'}, 'window_minutes', window_minutes);
 
 % Take the log of the spectrum in the beta frequency band
 beta_band_idx = find(f_axis >= beta_band(1) & f_axis <= beta_band(2));
@@ -122,7 +135,7 @@ if (should_plot)
     % Plot the spectrum (only plot every x samples)
     f_beta_plot = f_axis(beta_band_idx);
     pxx_beta_plot = pxx(beta_band_idx);
-    decimation_factor = 10;
+    decimation_factor = 1;
     subplot(3, 1, 2);
     loglog(f_beta_plot(1:decimation_factor:end), pxx_beta_plot(1:decimation_factor:end), 'ko', 'MarkerSize', 7);
     hold on; grid on;  axis tight;
