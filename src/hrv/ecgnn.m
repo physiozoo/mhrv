@@ -199,12 +199,12 @@ if (should_plot)
 
     if (~isempty(poincare_outliers))
         plot(trr(poincare_outliers), rri(poincare_outliers), 'rx', 'MarkerSize', markersize);
-        legend_labels{end+1} = 'poincare outliers';
+        legend_labels{end+1} = 'Poincare outliers';
     end
 
     if (~isempty(lp_outliers))
         plot(trr(lp_outliers), rri(lp_outliers), 'ko', 'MarkerSize', markersize);
-        legend_labels{end+1} = 'lowpass outliers';
+        legend_labels{end+1} = 'Lowpass outliers';
     end
 
     % Plot window average and thresholds
