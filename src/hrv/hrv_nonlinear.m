@@ -76,9 +76,9 @@ hrv_nl.alpha2 = DFA_fit_alpha2(1);
 % beta_band(1), so the minimal window we need to resolve this frequency is
 t_win_minimum = 1/beta_band(1);
 
-% Take twice the minimal window for better resolution. We'll average the spectrums from each window
-% to reduce noise.
-window_minutes = floor(2 * t_win_minimum / 60);
+% Take five times the minimal window for better resolution.
+% We'll average the spectrums from each window to reduce noise.
+window_minutes = floor(5 * t_win_minimum / 60);
 
 % Make sure the window isn't longer than the signal
 if ((tm_nni(end) / 60) < window_minutes)
