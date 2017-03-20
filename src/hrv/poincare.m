@@ -7,8 +7,11 @@ function [ sd1, sd2, outlier_idx ] = poincare( rri, varargin )
 %   Input:
 %       - rri: Row vector of RR-interval lengths in seconds.
 %       - varargin: Pass in name-value pairs to configure advanced options:
-%           - r_factor: Factor to multiply the standard devations to get the radii of the ellipse.
-%                       Default is 2 (so over 95% of points will be inside the ellipse).
+%           - sd1_factor: Factor to multiply the standard devation along the perpendicular line (SD1)
+%             to get the radius of the ellipse along that axis. Default is 2 (so over 95% of points
+%             will be inside the ellipse).
+%           - sd2_factor: As above, but for the standard deviation along the line of identity (SD2).
+%             Default: 3.
 %           - plot: true/false whether to generate a plot. Defaults to true if no output
 %                   arguments were specified.
 %   Output
@@ -20,19 +23,23 @@ function [ sd1, sd2, outlier_idx ] = poincare( rri, varargin )
 %% === Input
 
 % Defaults
-DEFAULT_R_FACTOR = 2.0; % Selected because 2 * std means over 95% of points should be
-% inside the ellipse (if an ellipse fits the data well).
+% Note that 2 * std means over 95% of points should be inside the ellipse (if an ellipse fits the
+% data well).
+DEFAULT_SD1_FACTOR = 2;
+DEFAULT_SD2_FACTOR = 3;
 
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rri', @(x) isnumeric(x) && ~isscalar(x));
-p.addParameter('r_factor', DEFAULT_R_FACTOR, @isnumeric);
+p.addParameter('sd1_factor', DEFAULT_SD1_FACTOR, @isnumeric);
+p.addParameter('sd2_factor', DEFAULT_SD2_FACTOR, @isnumeric);
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rri, varargin{:});
-r_factor = p.Results.r_factor;
+sd1_factor = p.Results.sd1_factor;
+sd2_factor = p.Results.sd2_factor;
 should_plot = p.Results.plot;
 
 % Normalize input shape
@@ -57,8 +64,8 @@ sd2 = sqrt(var(x_new));
 %% Fit ellipse
 
 % Ellipse radii
-r_x = r_factor * sd2;
-r_y = r_factor * sd1;
+r_x = sd2_factor * sd2;
+r_y = sd1_factor * sd1;
 
 % Ellipse center
 c_x = mean(x_new);
