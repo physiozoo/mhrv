@@ -60,7 +60,7 @@ DEFAULT_VLF_BAND = [0.003, 0.04];
 DEFAULT_LF_BAND  = [0.04,  0.15];
 DEFAULT_HF_BAND  = [0.15,  0.4];
 DEFAULT_WINDOW_MINUTES = 5;
-DEFAULT_AR_ORDER = 24;
+DEFAULT_AR_ORDER = 16;
 DEFAULT_WELCH_OVERLAP = 50; % percent
 DEFAULT_DETREND_ORDER = 1;
 
@@ -283,7 +283,7 @@ if (should_plot)
     % Vertical lines of frequency ranges
     lw = 3; ls = ':'; lc = 'black';
     xrange = [0,f_max*1.01];
-    yrange = [1e-4, 1];
+    yrange = [1e-4, 1e0];
     line(vlf_band(1) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
     line(lf_band(1)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
     line(hf_band(1)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
