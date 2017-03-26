@@ -31,8 +31,8 @@ for win_idx = 1:num_templates
     % difference vector. Well calculate two distances: dist_A is the max
     % difference component (Chebyshev distance) using all m+1 components,
     % and dist_B is the Chebyshev distance using only the first m components.  
-    dist_B = max(diff_mat(:,1:end-1), [], 2);
-    dist_A = max(dist_B, diff_mat(:,end));
+    dist_B = max(diff_mat(:,1:end-1), [], 2); % max val of each row in diff_mat (without column m+1),
+    dist_A = max(dist_B, diff_mat(:,end));    % max between column m+1 and dist_B
     
     % A template match is a case where the Chebyshev distance between the
     % current template and one of the next templates is less than r. Count
