@@ -26,33 +26,85 @@ function [ sd1, sd2, outlier_idx ] = poincare( rri, varargin )
 % Note that 2 * std means over 95% of points should be inside the ellipse (if an ellipse fits the
 % data well).
 DEFAULT_SD1_FACTOR = 2;
-DEFAULT_SD2_FACTOR = 3;
+DEFAULT_SD2_FACTOR = 2;
+DEFAULT_RR_MIN = 0.32; % Seconds (187.5 BPM)
+DEFAULT_RR_MAX = 1.5;  % Seconds (40 BPM)
+DEFAULT_RR_MAX_CHANGE = 20; % Percent, max change between adjacent RR intervals
 
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rri', @(x) isnumeric(x) && ~isscalar(x));
-p.addParameter('sd1_factor', DEFAULT_SD1_FACTOR, @isnumeric);
-p.addParameter('sd2_factor', DEFAULT_SD2_FACTOR, @isnumeric);
+p.addParameter('sd1_factor', DEFAULT_SD1_FACTOR, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('sd2_factor', DEFAULT_SD2_FACTOR, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('rr_min', DEFAULT_RR_MIN, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('rr_max', DEFAULT_RR_MAX, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('rr_max_change', DEFAULT_RR_MAX_CHANGE, @(x) isnumeric(x) && isscalar(x) && x>0 && x<=100);
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rri, varargin{:});
 sd1_factor = p.Results.sd1_factor;
 sd2_factor = p.Results.sd2_factor;
+rr_min = p.Results.rr_min;
+rr_max = p.Results.rr_max;
+rr_max_change = p.Results.rr_max_change;
 should_plot = p.Results.plot;
 
-% Normalize input shape
+% Normalize input shape to row vector
 rri = reshape(rri, 1, length(rri));
+
+%% Square filter: Remove non-physiological intervals
+
+% _orig is the original, unfiltered data
+x_orig = rri(1:end-1);   % RR(n)
+y_orig = rri(2:end);     % RR(n+1)
+
+% Find intervals that are too large or too small, i.e. non-physiological
+square_filter_idx = find(rri < rr_min | rri > rr_max);
+
+%% Quotient filter
+
+rr_max_change = rr_max_change / 100;
+rr_q_min = 1.0 - rr_max_change;
+rr_q_max = 1.0 + rr_max_change;
+
+% Find intervals that differ by more than a specified percentage from the prev/next interval
+quotient_filter_idx = find(x_orig./y_orig < rr_q_min | x_orig./y_orig > rr_q_max | ...
+                           y_orig./x_orig < rr_q_min | y_orig./x_orig > rr_q_max);
+
+%% Remove filtered
+
+% For poincare plot, we must remove the intervals both from the x and the y vectors, so for every
+% index we found, also use the previous index.
+% The square filter finds one problematic interval at a time, so we need to remove it's index and
+% the previous index (so it's removed from both x and y vectors).
+square_filter_idx_pp = [square_filter_idx, square_filter_idx-1];
+
+% The quotient filter finds a problem in the ratio of two intervals, and we can't know which one of
+% them is problematic. So, we'll remove both, meaning we need to remove three interval indices.
+quotient_filter_idx = [quotient_filter_idx, quotient_filter_idx+1];
+quotient_filter_idx_pp = [quotient_filter_idx, quotient_filter_idx-1];
+
+% Outlier indices for the poincare plot
+filter_idx_pp = unique([square_filter_idx_pp, quotient_filter_idx_pp]);
+filter_idx_pp(filter_idx_pp < 1 | filter_idx_pp > length(x_orig)) = []; % Make sure no index is out of bounds
+
+% Outlier interval indices in the original RR vector
+outlier_idx = unique([square_filter_idx, quotient_filter_idx]);
+outlier_idx(outlier_idx < 1 | outlier_idx > length(rri)) = [];
+
+% Remove the filtered intervals from both x and y vectors
+% _old is data after filter, but in the old coordinate system
+x_old = x_orig; y_old = y_orig;
+x_old(filter_idx_pp) = [];
+y_old(filter_idx_pp) = [];
 
 %% Rotate input
 alpha = -pi/4;
 
-% Original data x-y pairs
-x_old = rri(1:end-1);   % RR(n)
-y_old = rri(2:end);     % RR(n+1)
-
 % Rotate the data to the new coordinate system
+% _new is the square-filtered data in the new coordinate system
 rri_rotated = rotation_matrix(alpha) * [x_old; y_old];
 x_new = rri_rotated(1,:);
 y_new = rri_rotated(2,:);
@@ -62,6 +114,8 @@ sd1 = sqrt(var(y_new));
 sd2 = sqrt(var(x_new));
 
 %% Fit ellipse
+% For fitting the ellipse we're using the _new vectors because we don't wan't any non-physiological
+% intervals to influence the ellise and SD1/2 metrics.
 
 % Ellipse radii
 r_x = sd2_factor * sd2;
@@ -78,16 +132,6 @@ yt = r_y * sin(t) + c_y;
 
 % Rotate the ellipse back to the old coordinate system
 ellipse_old = rotation_matrix(-alpha) * [xt; yt];
-
-%% Find outliers
-% Use ellipse cannonical equation to find all points outside the ellipse
-outlier_idx_logical = (x_new - c_x).^2 / r_x^2 + (y_new - c_y).^2 / r_y^2 > 1;
-
-% Since the original input vector is longer by 1, we need to append another value
-outlier_idx_logical = [outlier_idx_logical, false];
-
-% Convert logical indeices to regular
-outlier_idx = find(outlier_idx_logical);
 
 %% Lines for ellipse axes
 ellipse_center_new = [c_x; c_y];
@@ -106,8 +150,8 @@ if (should_plot)
     figure; hold on; axis equal tight; grid on;
     xlabel('RR(n) [sec]'); ylabel('RR(n+1) [sec]');
 
-    plot(x_old, y_old, 'b+', 'MarkerSize', msz);
-    plot(x_old(outlier_idx), y_old(outlier_idx), 'ro', 'MarkerSize', msz*1.25);
+    plot(x_orig, y_orig, 'b+', 'MarkerSize', msz);
+    plot(x_orig(filter_idx_pp), y_orig(filter_idx_pp), 'ro', 'MarkerSize', msz*1.25);
     plot(ellipse_old(1,:), ellipse_old(2,:), 'k--', 'LineWidth', lw1);
     plot(sd1_line_old(1,:), sd1_line_old(2,:), 'r-', 'LineWidth', lw2);
     plot(sd2_line_old(1,:), sd2_line_old(2,:), 'g-', 'LineWidth', lw2);
