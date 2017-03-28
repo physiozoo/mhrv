@@ -1,4 +1,4 @@
-function [ n, fn, alpha ] = dfa( t, sig, varargin )
+function [ n, fn, alpha1, alpha2 ] = dfa( t, sig, varargin )
 %DFA Detrended fluctuation analysis
 %   Calculates the DFA of a signal and it's scaling exponent alpha.
 %   Input:
@@ -17,6 +17,8 @@ function [ n, fn, alpha ] = dfa( t, sig, varargin )
 DEFAULT_NMIN = 4;
 DEFAULT_NMAX = 128;
 DEFAULT_N_INCR = 4;
+DEFAULT_ALPHA1_RANGE = [4, 15];
+DEFAULT_ALPHA2_RANGE = [16, 128];
 
 % Define input
 p = inputParser;
@@ -26,6 +28,8 @@ p.addRequired('sig', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('n_min',  DEFAULT_NMIN, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('n_max',  DEFAULT_NMAX, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('n_incr',  DEFAULT_N_INCR, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('alpha1_range',  DEFAULT_ALPHA1_RANGE, @(x) isnumeric(x) && numel(x) == 2);
+p.addParameter('alpha2_range',  DEFAULT_ALPHA2_RANGE, @(x) isnumeric(x) && numel(x) == 2);
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -33,6 +37,8 @@ p.parse(t, sig, varargin{:});
 n_min = p.Results.n_min;
 n_max = p.Results.n_max;
 n_incr = p.Results.n_incr;
+alpha1_range = p.Results.alpha1_range;
+alpha2_range = p.Results.alpha2_range;
 should_plot = p.Results.plot;
 
 %% === DFA
@@ -73,30 +79,39 @@ n  = n';
 
 %% === Scaling exponent, alpha
 
+% Find DFA values in each of the alpha ranges
+alpha1_idx = find(n >= alpha1_range(1) & n <= alpha1_range(2));
+alpha2_idx = find(n >= alpha2_range(1) & n <= alpha2_range(2));
+
+% Fit a line to the log-log DFA in each alpha range
 fn_log = log10(fn);
 n_log = log10(n);
+fit_alpha1 = polyfit(n_log(alpha1_idx), fn_log(alpha1_idx), 1);
+fit_alpha2 = polyfit(n_log(alpha2_idx), fn_log(alpha2_idx), 1);
 
-% Fit a line to the log-log function
-fit_params = polyfit(n_log, fn_log, 1);
-
-% take the slope of the line
-alpha = fit_params(1);
-intercept = fit_params(2);
+% Save the slopes of the lines
+alpha1 = fit_alpha1(1);
+alpha2 = fit_alpha2(1);
 
 %% Plot
 if should_plot
+    lw = 3.8; ls = ':';
+    
     figure;
-    h1 = loglog(n, fn, 'ko', 'MarkerSize', 6);
-    
-    grid on; hold on; axis tight;
+    h1 = loglog(n, fn, 'ko', 'MarkerSize', 7);
+    hold on; grid on; axis tight;
+
+    % Plot alpha1 line
+    alpha1_line = fit_alpha1(1) * n_log(alpha1_idx) + fit_alpha1(2);
+    loglog(10.^n_log(alpha1_idx), 10.^alpha1_line, 'Color', 'blue', 'LineStyle', ls, 'LineWidth', lw);
+
+    % Plot alpha2 line
+    alpha2_line = fit_alpha2(1) * n_log(alpha2_idx) + fit_alpha2(2);
+    loglog(10.^n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', ls, 'LineWidth', lw);
+
     xlabel('log(n)'); ylabel('log(F(n))');
+    legend('DFA', ['\alpha_1 = ' num2str(alpha1)], ['\alpha_2 = ' num2str(alpha2)], 'Location', 'northwest');
     set(gca, 'XTick', [4, 8, 16, 32, 64, 128]);
-    
-    % Plot alpha line
-    alpha_line = alpha * n_log + intercept;
-    loglog(10.^n_log, 10.^alpha_line, 'Color', 'blue', 'LineStyle', '--', 'LineWidth', 3);
-    
-    legend({'DFA', sprintf('\\alpha = %.3f', alpha)}, 'Location', 'northwest');
     uistack(h1, 'top');
 end
 

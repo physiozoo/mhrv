@@ -3,10 +3,6 @@ function [ hrv_nl ] = hrv_nonlinear( nni, tm_nni, varargin )
 %   Detailed explanation goes here
 
 %% === Input
-DEFAULT_ALPHA1_RANGE = [4, 15];
-DEFAULT_ALPHA2_RANGE = [16, 128];
-DEFAULT_DFA_NMIN = 4;
-DEFAULT_DFA_NMAX = 150;
 DEFAULT_BETA_BAND = [0.003, 0.04]; % hz
 DEFAULT_MSE_MAX_SCALE = 20;
 DEFAULT_MSE_FIT_SCALE = 7;
@@ -18,10 +14,6 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addRequired('tm_nni', @(x) isnumeric(x) && ~isscalar(x));
-p.addParameter('alpha1_range',  DEFAULT_ALPHA1_RANGE, @(x) isnumeric(x) && numel(x) == 2);
-p.addParameter('alpha2_range',  DEFAULT_ALPHA2_RANGE, @(x) isnumeric(x) && numel(x) == 2);
-p.addParameter('dfa_n_min',  DEFAULT_DFA_NMIN, @(x) isnumeric(x) && isscalar(x));
-p.addParameter('dfa_n_max',  DEFAULT_DFA_NMAX, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('beta_band',  DEFAULT_BETA_BAND, @(x) isnumeric(x) && numel(x) == 2);
 p.addParameter('mse_max_scale', DEFAULT_MSE_MAX_SCALE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('mse_fit_scale', DEFAULT_MSE_FIT_SCALE, @(x) isnumeric(x) && isscalar(x));
@@ -31,10 +23,6 @@ p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(nni, tm_nni, varargin{:});
-alpha1_range = p.Results.alpha1_range;
-alpha2_range = p.Results.alpha2_range;
-dfa_n_min = p.Results.dfa_n_min;
-dfa_n_max = p.Results.dfa_n_max;
 beta_band = p.Results.beta_band;
 mse_max_scale = p.Results.mse_max_scale;
 mse_fit_scale = p.Results.mse_fit_scale;
@@ -54,21 +42,13 @@ hrv_nl.SD2 = sd2;
 %% === DFA-based Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
 
 % Calcualte DFA
-[DFA_n, DFA_Fn] = dfa(tm_nni, nni, 'n_min', dfa_n_min, 'n_max', dfa_n_max, 'n_incr', 2);
+[~, ~, alpha1, alpha2] = dfa(tm_nni, nni, 'plot', should_plot);
+fig_dfa = gcf;
+fig_ax_dfa = gca;
 
-% Find DFA values in each of the alpha ranges
-alpha1_idx = find(DFA_n >= alpha1_range(1) & DFA_n <= alpha1_range(2));
-alpha2_idx = find(DFA_n >= alpha2_range(1) & DFA_n <= alpha2_range(2));
-
-% Fit a line to the log-log DFA in each alpha range
-DFA_Fn_log = log10(DFA_Fn);
-DFA_n_log = log10(DFA_n);
-DFA_fit_alpha1 = polyfit(DFA_n_log(alpha1_idx), DFA_Fn_log(alpha1_idx), 1);
-DFA_fit_alpha2 = polyfit(DFA_n_log(alpha2_idx), DFA_Fn_log(alpha2_idx), 1);
-
-% Save the slopes of the lines
-hrv_nl.alpha1 = DFA_fit_alpha1(1);
-hrv_nl.alpha2 = DFA_fit_alpha2(1);
+% Save the scaling exponents
+hrv_nl.alpha1 = alpha1;
+hrv_nl.alpha2 = alpha2;
 
 %% === Beta: Spectral power-law exponent
 
@@ -113,24 +93,14 @@ hrv_nl.mse_b = mse_fit(2);
 %% === Display output if requested
 if (should_plot)
     lw = 3.8; ls = ':';
-    figure;
+    hfigure = figure;
 
-    % Plot the DFA data
-    subplot(3, 1, 1);
-    loglog(DFA_n, DFA_Fn, 'ko', 'MarkerSize', 7);
-    hold on; grid on; axis tight;
-
-    % Plot alpha1 line
-    alpha1_line = DFA_fit_alpha1(1) * DFA_n_log(alpha1_idx) + DFA_fit_alpha1(2);
-    loglog(10.^DFA_n_log(alpha1_idx), 10.^alpha1_line, 'Color', 'blue', 'LineStyle', ls, 'LineWidth', lw);
-
-    % Plot alpha2 line
-    alpha2_line = DFA_fit_alpha2(1) * DFA_n_log(alpha2_idx) + DFA_fit_alpha2(2);
-    loglog(10.^DFA_n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', ls, 'LineWidth', lw);
-
-    xlabel('log(n)'); ylabel('log(F(n))');
-    legend('DFA', ['\alpha_1 = ' num2str(hrv_nl.alpha1)], ['\alpha_2 = ' num2str(hrv_nl.alpha2)], 'Location', 'northwest');
-    set(gca, 'XTick', [4, 8, 16, 32, 64, 128]);
+    % Move the DFA plot into a subplot
+    hsub1 = subplot(3, 1, 1);
+    hsub1_pos = get(hsub1,'Position');
+    delete(hsub1);
+    set(fig_ax_dfa,'Parent',hfigure,'Position',hsub1_pos);
+    delete(fig_dfa);
 
     % Plot the spectrum (only plot every x samples)
     f_beta_plot = f_axis(beta_band_idx);
