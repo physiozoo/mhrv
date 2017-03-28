@@ -60,7 +60,7 @@ DEFAULT_VLF_BAND = [0.003, 0.04];
 DEFAULT_LF_BAND  = [0.04,  0.15];
 DEFAULT_HF_BAND  = [0.15,  0.4];
 DEFAULT_WINDOW_MINUTES = 5;
-DEFAULT_AR_ORDER = 16;
+DEFAULT_AR_ORDER = 24;
 DEFAULT_WELCH_OVERLAP = 50; % percent
 DEFAULT_DETREND_ORDER = 1;
 
@@ -134,7 +134,9 @@ num_windows = floor(t_max / t_win);
 
 % Sanity check
 if (num_windows < 1)
-    error('Invalid window_minutes: Must be shorter than the signal duration');
+    warning('window_minutes is shorter than the signal duration.');
+    num_windows = 1;
+    t_win = floor(t_max);
 end
 
 % Uniform sampling freq: Take 10x more than f_max
@@ -208,11 +210,16 @@ end
 
 %% AR Method
 if (calc_ar)
-    % Apply hamming window on all samples
-    nni_uni_windowed = nni_uni .* hamming(length(nni_uni));
-    
-    % Yule-Walker AR model Spectrum, evaluated at frequencies in f_axis_uni
-    [pxx_ar, ~] = pyulear(nni_uni_windowed, ar_order, f_axis, fs_uni);
+    for curr_win = 1:num_windows_uni;
+        curr_win_idx = ((curr_win - 1) * n_win_uni + 1) : (curr_win * n_win_uni);
+        nni_win = nni_uni(curr_win_idx);
+
+        % AR periodogram
+        [pxx_ar_win, ~] = pyulear(nni_win, ar_order, f_axis, fs_uni);
+        pxx_ar = pxx_ar + pxx_ar_win;
+    end
+    % Average
+    pxx_ar = pxx_ar ./ num_windows_uni;
 end
 
 %% Welch Method
