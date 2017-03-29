@@ -20,10 +20,10 @@ function [ nni, tnn, rri, trr, rri_lp, tresh_low, thresh_high ] = ecgnn(rec_name
 %                             'win_percent' percent of the average in a window of size
 %                             'win_samples' around it, excludes the interval.
 %           - win_samples: Number of samples in the filter window on each side of the current sample
-%                          (total window size will be 2*win_samples+1)
-%           - win_percent: The percentage above/below the average to use for filtering.
-%           - 'from': Number of first sample to start detecting from (default 1)
-%           - 'to': Number of last sample to detect until (default [], i.e. end of signal)
+%                          (total window size will be 2*win_samples+1). Default: 10.
+%           - win_percent: The percentage above/below the average to use for filtering. Default: 20.
+%           - from: Number of first sample to start detecting from (default 1)
+%           - to: Number of last sample to detect until (default [], i.e. end of signal)
 %           - plot: true/false whether to generate a plot. Defaults to true if no output arguments
 %                   were specified.
 %   Outputs:
@@ -43,7 +43,7 @@ DEFAULT_USE_RQRS = true;
 DEFAULT_FILTER_GQPOST = true;
 DEFAULT_FILTER_POINCARE = true;
 DEFAULT_FILTER_LOWPASS = true;
-DEFAULT_WIN_SAMPLES = 20; % samples
+DEFAULT_WIN_SAMPLES = 10; % samples
 DEFAULT_WIN_PERCENT = 20; % percentage [0-100]
 DEFAULT_FROM_SAMPLE = 1;
 DEFAULT_TO_SAMPLE = [];
