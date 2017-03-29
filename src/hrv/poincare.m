@@ -12,6 +12,12 @@ function [ sd1, sd2, outlier_idx ] = poincare( rri, varargin )
 %             will be inside the ellipse).
 %           - sd2_factor: As above, but for the standard deviation along the line of identity (SD2).
 %             Default: 3.
+%           - rr_min: Min physiological RR interval, in seconds. Intervals shorter than this will
+%             be removed prior to poincare plotting. Default: 0.32 sec.
+%           - rr_max: Max physiological RR interval, in seconds. Intervals longer than this will
+%             be removed prior to poincare plotting. Default: 1.5 sec.
+%           - rr_max_change: Maximal change, in percent, allowed between adjacent RR intervals.
+%             Intervals violating this will be removed prior to poincare plotting. Default: 25.
 %           - plot: true/false whether to generate a plot. Defaults to true if no output
 %                   arguments were specified.
 %   Output
@@ -29,7 +35,7 @@ DEFAULT_SD1_FACTOR = 2;
 DEFAULT_SD2_FACTOR = 2;
 DEFAULT_RR_MIN = 0.32; % Seconds (187.5 BPM)
 DEFAULT_RR_MAX = 1.5;  % Seconds (40 BPM)
-DEFAULT_RR_MAX_CHANGE = 20; % Percent, max change between adjacent RR intervals
+DEFAULT_RR_MAX_CHANGE = 25; % Percent, max change between adjacent RR intervals
 
 % Define input
 p = inputParser;
