@@ -5,7 +5,7 @@ rec_name = ['db' filesep 'fantasia' filesep 'f1y06']; from = 0*60*250 + 1; to = 
 
 % Plot preprocessed intervals
 [nni, tnn, rri, trr] = ecgnn(rec_name, 'plot', true, 'from', from, 'to', to, ...
-                            'filter_gqpost', false, 'filter_lowpass', false, 'filter_poincare', true);
+                            'filter_gqpost', false, 'filter_lowpass', true, 'filter_poincare', true);
 
 fig_poincare = findobj(0, 'type', 'figure', 'number', 1);
 fig_ecg = findobj(0, 'type', 'figure', 'number', 2);
