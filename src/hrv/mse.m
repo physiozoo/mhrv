@@ -4,7 +4,7 @@ function [ mse_result, scale_axis ] = mse( sig, varargin )
 
 %% === Input
 DEFAULT_MSE_MAX_SCALE = 20;
-DEFAULT_SAMPEN_R = 0.15; % percent of std. dev.
+DEFAULT_SAMPEN_R = 0.2; % percent of std. dev.
 DEFAULT_SAMPEN_M = 2;
 
 % Define input
