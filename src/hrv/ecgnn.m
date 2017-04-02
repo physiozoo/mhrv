@@ -40,7 +40,7 @@ function [ nni, tnn, rri, trr, rri_lp, tresh_low, thresh_high ] = ecgnn(rec_name
 % Defaults
 DEFAULT_GQCONF = '';
 DEFAULT_USE_RQRS = true;
-DEFAULT_FILTER_GQPOST = true;
+DEFAULT_FILTER_GQPOST = false;
 DEFAULT_FILTER_POINCARE = true;
 DEFAULT_FILTER_LOWPASS = true;
 DEFAULT_WIN_SAMPLES = 10; % samples
