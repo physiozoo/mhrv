@@ -20,6 +20,8 @@ function [ hrv_fd, pxx, f_axis ] = hrv_freq( nni, tnn, varargin )
 %             of the methods given in 'methods'. This also determines the spectrum that will be
 %             returned from this function (pxx).
 %             Default: First value in 'methods'.
+%           - band_factor: A factor that will be applied to the frequency bands. Useful for shifting
+%             them linearly to adapt to non-human data. Default: 1.0 (no shift).
 %           - vlf_band: 2-element vector of frequencies in Hz defining the VLF band.
 %             Default: [0.003, 0.04].
 %           - lf_band: 2-element vector of frequencies in Hz defining the LF band.
@@ -56,6 +58,7 @@ SUPPORTED_METHODS = {'lomb', 'ar', 'welch', 'fft'};
 
 % Defaults
 DEFAULT_METHODS = {'lomb', 'ar', 'welch'};
+DEFAULT_BAND_FACTOR = 1.0;
 DEFAULT_VLF_BAND = [0.003, 0.04];
 DEFAULT_LF_BAND  = [0.04,  0.15];
 DEFAULT_HF_BAND  = [0.15,  0.4];
@@ -68,9 +71,9 @@ DEFAULT_DETREND_ORDER = 1;
 p = inputParser;
 p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addRequired('tnn',  @(x) isnumeric(x) && ~isscalar(x));
-
 p.addParameter('methods', DEFAULT_METHODS, @(x) iscellstr(x) && ~isempty(x));
 p.addParameter('power_method', [], @ischar);
+p.addParameter('band_factor', DEFAULT_BAND_FACTOR, @(x) isnumeric(x)&&isscalar(x)&&x>0);
 p.addParameter('vlf_band', DEFAULT_VLF_BAND, @(x) isnumeric(2)&&length(x)==2&&x(2)>x(1));
 p.addParameter('lf_band', DEFAULT_LF_BAND, @(x) isnumeric(2)&&length(x)==2&&x(2)>x(1));
 p.addParameter('hf_band', DEFAULT_HF_BAND, @(x) isnumeric(2)&&length(x)==2&&x(2)>x(1));
@@ -84,9 +87,10 @@ p.addParameter('plot', nargout == 0, @islogical);
 p.parse(nni, tnn, varargin{:});
 methods = p.Results.methods;
 power_method = p.Results.power_method;
-vlf_band = p.Results.vlf_band;
-lf_band = p.Results.lf_band;
-hf_band = p.Results.hf_band;
+band_factor = p.Results.band_factor;
+vlf_band = p.Results.vlf_band .* band_factor;
+lf_band = p.Results.lf_band   .* band_factor;
+hf_band = p.Results.hf_band   .* band_factor;
 window_minutes = p.Results.window_minutes;
 detrend_order = p.Results.detrend_order;
 ar_order = p.Results.ar_order;
@@ -109,7 +113,6 @@ elseif (~any(strcmp(SUPPORTED_METHODS, power_method)))
 elseif (~any(strcmp(methods, power_method)))
     error('No matching method provided for power_method %s', power_method);
 end
-
 
 % Set window_minutes to maximal value if requested
 if (isempty(window_minutes))
@@ -144,7 +147,7 @@ fs_uni = 10 * f_max; %Hz
 
 % Uniform time axis
 tnn_uni = tnn(1) : 1/fs_uni : tnn(end);
-n_win_uni = t_win / (1/fs_uni);
+n_win_uni = floor(t_win / (1/fs_uni));
 num_windows_uni = floor(length(tnn_uni) / n_win_uni);
 
 % Build a frequency axis. The best frequency resolution we can get is 1/t_win.
@@ -290,7 +293,7 @@ if (should_plot)
     % Vertical lines of frequency ranges
     lw = 3; ls = ':'; lc = 'black';
     xrange = [0,f_max*1.01];
-    yrange = [1e-4, 1e0];
+    yrange = [1e-5, 1e0];
     line(vlf_band(1) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
     line(lf_band(1)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
     line(hf_band(1)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
