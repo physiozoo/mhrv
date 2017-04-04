@@ -200,8 +200,9 @@ if (calc_lomb)
         nni_win = nni_win .* window_func;
         
         % Check Nyquist criterion
-        if (n_win <= 2*f_max*t_win)
-            continue; % warning('Nyquist criterion not met in window %d, skipping', curr_win);
+        min_samples_nyquist = ceil(2*f_max*t_win);
+        if (n_win < min_samples_nyquist)
+            warning('Nyquist criterion not met in window %d (%d of %d samples)', curr_win, n_win, min_samples_nyquist);
         end
         
         [pxx_lomb_win, ~] = plomb(nni_win, tnn_win, f_axis);
