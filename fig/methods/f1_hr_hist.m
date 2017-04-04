@@ -1,7 +1,7 @@
 close all;
+output_dir = ['fig' filesep 'out'];
 
 folder = 'db/billman/';
-
 rec_types = {'pre-*-bsl', 'post-*-bsl', 'pre-*-dbk', 'post-*-dbk'};
 rec_types_full = {'Basal pre-ex', 'Basal post-ex', 'Double Blockade pre-ex', 'Double Blockade post-ex'};
 
@@ -42,4 +42,4 @@ for rec_type_idx = 1:length(rec_types);
 end
 
 % Print out first figure only
-fig_print(1, 'billman_basal_pre_ex_hr_hist');
+fig_print(1, [output_dir filesep 'billman_basal_pre_ex_hr_hist']);

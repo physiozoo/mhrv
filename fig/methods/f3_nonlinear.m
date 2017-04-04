@@ -1,4 +1,5 @@
 close all;
+output_dir = ['fig' filesep 'out'];
 
 rec_name = ['db' filesep 'fantasia' filesep 'f1y06']; from = 0*60*250 + 1; to = 120*60*250;
 
@@ -42,7 +43,7 @@ width  = 18; % cm
 height = 9; % cm
 
 rec_split = strsplit(rec_name, filesep);
-filename_prefix = [rec_split{end-1} '_' rec_split{end} '_'];
+filename_prefix = [output_dir filesep rec_split{end-1} '_' rec_split{end} '_'];
 
 fig_print(fig_poincare, [filename_prefix 'poincare'], 'width', width, 'height', height);
 fig_print(fig_dfa, [filename_prefix 'dfa'], 'width', width, 'height', height);
