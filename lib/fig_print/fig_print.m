@@ -14,6 +14,7 @@ DEFAULT_FONT_SIZE = 10; % pt
 DEFAULT_FONT = 'Times New Roman';
 DEFAULT_OUTPUT_FORMAT = 'epsc2';
 DEFAULT_AXES_LINE_WIDTH = 1.0; % pt
+DEFAULT_TITLE = [];
 
 % Define input
 p = inputParser;
@@ -25,6 +26,7 @@ p.addParameter('font_size', DEFAULT_FONT_SIZE, @isscalar);
 p.addParameter('font', DEFAULT_FONT, @ischar);
 p.addParameter('output_format', DEFAULT_OUTPUT_FORMAT, @ischar);
 p.addParameter('axes_line_width', DEFAULT_AXES_LINE_WIDTH, @isscalar);
+p.addParameter('title', DEFAULT_TITLE, @ischar);
 
 % Get input
 p.parse(fig_handle, out_filename, varargin{:});
@@ -34,6 +36,7 @@ font_size = p.Results.font_size;
 font = p.Results.font;
 output_format = p.Results.output_format;
 axes_line_width = p.Results.axes_line_width;
+axes_title = p.Results.title;
 
 %% Update the figure and axes
 
@@ -57,6 +60,11 @@ set(all_axes, ...
     'FontSize', font_size, ...
     'FontName', font, ...
     'LineWidth', axes_line_width);
+
+% Set title if specified. Will be set only to first axes.
+if (~isempty(axes_title))
+    title(all_axes(1), axes_title);
+end
 
 % Set font for all text objects
 all_text = findall(fig_handle, 'type', 'text');
