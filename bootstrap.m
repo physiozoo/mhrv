@@ -8,7 +8,7 @@ close all;
 clear variables;
 
 % Remove rhrv-realted variables
-clearvars -global rhrv_basepath;
+clearvars -global rhrv_basepath rhrv_default_values;
 clear get_wfdb_tool_path;
 
 %% Set up matlab path
@@ -26,11 +26,20 @@ rhrv_basepath = basepath_;
 
 % Add them to matlab's path including subfolders
 addpath(genpath(lib_dir_));
+addpath(genpath(cfg_dir_));
 addpath(genpath(src_dir_));
 
-%% Load user configuration
-run([cfg_dir_ filesep 'rhrv_config.m']);
+%% Load user configuration & default parameter values
+rhrv_config;
 
+global rhrv_default_values;
+rhrv_default_values = containers.Map;
+if (~isempty(rhrv_cfg_.params_file))
+    set_params = str2func(rhrv_cfg_.params_file);
+    set_params(rhrv_default_values, cfg_dir_);
+end
+
+%% WFDB paths
 % Check if user specified a custom wfdb path. If not, use rhrv root folder.
 if (isempty(rhrv_cfg_.paths.wfdb_path))
     wfdb_search_path_ = basepath_;
@@ -57,7 +66,7 @@ elseif ver_cmp_ > 0
     disp('Notice: Detected WFDB version (%s) is newer than the tested version (%s)', wfdb_version_, supported_version_);
 end
 
-% Default sizes for figres
+%% Set default sizes for figres
 set(0,'DefaultAxesFontSize', rhrv_cfg_.plots.font_size);
 set(0,'DefaultLineLineWidth', rhrv_cfg_.plots.line_width);
 set(0,'DefaultLineMarkerSize', rhrv_cfg_.plots.marker_size);
