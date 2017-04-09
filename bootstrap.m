@@ -32,11 +32,8 @@ addpath(genpath(src_dir_));
 %% Load user configuration & default parameter values
 rhrv_config;
 
-global rhrv_default_values;
-rhrv_default_values = containers.Map;
 if (~isempty(rhrv_cfg_.params_file))
-    set_params = str2func(rhrv_cfg_.params_file);
-    set_params(rhrv_default_values, cfg_dir_);
+    rhrv_load_params(rhrv_cfg_.params_file);
 end
 
 %% WFDB paths
