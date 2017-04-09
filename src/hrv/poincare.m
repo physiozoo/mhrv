@@ -31,11 +31,11 @@ function [ sd1, sd2, outlier_idx ] = poincare( rri, varargin )
 % Defaults
 % Note that 2 * std means over 95% of points should be inside the ellipse (if an ellipse fits the
 % data well).
-DEFAULT_SD1_FACTOR = 2;
-DEFAULT_SD2_FACTOR = 2;
-DEFAULT_RR_MIN = 0.32; % Seconds (187.5 BPM)
-DEFAULT_RR_MAX = 1.5;  % Seconds (40 BPM)
-DEFAULT_RR_MAX_CHANGE = 25; % Percent, max change between adjacent RR intervals
+DEFAULT_SD1_FACTOR = rhrv_default('poincare.sd1_factor', 2);
+DEFAULT_SD2_FACTOR = rhrv_default('poincare.sd2_factor', 2);
+DEFAULT_RR_MIN = rhrv_default('poincare.rr_min', 0.32); % Seconds (187.5 BPM)
+DEFAULT_RR_MAX = rhrv_default('poincare.rr_max', 1.5);  % Seconds (40 BPM)
+DEFAULT_RR_MAX_CHANGE = rhrv_default('poincare.rr_max_change', 25); % Percent, max change between adjacent RR intervals
 
 % Define input
 p = inputParser;

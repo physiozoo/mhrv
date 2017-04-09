@@ -57,15 +57,15 @@ function [ hrv_fd, pxx, f_axis ] = hrv_freq( nni, tnn, varargin )
 SUPPORTED_METHODS = {'lomb', 'ar', 'welch', 'fft'};
 
 % Defaults
-DEFAULT_METHODS = {'lomb', 'ar', 'welch'};
-DEFAULT_BAND_FACTOR = 1.0;
-DEFAULT_VLF_BAND = [0.003, 0.04];
-DEFAULT_LF_BAND  = [0.04,  0.15];
-DEFAULT_HF_BAND  = [0.15,  0.4];
-DEFAULT_WINDOW_MINUTES = 5;
-DEFAULT_AR_ORDER = 24;
-DEFAULT_WELCH_OVERLAP = 50; % percent
-DEFAULT_DETREND_ORDER = 1;
+DEFAULT_METHODS = rhrv_default('hrv_freq.methods', {'lomb', 'ar', 'welch'});
+DEFAULT_BAND_FACTOR = rhrv_default('hrv_freq.band_factor', 1.0);
+DEFAULT_VLF_BAND = rhrv_default('hrv_freq.vlf_band', [0.003, 0.04]);
+DEFAULT_LF_BAND  = rhrv_default('hrv_freq.lf_band', [0.04,  0.15]);
+DEFAULT_HF_BAND  = rhrv_default('hrv_freq.hf_band', [0.15,  0.4]);
+DEFAULT_WINDOW_MINUTES = rhrv_default('hrv_freq.window_minutes', 5);
+DEFAULT_AR_ORDER = rhrv_default('hrv_freq.ar_order', 24);
+DEFAULT_WELCH_OVERLAP = rhrv_default('hrv_freq.welch_overlap', 50); % percent
+DEFAULT_DETREND_ORDER = rhrv_default('hrv_freq.detrend_order', 1);
 
 % Define input
 p = inputParser;

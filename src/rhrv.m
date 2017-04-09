@@ -23,27 +23,21 @@ function [ hrv_metrics ] = rhrv( rec_name, varargin )
 %% Make sure environment is set up
 close all;
 
-global rhrv_basepath;
-if (isempty(rhrv_basepath))
-    error('Please run bootstrap.m before using the rhrv tools');
-end
-
 %% Handle input
 
 % Defaults
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_WINDOW_INDEX_LIMIT = Inf;
 DEFAULT_WINDOW_INDEX_OFFSET = 0;
-DEFAULT_GQCONF = [rhrv_basepath filesep 'cfg/gqrs.default.conf'];
 
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
+
 p.addRequired('rec_name', @isrecord);
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_limit', DEFAULT_WINDOW_INDEX_LIMIT, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_offset', DEFAULT_WINDOW_INDEX_OFFSET, @(x) isnumeric(x) && numel(x) < 2 && x >= 0);
-p.addParameter('gqconf', DEFAULT_GQCONF, @isstr);
 p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
@@ -51,7 +45,6 @@ p.parse(rec_name, varargin{:});
 window_minutes = p.Results.window_minutes;
 window_index_limit = p.Results.window_index_limit;
 window_index_offset = p.Results.window_index_offset;
-gqconf = p.Results.gqconf;
 should_plot = p.Results.plot;
 
 % Save processing start time
@@ -105,7 +98,7 @@ for curr_win_idx = window_index_offset : window_max_index
     % Read & process RR intervals from ECG signal
     fprintf('[%.3f] >> rhrv: [%d/%d] Processing RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
     [nni_window, tnn_window, ~, trr_window] = ...
-        ecgnn(rec_name, 'ecg_channel', ecg_channel, 'gqconf', gqconf, 'use_rqrs', true,...
+        ecgnn(rec_name, 'ecg_channel', ecg_channel, 'use_rqrs', true,...
                         'filter_gqpost', false, 'filter_lowpass', true, 'filter_poincare', true,...
                         'from', window_start_sample, 'to', window_end_sample, 'plot', should_plot);
 

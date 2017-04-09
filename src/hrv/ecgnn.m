@@ -38,13 +38,13 @@ function [ nni, tnn, rri, trr, rri_lp, tresh_low, thresh_high ] = ecgnn(rec_name
 %% Input
 
 % Defaults
-DEFAULT_GQCONF = '';
+DEFAULT_GQCONF = rhrv_default('rqrs.gqconf','');
 DEFAULT_USE_RQRS = true;
 DEFAULT_FILTER_GQPOST = false;
-DEFAULT_FILTER_POINCARE = true;
-DEFAULT_FILTER_LOWPASS = true;
-DEFAULT_WIN_SAMPLES = 10; % samples
-DEFAULT_WIN_PERCENT = 20; % percentage [0-100]
+DEFAULT_FILTER_POINCARE = rhrv_default('rrfilt.filter_poincare', true);
+DEFAULT_FILTER_LOWPASS = rhrv_default('rrfilt.filter_lowpass', true);
+DEFAULT_WIN_SAMPLES = rhrv_default('rrfilt.win_samples', 10); % samples
+DEFAULT_WIN_PERCENT = rhrv_default('rrfilt.win_percent', 20); % percentage [0-100]
 DEFAULT_FROM_SAMPLE = 1;
 DEFAULT_TO_SAMPLE = [];
 DEFAULT_ECG_CHANNEL = [];

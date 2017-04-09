@@ -1,19 +1,22 @@
 function [ qrs, outliers ] = rqrs( rec_name, varargin )
-%RQRS R-peak detection in ECG signals, based on 'gqrs'
-%   Detailed explanation goes here
+%RQRS R-peak detection in ECG signals, based on 'gqrs' and 'gqpost'.
+%   RQRS Finds R-peaks in PhysioNet-format ECG records. It uses the 'gqrs' and 'gqpost' programs
+%   from the PhysioNet WFDB toolbox, to find the QRS complexes. Then, it searches forward in a small
+%   window to find the R-peak.
 
 %% === Input
 
 % Defaults
-DEFAULT_GQPOST = true;
-DEFAULT_WINDOW_SIZE_SECONDS = 0.056; % 80% of .07, the average human QRS duration
+DEFAULT_GQPOST = rhrv_default('rqrs.use_gqpost', true);
+DEFAULT_GQCONF = rhrv_default('rqrs.gqconf', '');
+DEFAULT_WINDOW_SIZE_SECONDS = rhrv_default('rqrs.window_size_sec', 0.056); % 80% of .07, the average human QRS duration
 
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
 p.addParameter('gqpost', DEFAULT_GQPOST, @(x) islogical(x) && isscalar(x));
-p.addParameter('gqconf', '', @isstr);
+p.addParameter('gqconf', DEFAULT_GQCONF, @isstr);
 p.addParameter('window_size_sec', DEFAULT_WINDOW_SIZE_SECONDS, @isnumeric);
 
 % Get input

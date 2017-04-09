@@ -1,13 +1,25 @@
 function [ hrv_nl ] = hrv_nonlinear( nni, tm_nni, varargin )
-%HRV_NONLINEAR Calcualte non-linear HRV metrics
-%   Detailed explanation goes here
+%HRV_NONLINEAR Calcualte non-linear HRV metrics.
+%   Inputs:
+%       - nni: RR/NN intervals, in seconds.
+%       - tnn: The correspondint times of the intervals, in seconds.
+%       - varargin: Pass in name-value pairs to configure advanced options:
+%           - beta_band: A 2-element vector specifying the frequency range (in Hz) to use for
+%             calculating the beta parameter. Default: [0.003, 0.04].
+%
+%   Output:
+%       - hrv_nl: Struct containing the following HRV metrics:
+%           - SD1: Poincare plot SD1 descriptor (std. dev. of intervals along the line perpendicular
+%             to the line of identity).
+%           - SD2: Poincare plot SD2 descriptor (std. dev. of intervals along the line of identity).
+%
 
 %% === Input
-DEFAULT_BETA_BAND = [0.003, 0.04]; % hz
-DEFAULT_MSE_MAX_SCALE = 20;
+DEFAULT_BETA_BAND = rhrv_default('hrv_nl.beta_band', [0.003, 0.04]); % hz
+DEFAULT_MSE_MAX_SCALE = rhrv_default('mse.mse_max_scale', 20);
 DEFAULT_MSE_FIT_SCALE = 7;
-DEFAULT_SAMPEN_R = 0.15; % percent of std. dev.
-DEFAULT_SAMPEN_M = 2;
+DEFAULT_SAMPEN_R = rhrv_default('mse.sampen_r', 0.2); % percent of std. dev.
+DEFAULT_SAMPEN_M = rhrv_default('mse.sampen_m', 2);
 
 % Define input
 p = inputParser;
