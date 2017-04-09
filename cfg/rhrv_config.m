@@ -21,3 +21,9 @@ rhrv_cfg_.plots = struct;
 rhrv_cfg_.plots.font_size = 12;
 rhrv_cfg_.plots.line_width = 1.0;
 rhrv_cfg_.plots.marker_size = 4;
+
+%% Default param values file
+
+% Use this file to specify default values for the parameters used by the various algorithms.
+% If you create a new file, place it in the 'cfg' dir.
+rhrv_cfg_.params_file = 'rhrv_params_human';
