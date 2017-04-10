@@ -1,5 +1,6 @@
 ### Generated plots
 *.eps
+fig/out/
 
 ### Matlab ###
 # Windows default autosave extension
