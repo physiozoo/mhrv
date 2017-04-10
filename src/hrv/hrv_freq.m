@@ -114,11 +114,6 @@ elseif (~any(strcmp(methods, power_method)))
     error('No matching method provided for power_method %s', power_method);
 end
 
-% Set window_minutes to maximal value if requested
-if (isempty(window_minutes))
-    window_minutes = floor(tnn(end) / 60);
-end
-
 %% Preprocess
 
 % Detrend and zero mean
@@ -129,17 +124,21 @@ nni = nni - nni_trend;
 
 %% Initializations
 
+% Set window_minutes to maximal value if requested
+if (isempty(window_minutes))
+    window_minutes = floor((tnn(end)-tnn(1)) / 60);
+end
+
 t_win = 60 * window_minutes; % Window length in seconds
 t_max = tnn(end);
 f_min = vlf_band(1);
 f_max = hf_band(2);
 num_windows = floor(t_max / t_win);
 
-% Sanity check
+% In case there's not enough data for one window, use entire signal length
 if (num_windows < 1)
-    warning('window_minutes is shorter than the signal duration.');
     num_windows = 1;
-    t_win = floor(t_max);
+    t_win = floor(tnn(end)-tnn(1));
 end
 
 % Uniform sampling freq: Take 10x more than f_max
@@ -276,7 +275,7 @@ if (should_plot)
     
     if (calc_lomb)
         semilogy(f_axis, pxx_lomb); grid on; hold on;
-        legend_entries{end+1} = sprintf('Lomb (t_{win}=%dm, n_{win}=%d)', window_minutes, num_windows);
+        legend_entries{end+1} = sprintf('Lomb (t_{win}=%.1fm, n_{win}=%d)', t_win/60, num_windows);
     end
     if (calc_ar)
         semilogy(f_axis, pxx_ar); grid on; hold on;
@@ -284,11 +283,11 @@ if (should_plot)
     end
     if (calc_welch)
         semilogy(f_axis, pxx_welch); grid on; hold on;
-        legend_entries{end+1} = sprintf('Welch (t_{win}=%dm, %d%% ovl.)', window_minutes, welch_overlap);
+        legend_entries{end+1} = sprintf('Welch (t_{win}=%.1fm, %d%% ovl.)', t_win/60, welch_overlap);
     end
     if (calc_fft)
         semilogy(f_axis, pxx_fft); grid on; hold on;
-        legend_entries{end+1} = sprintf('FFT (twin=%dm, nwin=%d)', window_minutes, num_windows);
+        legend_entries{end+1} = sprintf('FFT (twin=%.1fm, nwin=%d)', t_win/60, num_windows);
     end
 
     % Vertical lines of frequency ranges
