@@ -25,7 +25,7 @@ function [ hrv_metrics ] = rhrv( rec_name, varargin )
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_WINDOW_INDEX_LIMIT = Inf;
 DEFAULT_WINDOW_INDEX_OFFSET = 0;
-DEFAULT_PARAMS = 'rhrv_params_human';
+DEFAULT_PARAMS = 'human';
 
 % Define input
 p = inputParser;

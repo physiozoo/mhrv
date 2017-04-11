@@ -14,6 +14,16 @@ end
 global rhrv_default_values;
 rhrv_default_values = containers.Map;
 
-loader_handler = str2func(params_filename);
+% Find the function name
+if ~isempty(which(params_filename))
+   params_funcname = params_filename;
+elseif ~isempty(which(['rhrv_params_' params_filename]))
+        params_funcname = ['rhrv_params_' params_filename];
+else
+    error('Can''t find parameters file %s', params_filename);
+end
+
+% Invoke the setter function
+loader_handler = str2func(params_funcname);
 loader_handler(rhrv_default_values, [rhrv_basepath filesep 'cfg']);
 end
