@@ -19,6 +19,9 @@ function [ hrv_metrics ] = rhrv( rec_name, varargin )
 %       - hrv_metrics: A table where each row is a window and each column is an HRV metrics that was
 %                      calculated in that window.
 
+%% Make sure environment is set up
+rhrv_init --close;
+
 %% Handle input
 
 % Defaults

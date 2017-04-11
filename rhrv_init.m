@@ -1,15 +1,35 @@
-%% BOOTSTRAP
+function [] = rhrv_init( varargin )
+%% RHRV_INIT
 % Please run this script before using the toolkit.
 % It will initialize the matlab path and environment for the rhrv tools.
 % To set custom user-specific options, edit the file cfg/rhrv_config.m before running this.
 
-%% Reset workspaces
-close all;
-clear variables;
+%% Parse input
+should_force = false;
+should_close = false;
+for i = 1:length(varargin)
+    curr_arg = varargin{i};
+    if strcmp(curr_arg, '-f') || strcmp(curr_arg, '--force') 
+        should_force = true;
+    elseif strcmp(curr_arg, '-c') || strcmp(curr_arg, '--close')
+        should_close = true;
+    end
+end
 
+%% Check if already initialized
+global rhrv_initialized;
+if (~isempty(rhrv_initialized) && ~should_force)
+    return;
+end
+
+%% Reset workspaces
 % Remove rhrv-realted variables
-clearvars -global rhrv_basepath rhrv_default_values;
+clearvars -global rhrv_basepath rhrv_initialized rhrv_default_values;
 clear get_wfdb_tool_path;
+
+if should_close
+    close all;
+end
 
 %% Set up matlab path
 
@@ -64,5 +84,5 @@ set(0,'DefaultAxesFontSize', rhrv_cfg_.plots.font_size);
 set(0,'DefaultLineLineWidth', rhrv_cfg_.plots.line_width);
 set(0,'DefaultLineMarkerSize', rhrv_cfg_.plots.marker_size);
 
-%% Clean up
-clear -regexp _$
+%% Mark initialization
+rhrv_initialized = true;
