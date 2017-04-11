@@ -30,7 +30,7 @@ addpath(genpath(cfg_dir_));
 addpath(genpath(src_dir_));
 
 %% Load user configuration & default parameter values
-rhrv_config;
+rhrv_cfg_ = rhrv_config;
 
 if (~isempty(rhrv_cfg_.params_file))
     rhrv_load_params(rhrv_cfg_.params_file);
