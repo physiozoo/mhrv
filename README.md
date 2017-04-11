@@ -15,7 +15,8 @@ Currently this project is in a very early iteration and is intended for my perso
     * `qrs_compare` - Comparison of QRS detections to reference annotations and calculation of quality indices like Sensitivity, PPV.
 
 * ECG signal processing
-     * `egcnn` - Construction of RR intervals from ECG and filtering them to detect ectopic (out of place) beats.
+     * `egcrr` - Construction of RR intervals from ECG data in PhysioNet format.
+     * `filtrr` - Filtering of RR interval time series to detect ectopic (out of place) beats.
 
 * HRV Metrics: Calculating quantative measures that indicate the activity of the heart.
     * `hrv_time` - Time Domain: AVNN, SDNN, p50NN.
@@ -40,7 +41,7 @@ Currently this project is in a very early iteration and is intended for my perso
    cloning,  run `git submodule update --init` to also clone the dependency
    into your local repo.
 
-2. From MATLAB, run the `bootstrap.m` script. This script will:
+2. From MATLAB, run the `rhrv_init` function. This function will:
 
     * Check for the presence of the WFDB tools in your system `PATH`. If WFDB
       tools are not detected, it will attempt to automatically download them for
@@ -49,8 +50,8 @@ Currently this project is in a very early iteration and is intended for my perso
 
 ### Manual WFDB Installation (Optional)
 The above steps should be enough to get most users started. If however you
-don't want the `bootstrap` script to download the WFDB tools for you, you can
-install them yourself.
+don't want `rhrv_init` to download the WFDB tools for you, you can install them
+yourself.
 
   * On OSX, you can use [homebrew](http://brew.sh) to install it easily with `brew install homebrew/science/wfdb`.
   * On Windows and Linux, you should either [download the WFDB binaries](https://physionet.org/physiotools/binaries/)
