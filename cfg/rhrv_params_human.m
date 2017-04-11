@@ -7,10 +7,10 @@ defaults('rqrs.use_gqpost') = true;
 defaults('rqrs.window_size_sec') = 0.056; % 80% of .07, the average human QRS duration
 
 %% RR Interval filtering
-defaults('rrfilt.filter_poincare') = true;
-defaults('rrfilt.filter_lowpass') = true;
-defaults('rrfilt.win_samples') = 10; % samples
-defaults('rrfilt.win_percent') = 20; % percentage [0-100]
+defaults('filtrr.filter_poincare') = true;
+defaults('filtrr.filter_lowpass') = true;
+defaults('filtrr.win_samples') = 10; % samples
+defaults('filtrr.win_percent') = 20; % percentage [0-100]
 
 %% Time-domain HRV metrics
 defaults('hrv_time.pnn_thresh_ms') = 50;

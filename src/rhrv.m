@@ -12,16 +12,12 @@ function [ hrv_metrics ] = rhrv( rec_name, varargin )
 %           - window_index_limit: Maximal number of windows to process. Combined with the above,
 %                                 this allows control of which window to start from and how many
 %                                 windows to process from there.
-%           - gqconf: Path to a config file for gqrs. E.g. for analyzing non-human data it's
-%                     necessary to provide gqrs with an appropriate config file for the data.
+%           - params: Name of rhrv defaults file to use (e.g. 'canine'). Default 'human'.
 %           - plot: true/false whether to generate plots. Defaults to true if no output arguments
 %                   were specified.
 %   Outputs:
 %       - hrv_metrics: A table where each row is a window and each column is an HRV metrics that was
 %                      calculated in that window.
-
-%% Make sure environment is set up
-close all;
 
 %% Handle input
 
@@ -29,6 +25,7 @@ close all;
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_WINDOW_INDEX_LIMIT = Inf;
 DEFAULT_WINDOW_INDEX_OFFSET = 0;
+DEFAULT_PARAMS = 'rhrv_params_human';
 
 % Define input
 p = inputParser;
@@ -38,19 +35,26 @@ p.addRequired('rec_name', @isrecord);
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_limit', DEFAULT_WINDOW_INDEX_LIMIT, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_offset', DEFAULT_WINDOW_INDEX_OFFSET, @(x) isnumeric(x) && numel(x) < 2 && x >= 0);
+p.addParameter('params', DEFAULT_PARAMS, @ischar);
 p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
 p.parse(rec_name, varargin{:});
+params = p.Results.params;
 window_minutes = p.Results.window_minutes;
 window_index_limit = p.Results.window_index_limit;
 window_index_offset = p.Results.window_index_offset;
 should_plot = p.Results.plot;
 
+% Load user-specified default parameters
+if ~isempty(params)
+    rhrv_load_params(params);
+end
+
+%% Process ECG Signal
 % Save processing start time
 t0 = cputime;
 
-%% Process ECG Signal
 fprintf('[%.3f] >> rhrv: Processing ECG signal from record %s...\n', cputime-t0, rec_name);
 
 % Get data about the ECG channel in the signal
@@ -96,27 +100,29 @@ for curr_win_idx = window_index_offset : window_max_index
     window_end_sample   = window_start_sample + window_samples - 1;
 
     % Read & process RR intervals from ECG signal
-    fprintf('[%.3f] >> rhrv: [%d/%d] Processing RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
-    [nni_window, tnn_window, ~, trr_window] = ...
-        ecgnn(rec_name, 'ecg_channel', ecg_channel, 'use_rqrs', true,...
-                        'filter_gqpost', false, 'filter_lowpass', true, 'filter_poincare', true,...
-                        'from', window_start_sample, 'to', window_end_sample, 'plot', should_plot);
+    fprintf('[%.3f] >> rhrv: [%d/%d] Detecting QRS end RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
+    [rri_window, trr_window] = ecgrr(rec_name, 'ecg_channel', ecg_channel,...
+        'from', window_start_sample, 'to', window_end_sample, 'plot', should_plot);
+
+    % Filter RR intervals to produce NN intervals
+    fprintf('[%.3f] >> rhrv: [%d/%d] Filtering RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
+    [nni_window, tnn_window] = filtrr(rri_window, trr_window, 'plot', should_plot);
 
     if (isempty(nni_window))
         warning('[%.3f] >> rhrv: [%d/%d] No R-peaks detected in window, skipping\n', cputime-t0, curr_win_idx+1, num_win);
         continue;
     end
 
-    fprintf('[%.3f] >> rhrv: [%d/%d] %d total intervals, %d were filtered out\n',...
-            cputime-t0, curr_win_idx+1, num_win, length(trr_window), length(trr_window)-length(tnn_window));
+    fprintf('[%.3f] >> rhrv: [%d/%d] %d NN intervals, %d RR intervals were filtered out\n',...
+            cputime-t0, curr_win_idx+1, num_win, length(nni_window), length(trr_window)-length(tnn_window));
 
     % Time Domain metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating time-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    hrv_td = hrv_time(nni_window, varargin{:});
+    hrv_td = hrv_time(nni_window, 'plot', should_plot);
 
     % Freq domain metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating frequency-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [ hrv_fd, ~, ~ ] = hrv_freq(nni_window, tnn_window, 'methods', {'lomb','welch','ar'}, 'plot', should_plot);
+    [ hrv_fd, ~, ~ ] = hrv_freq(nni_window, tnn_window, 'plot', should_plot);
 
     % Non linear metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);
