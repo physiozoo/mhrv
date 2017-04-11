@@ -29,12 +29,8 @@ addpath(genpath(lib_dir_));
 addpath(genpath(cfg_dir_));
 addpath(genpath(src_dir_));
 
-%% Load user configuration & default parameter values
+%% Load user configuration
 rhrv_cfg_ = rhrv_config;
-
-if (~isempty(rhrv_cfg_.params_file))
-    rhrv_load_params(rhrv_cfg_.params_file);
-end
 
 %% WFDB paths
 % Check if user specified a custom wfdb path. If not, use rhrv root folder.
