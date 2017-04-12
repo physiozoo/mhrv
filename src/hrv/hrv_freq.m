@@ -128,7 +128,7 @@ nni = nni - nni_trend;
 
 % Set window_minutes to maximal value if requested
 if (isempty(window_minutes))
-    window_minutes = floor((tnn(end)-tnn(1)) / 60);
+    window_minutes = max(1, floor((tnn(end)-tnn(1)) / 60));
 end
 
 t_win = 60 * window_minutes; % Window length in seconds
