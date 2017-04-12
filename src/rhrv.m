@@ -126,7 +126,7 @@ for curr_win_idx = window_index_offset : window_max_index
 
     % Freq domain metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating frequency-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [ hrv_fd, ~, ~ ] = hrv_freq(nni_window, tnn_window, 'plot', should_plot);
+    [ hrv_fd, ~, ~ ] = hrv_freq(nni_window, 'plot', should_plot);
 
     % Non linear metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);

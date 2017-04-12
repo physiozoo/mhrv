@@ -23,7 +23,7 @@ fig_dfa = gcf;
 fig_mse = gcf;
 
 %% Beta
-[ ~, pxx, f_axis ] = hrv_freq(nni, tnn, 'methods', {'ar'}, 'window_minutes', 30);
+[ ~, pxx, f_axis ] = hrv_freq(nni, 'methods', {'ar'}, 'window_minutes', 30);
 
 % Fit a line and get the slope
 beta_band_idx = find(f_axis >= 0.005 & f_axis <= 0.042);

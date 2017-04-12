@@ -1,10 +1,9 @@
-function [ hrv_fd, pxx, f_axis ] = hrv_freq( nni, tnn, varargin )
+function [ hrv_fd, pxx, f_axis ] = hrv_freq( nni, varargin )
 %HRV_FREQ NN interval spectrum and frequency-domain HRV metrics
 %   This function estimates the PSD (power spectral density) of a given nn-interval sequence, and
 %   calculates the power in various frequency bands.
 %   Inputs:
 %       - nni: RR/NN intervals, in seconds.
-%       - tnn: The correspondint times of the intervals, in seconds.
 %       - varargin: Pass in name-value pairs to configure advanced options:
 %           - methods: A cell array of strings containing names of methods to use to estimate the
 %             spectrum. Supported methods are:
@@ -70,7 +69,6 @@ DEFAULT_DETREND_ORDER = rhrv_default('hrv_freq.detrend_order', 1);
 % Define input
 p = inputParser;
 p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
-p.addRequired('tnn',  @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('methods', DEFAULT_METHODS, @(x) iscellstr(x) && ~isempty(x));
 p.addParameter('power_method', [], @ischar);
 p.addParameter('band_factor', DEFAULT_BAND_FACTOR, @(x) isnumeric(x)&&isscalar(x)&&x>0);
@@ -84,7 +82,7 @@ p.addParameter('welch_overlap', DEFAULT_WELCH_OVERLAP, @(x) isnumeric(x)&&isscal
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
-p.parse(nni, tnn, varargin{:});
+p.parse(nni, varargin{:});
 methods = p.Results.methods;
 power_method = p.Results.power_method;
 band_factor = p.Results.band_factor;
@@ -115,6 +113,10 @@ elseif (~any(strcmp(methods, power_method)))
 end
 
 %% Preprocess
+
+% Calculate zero-based interval time axis
+nni = nni(:);
+tnn = [0; cumsum(nni(1:end-1))];
 
 % Detrend and zero mean
 nni = nni - mean(nni);
@@ -188,7 +190,7 @@ end
 
 %% Lomb method
 if (calc_lomb)
-    for curr_win = 1:num_windows;
+    for curr_win = 1:num_windows
         curr_win_idx = (tnn >= t_win * (curr_win-1)) & (tnn < t_win * curr_win);
 
         nni_win = nni(curr_win_idx);
@@ -213,7 +215,7 @@ end
 
 %% AR Method
 if (calc_ar)
-    for curr_win = 1:num_windows_uni;
+    for curr_win = 1:num_windows_uni
         curr_win_idx = ((curr_win - 1) * n_win_uni + 1) : (curr_win * n_win_uni);
         nni_win = nni_uni(curr_win_idx);
 
@@ -235,7 +237,7 @@ end
 %% FFT method
 if (calc_fft)
     window_func = hamming(n_win_uni);    
-    for curr_win = 1:num_windows_uni;
+    for curr_win = 1:num_windows_uni
         curr_win_idx = ((curr_win - 1) * n_win_uni + 1) : (curr_win * n_win_uni);
         nni_win = nni_uni(curr_win_idx);
         

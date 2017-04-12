@@ -14,7 +14,7 @@ for rec_type_idx = 1:length(rec_types);
     for file_idx = 1:nfiles
         file = files(file_idx);
         [path, name, ext] = fileparts([folder file.name]);
-        rec_name = [path '/' name];
+        rec_name = [path filesep name];
         
         % Read data from record
         fprintf('-> Reading from %s\n', rec_name);
@@ -23,7 +23,7 @@ for rec_type_idx = 1:length(rec_types);
         [nni, tnn] = filtrr(rri, trr);
 
         % Calculate spectrum
-        hrv_freq(nni, tnn, 'plot', true);
+        hrv_freq(nni, 'plot', true);
         
         % Print the figure
         fig_print(gcf, [output_dir filesep name '_freq'], 'title', rec_name);

@@ -16,11 +16,11 @@ fig_poincare = findobj(0, 'type', 'figure', 'number', 2);
 fig_processed_intervals = findobj(0, 'type', 'figure', 'number', 3);
 
 % Plot freq-domain of orginal intervals
-hrv_freq(rri, trr, 'plot', true, 'window_minutes', 5);
+hrv_freq(rri, 'plot', true, 'window_minutes', 5);
 fig_freq_orig = gcf;
 
 % Plot freq-domain of preprocessed intervals
-hrv_freq(nni, tnn, 'plot', true, 'window_minutes', 5);
+hrv_freq(nni, 'plot', true, 'window_minutes', 5);
 fig_freq_processed = gcf;
 
 %% Print to file
