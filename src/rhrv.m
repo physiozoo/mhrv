@@ -133,7 +133,9 @@ for curr_win_idx = window_index_offset : window_max_index
     hrv_nl = hrv_nonlinear(nni_window, 'plot', should_plot);
 
     % Update metrics table
-    hrv_metrics_tables{curr_win_idx+1} = [struct2table(hrv_td), struct2table(hrv_fd), struct2table(hrv_nl)];
+    intervals_count.RR = length(rri_window);
+    intervals_count.NN = length(nni_window);
+    hrv_metrics_tables{curr_win_idx+1} = [struct2table(intervals_count), struct2table(hrv_td), struct2table(hrv_fd), struct2table(hrv_nl)];
 end
 
 %% Create output table
@@ -163,7 +165,7 @@ hrv_metrics.Properties.RowNames = row_names;
 if (nargout == 0)
     % Print some of the HRV metrics to user
     disp(hrv_metrics(:,...
-        {'AVNN','SDNN','RMSSD','pNNx',...
+        {'RR', 'NN', 'AVNN','SDNN','RMSSD','pNNx',...
          'LF_to_TOT','HF_to_TOT', 'LF_to_HF',...
          'SD1', 'SD2', 'alpha1','alpha2','beta', 'SampEn'}));
 end
