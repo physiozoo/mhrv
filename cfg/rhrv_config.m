@@ -23,4 +23,9 @@ rhrv_cfg.plots.font_size = 12;
 rhrv_cfg.plots.line_width = 1.0;
 rhrv_cfg.plots.marker_size = 4;
 
+%% Default parameters file
 
+% Set this to a file in the cfg/ directory containing desired default values of various toolbox
+% parameters. This is usefult if you want the toolbox to be initialized with specific parameters
+% after calling rhrv_init.
+rhrv_cfg.params_file = ''; % e.g. 'human', 'canine'.

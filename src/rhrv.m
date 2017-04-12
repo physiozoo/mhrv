@@ -12,7 +12,8 @@ function [ hrv_metrics ] = rhrv( rec_name, varargin )
 %           - window_index_limit: Maximal number of windows to process. Combined with the above,
 %                                 this allows control of which window to start from and how many
 %                                 windows to process from there.
-%           - params: Name of rhrv defaults file to use (e.g. 'canine'). Default 'human'.
+%           - params: Name of rhrv defaults file to use (e.g. 'canine'). Default '', i.e. no
+%                     parameters file will be loaded.
 %           - plot: true/false whether to generate plots. Defaults to true if no output arguments
 %                   were specified.
 %   Outputs:
@@ -28,7 +29,7 @@ rhrv_init --close;
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_WINDOW_INDEX_LIMIT = Inf;
 DEFAULT_WINDOW_INDEX_OFFSET = 0;
-DEFAULT_PARAMS = 'human';
+DEFAULT_PARAMS = '';
 
 % Define input
 p = inputParser;

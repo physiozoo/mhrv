@@ -1,8 +1,17 @@
 function [] = rhrv_init( varargin )
-%% RHRV_INIT
-% Please run this script before using the toolkit.
-% It will initialize the matlab path and environment for the rhrv tools.
-% To set custom user-specific options, edit the file cfg/rhrv_config.m before running this.
+%% RHRV_INIT Initialize MATLAB environment of the rhrv tools.
+% Run this script before using the toolkit.
+% It will initialize the matlab path and environment for the rhrv tools, and also download the
+% PhysioNet tools if they are not found on this system.
+% To set custom user-specific options (e.g. PhysioNet tools location), edit the file
+% cfg/rhrv_config.m before running this.
+% By default this script won't do anything if it was run previously during the same MATLAB session.
+%
+%   Usage:
+%       rhrv_init [-f/--force] [-c/--close]
+%
+%   * The --force/-f option forces running of this script again, even if it was run before.
+%   * The --close/-c option causes the script to close all open figures.
 
 %% Parse input
 should_force = false;
@@ -51,6 +60,10 @@ addpath(genpath(src_dir_));
 
 %% Load user configuration
 rhrv_cfg_ = rhrv_config;
+
+if (~isempty(rhrv_cfg_.params_file))
+    rhrv_load_params(rhrv_cfg_.params_file);
+end
 
 %% WFDB paths
 % Check if user specified a custom wfdb path. If not, use rhrv root folder.
