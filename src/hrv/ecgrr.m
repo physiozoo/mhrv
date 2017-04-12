@@ -82,20 +82,13 @@ rri(rr_outliers) = [];
 
 %% Plot if no output args or if requested
 if (should_plot)
-    figure;
-
     qrs_no_outliers = setdiff(qrs, qrs_outliers);
 
-    subplot(2,1,1);
+    figure;
     plot(tm, sig); hold on; grid on;
     plot(tm(qrs_no_outliers), sig(qrs_no_outliers,1), 'rx');
     xlabel('time [s]'); ylabel('ECG [mV]');
     legend('ECG signal', 'R-peaks');
-
-    subplot(2,1,2);
-    plot(trr, rri); hold on; grid on;
-    xlabel('time [s]'); ylabel('RR Intervals [s]');
-    legend('RR Intervals');
 end
 end
 
