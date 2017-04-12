@@ -130,7 +130,7 @@ for curr_win_idx = window_index_offset : window_max_index
 
     % Non linear metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    hrv_nl = hrv_nonlinear(nni_window, tnn_window, 'plot', should_plot);
+    hrv_nl = hrv_nonlinear(nni_window, 'plot', should_plot);
 
     % Update metrics table
     hrv_metrics_tables{curr_win_idx+1} = [struct2table(hrv_td), struct2table(hrv_fd), struct2table(hrv_nl)];
@@ -165,7 +165,7 @@ if (nargout == 0)
     disp(hrv_metrics(:,...
         {'AVNN','SDNN','RMSSD','pNNx',...
          'LF_to_TOT','HF_to_TOT', 'LF_to_HF',...
-         'SD1', 'SD2', 'alpha1','alpha2','beta', 'mse_a', 'mse_b'}));
+         'SD1', 'SD2', 'alpha1','alpha2','beta', 'SampEn'}));
 end
 if (should_plot)
     tilefigs;

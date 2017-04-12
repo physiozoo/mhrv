@@ -1,8 +1,7 @@
-function [ hrv_nl ] = hrv_nonlinear( nni, tm_nni, varargin )
+function [ hrv_nl ] = hrv_nonlinear( nni, varargin )
 %HRV_NONLINEAR Calcualte non-linear HRV metrics.
 %   Inputs:
 %       - nni: RR/NN intervals, in seconds.
-%       - tnn: The correspondint times of the intervals, in seconds.
 %       - varargin: Pass in name-value pairs to configure advanced options:
 %           - beta_band: A 2-element vector specifying the frequency range (in Hz) to use for
 %             calculating the beta parameter. Default: [0.003, 0.04].
@@ -17,7 +16,6 @@ function [ hrv_nl ] = hrv_nonlinear( nni, tm_nni, varargin )
 %% === Input
 DEFAULT_BETA_BAND = rhrv_default('hrv_nl.beta_band', [0.003, 0.04]); % hz
 DEFAULT_MSE_MAX_SCALE = rhrv_default('mse.mse_max_scale', 20);
-DEFAULT_MSE_FIT_SCALE = 7;
 DEFAULT_SAMPEN_R = rhrv_default('mse.sampen_r', 0.2); % percent of std. dev.
 DEFAULT_SAMPEN_M = rhrv_default('mse.sampen_m', 2);
 
@@ -25,25 +23,28 @@ DEFAULT_SAMPEN_M = rhrv_default('mse.sampen_m', 2);
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
-p.addRequired('tm_nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('beta_band',  DEFAULT_BETA_BAND, @(x) isnumeric(x) && numel(x) == 2);
 p.addParameter('mse_max_scale', DEFAULT_MSE_MAX_SCALE, @(x) isnumeric(x) && isscalar(x));
-p.addParameter('mse_fit_scale', DEFAULT_MSE_FIT_SCALE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('sampen_r', DEFAULT_SAMPEN_R, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('sampen_m', DEFAULT_SAMPEN_M, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
-p.parse(nni, tm_nni, varargin{:});
+p.parse(nni, varargin{:});
 beta_band = p.Results.beta_band;
 mse_max_scale = p.Results.mse_max_scale;
-mse_fit_scale = p.Results.mse_fit_scale;
 sampen_r = p.Results.sampen_r;
 sampen_m = p.Results.sampen_m;
 should_plot = p.Results.plot;
 
 % Create output struct
 hrv_nl = struct;
+
+%% Preprocess
+
+% Calculate zero-based interval time axis
+nni = nni(:);
+tnn = [0; cumsum(nni(1:end-1))];
 
 %% Poincare plot
 
@@ -54,9 +55,11 @@ hrv_nl.SD2 = sd2;
 %% === DFA-based Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
 
 % Calcualte DFA
-[~, ~, alpha1, alpha2] = dfa(tm_nni, nni, 'plot', should_plot);
-fig_dfa = gcf;
-fig_ax_dfa = gca;
+[~, ~, alpha1, alpha2] = dfa(tnn, nni, 'plot', should_plot);
+if should_plot
+    fig_dfa = gcf;
+    fig_ax_dfa = gca;
+end
 
 % Save the scaling exponents
 hrv_nl.alpha1 = alpha1;
@@ -73,7 +76,7 @@ t_win_minimum = 1/beta_band(1);
 window_minutes = floor(5 * t_win_minimum / 60);
 
 % Make sure the window isn't longer than the signal
-if ((tm_nni(end) / 60) < window_minutes)
+if ((tnn(end) / 60) < window_minutes)
     window_minutes = [];
 end
 
@@ -94,13 +97,8 @@ hrv_nl.beta = pxx_fit_beta(1);
 % Calculate the MSE graph
 [ mse_values, scale_axis ] = mse(nni, 'mse_max_scale', mse_max_scale, 'sampen_m', sampen_m, 'sampen_r',sampen_r);
 
-% Fit a straight line to the tail of the MSE graph
-fit_idx = mse_fit_scale:length(scale_axis);
-mse_fit = polyfit(scale_axis(fit_idx), mse_values(fit_idx), 1);
-
-% Calculate metrics: The slope and intercept of the linefit to the MSE graph
-hrv_nl.mse_a = mse_fit(1);
-hrv_nl.mse_b = mse_fit(2);
+% Save the first MSE value (this is the sample entropy).
+hrv_nl.SampEn = mse_values(1);
 
 %% === Display output if requested
 if (should_plot)
@@ -130,8 +128,7 @@ if (should_plot)
 
     % Plot MSE & linefit
     subplot(3, 1, 3);
-    plot(scale_axis, mse_values, '--ko', 'MarkerSize', 7); hold on; grid on;
-    plot(scale_axis(fit_idx), scale_axis(fit_idx).*mse_fit(1) + mse_fit(2), 'Color', 'green', 'LineStyle', ls, 'LineWidth', lw);
+    plot(scale_axis, mse_values, '--ko', 'MarkerSize', 7); grid on;
     xlabel('Scale factor'); ylabel('Sample Entropy');
-    legend(['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)], ['Fit, slope=' num2str(mse_fit(1))]);
+    legend(['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)]);
 end
