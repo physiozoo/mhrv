@@ -1,11 +1,14 @@
 close all;
 output_dir = ['fig' filesep 'out'];
 
+% Load human parameters
+rhrv_load_params('human');
+
 rec_name = ['db' filesep 'fantasia' filesep 'f1y06']; from = 0*60*250 + 1; to = 120*60*250;
 
 % Calculate intervals
-[nni, tnn, rri, trr] = ecgnn(rec_name, 'plot', false, 'from', from, 'to', to, ...
-                            'filter_gqpost', false, 'filter_lowpass', true, 'filter_poincare', true);
+[rri, trr] = ecgrr(rec_name, 'plot', false, 'from', from, 'to', to);
+[nni, tnn] = filtrr(rri, trr, 'plot', false);
 
 %% Poincare
 [sd1, sd2, outliers] = poincare(rri, 'plot', true);

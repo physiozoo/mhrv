@@ -5,7 +5,7 @@ folder = 'db/billman/';
 rec_types = {'pre-*-bsl'};
 
 % Load canine parameters
-rhrv_load_params('rhrv_params_canine');
+rhrv_load_params('canine');
 
 for rec_type_idx = 1:length(rec_types);
     files = dir([folder sprintf('*%s.dat', rec_types{rec_type_idx})])';
@@ -18,8 +18,10 @@ for rec_type_idx = 1:length(rec_types);
         
         % Read data from record
         fprintf('-> Reading from %s\n', rec_name);
-        [nni, tnn, ~, ~] = ecgnn(rec_name, 'plot', false);
-       
+
+        [rri, trr] = ecgrr(rec_name, 'plot', false);
+        [nni, tnn] = filtrr(rri, trr);
+
         % Calculate spectrum
         hrv_freq(nni, tnn, 'plot', true);
         

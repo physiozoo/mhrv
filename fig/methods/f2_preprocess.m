@@ -1,15 +1,18 @@
 close all;
 output_dir = ['fig' filesep 'out'];
 
+% Load human parameters
+rhrv_load_params('human');
+
 % Specify record
 rec_name = ['db' filesep 'fantasia' filesep 'f1y06']; from = 0*60*250 + 1; to = 120*60*250;
 
 % Plot preprocessed intervals
-[nni, tnn, rri, trr] = ecgnn(rec_name, 'plot', true, 'from', from, 'to', to, ...
-                            'filter_gqpost', false, 'filter_lowpass', true, 'filter_poincare', true);
+[rri, trr] = ecgrr(rec_name, 'plot', true, 'from', from, 'to', to);
+[nni, tnn] = filtrr(rri, trr, 'plot', true);
 
-fig_poincare = findobj(0, 'type', 'figure', 'number', 1);
-fig_ecg = findobj(0, 'type', 'figure', 'number', 2);
+fig_ecg = findobj(0, 'type', 'figure', 'number', 1);
+fig_poincare = findobj(0, 'type', 'figure', 'number', 2);
 fig_processed_intervals = findobj(0, 'type', 'figure', 'number', 3);
 
 % Plot freq-domain of orginal intervals
