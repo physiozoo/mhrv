@@ -1,9 +1,12 @@
 function [ hrv_td ] = hrv_time( nni, varargin )
 %HRV_TIME Calculate time-domain HRV mertics from NN intervals
 %   Input:
-%       nni - Vector of NN-interval lengths
-%       pnn_thresh_ms - Optional. Threshold NN interval time difference in
-%                       milliseconds (for the pNNx HRV measure).
+%       - nni: Vector of NN-interval lengths
+%       - varargin: Pass in name-value pairs to configure advanced options:
+%           - pnn_thresh_ms - Optional. Threshold NN interval time difference in
+%                             milliseconds (for the pNNx HRV measure).
+%           - plot: true/false whether to generate a plot. Defaults to true if no output
+%                   arguments were specified.
 %   Output: Struct containing the following HRV metrics:
 %       AVNN - Average NN interval length
 %       SDNN - Standard deviation of NN interval lengths
@@ -21,18 +24,33 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('nni', @(x) isempty(x) || isvector(x));
 p.addParameter('pnn_thresh_ms', DEFAULT_PNN_THRESH_MS, @isscalar);
+p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(nni, varargin{:});
 pnn_thresh_ms = p.Results.pnn_thresh_ms;
+should_plot = p.Results.plot;
 
-%% === Time Domain Metrics
+%% Time Domain Metrics
 hrv_td = struct;
 
 hrv_td.AVNN = mean(nni);
 hrv_td.SDNN = sqrt(var(nni));
 hrv_td.RMSSD = sqrt(mean(diff(nni).^2));
 hrv_td.pNNx = sum(abs(diff(nni)) > (pnn_thresh_ms / 1000))/(length(nni)-1);
+
+%% Plot
+if should_plot
+    figure;
+    [~] = histogram(nni, 'Normalization','probability');
+    xlabel('NN Interval [sec]'); ylabel('Probability');
+    
+    line(ones(1,2)*hrv_td.AVNN, ylim, 'LineStyle', '-', 'Color', 'red', 'LineWidth', 2.5);
+    line(ones(1,2)*(hrv_td.AVNN + hrv_td.SDNN), ylim, 'LineStyle', ':', 'Color', 'red', 'LineWidth', 2);
+    line(ones(1,2)*(hrv_td.AVNN - hrv_td.SDNN), ylim, 'LineStyle', ':', 'Color', 'red', 'LineWidth', 2);
+    
+    legend({'Interval Probability', sprintf('AVNN = %.3f', hrv_td.AVNN), sprintf('SDNN = %.3f', hrv_td.SDNN)});
+end
 
 end
 
