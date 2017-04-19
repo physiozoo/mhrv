@@ -1,4 +1,4 @@
-function [ n, fn, alpha1, alpha2 ] = dfa( t, sig, varargin )
+function [ n, fn, alpha1, alpha2, plot_data ] = dfa( t, sig, varargin )
 %DFA Detrended fluctuation analysis
 %   Calculates the DFA of a signal and it's scaling exponent alpha.
 %   Input:
@@ -16,8 +16,9 @@ function [ n, fn, alpha1, alpha2 ] = dfa( t, sig, varargin )
 %       - n: block sizes (x-axis of DFA)
 %       - fn: DFA value for each block size n
 %       - alpha: Exponential scaling factor
+%
 
-%% === Input
+%% Input
 DEFAULT_NMIN = rhrv_default('dfa.n_min', 4);
 DEFAULT_NMAX = rhrv_default('dfa.n_max', 128);
 DEFAULT_N_INCR = rhrv_default('dfa.n_incr', 4);
@@ -45,7 +46,7 @@ alpha1_range = p.Results.alpha1_range;
 alpha2_range = p.Results.alpha2_range;
 should_plot = p.Results.plot;
 
-%% === DFA
+%% DFA
 
 % Integrate the signal without mean
 nni_int = cumsum(sig - mean(sig));
@@ -81,7 +82,7 @@ end
 fn = fn(n);
 n  = n';
 
-%% === Scaling exponent, alpha
+%% Scaling exponent, alpha
 
 % Find DFA values in each of the alpha ranges
 alpha1_idx = find(n >= alpha1_range(1) & n <= alpha1_range(2));
@@ -97,26 +98,18 @@ fit_alpha2 = polyfit(n_log(alpha2_idx), fn_log(alpha2_idx), 1);
 alpha1 = fit_alpha1(1);
 alpha2 = fit_alpha2(1);
 
+%% Create plot data
+plot_data.n             = n;
+plot_data.fn            = fn;
+plot_data.alpha1_idx    = alpha1_idx;
+plot_data.alpha2_idx    = alpha2_idx;
+plot_data.fit_alpha1    = fit_alpha1;
+plot_data.fit_alpha2    = fit_alpha2;
+
 %% Plot
 if should_plot
-    lw = 3.8; ls = ':';
-    
-    figure;
-    h1 = loglog(n, fn, 'ko', 'MarkerSize', 7);
-    hold on; grid on; axis tight;
-
-    % Plot alpha1 line
-    alpha1_line = fit_alpha1(1) * n_log(alpha1_idx) + fit_alpha1(2);
-    loglog(10.^n_log(alpha1_idx), 10.^alpha1_line, 'Color', 'blue', 'LineStyle', ls, 'LineWidth', lw);
-
-    % Plot alpha2 line
-    alpha2_line = fit_alpha2(1) * n_log(alpha2_idx) + fit_alpha2(2);
-    loglog(10.^n_log(alpha2_idx), 10.^alpha2_line, 'Color', 'red', 'LineStyle', ls, 'LineWidth', lw);
-
-    xlabel('log(n)'); ylabel('log(F(n))');
-    legend('DFA', ['\alpha_1 = ' num2str(alpha1)], ['\alpha_2 = ' num2str(alpha2)], 'Location', 'northwest');
-    set(gca, 'XTick', [4, 8, 16, 32, 64, 128]);
-    uistack(h1, 'top');
+    figure('Name', 'DFA');
+    plot_dfa_fn(gca, plot_data);
 end
 
 end

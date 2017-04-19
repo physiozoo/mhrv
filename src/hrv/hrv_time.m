@@ -1,4 +1,4 @@
-function [ hrv_td ] = hrv_time( nni, varargin )
+function [ hrv_td, plot_data ] = hrv_time( nni, varargin )
 %HRV_TIME Calculate time-domain HRV mertics from NN intervals
 %   Input:
 %       - nni: Vector of NN-interval lengths
@@ -14,6 +14,7 @@ function [ hrv_td ] = hrv_time( nni, varargin )
 %       pNNx - The percentage of NN intervals which differ by at least x [ms] (default 50)
 %              from their preceding interval. The value of x in milliseconds can be set
 %              with the optional parameter 'pnn_thresh_ms'.
+%       SEM - Standard error of the mean NN interval length.
 
 %% === Input
 % Defaults
@@ -38,18 +39,16 @@ hrv_td.AVNN = mean(nni);
 hrv_td.SDNN = sqrt(var(nni));
 hrv_td.RMSSD = sqrt(mean(diff(nni).^2));
 hrv_td.pNNx = sum(abs(diff(nni)) > (pnn_thresh_ms / 1000))/(length(nni)-1);
+hrv_td.SEM = (hrv_td.SDNN / sqrt(length(nni))) * 100;
+
+%% Create plot data
+plot_data.nni = nni;
+plot_data.hrv_td = hrv_td;
 
 %% Plot
 if should_plot
-    figure;
-    [~] = histogram(nni, 'Normalization','probability');
-    xlabel('NN Interval [sec]'); ylabel('Probability');
-    
-    line(ones(1,2)*hrv_td.AVNN, ylim, 'LineStyle', '-', 'Color', 'red', 'LineWidth', 2.5);
-    line(ones(1,2)*(hrv_td.AVNN + hrv_td.SDNN), ylim, 'LineStyle', ':', 'Color', 'red', 'LineWidth', 2);
-    line(ones(1,2)*(hrv_td.AVNN - hrv_td.SDNN), ylim, 'LineStyle', ':', 'Color', 'red', 'LineWidth', 2);
-    
-    legend({'Interval Probability', sprintf('AVNN = %.3f', hrv_td.AVNN), sprintf('SDNN = %.3f', hrv_td.SDNN)});
+    figure('Name', 'Time Domain HRV');
+    plot_hrv_time_hist(gca, plot_data);
 end
 
 end

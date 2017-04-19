@@ -1,4 +1,4 @@
-function [ mse_result, scale_axis ] = mse( sig, varargin )
+function [ mse_result, scale_axis, plot_data ] = mse( sig, varargin )
 %MSE Multi-scale entropy of a signal
 %   Calculates the MSE of a signal, a measure of the signals complexity.
 %   The algorithms calculates the Sample Entropy of the signal at various 'scales' from 1 to
@@ -25,7 +25,7 @@ function [ mse_result, scale_axis ] = mse( sig, varargin )
 %       Physical Review Letters, 89(6), 68102.
 %       http://doi.org/10.1103/PhysRevLett.92.089803
 
-%% === Input
+%% Input
 DEFAULT_MSE_MAX_SCALE = rhrv_default('mse.mse_max_scale', 20);
 DEFAULT_SAMPEN_R = rhrv_default('mse.sampen_r', 0.2); % percent of std. dev.
 DEFAULT_SAMPEN_M = rhrv_default('mse.sampen_m', 2);
@@ -46,6 +46,7 @@ sampen_r = p.Results.sampen_r;
 sampen_m = p.Results.sampen_m;
 should_plot = p.Results.plot;
 
+%% MSE Calculation
 % Normalize input
 N = length(sig);
 sig_normalized = sig - mean(sig);
@@ -67,19 +68,25 @@ for scale = scale_axis
     mse_result(scale) = sample_entropy(sig_coarse, sampen_m, sampen_r);
 end
 
+%% Create plot data
+plot_data.scale_axis = scale_axis;
+plot_data.mse_result = mse_result;
+plot_data.sampen_r = sampen_r;
+plot_data.sampen_m = sampen_m;
+
+%% Plot
 if (should_plot)
-    % Plot MSE of the signal
-    figure;
-    plot(scale_axis, mse_result, '--ko', 'MarkerSize', 7); hold on;
+    figure('Name', ['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)]);
+    ax = gca;
     
+    plot_mse(ax, plot_data);
+    hold(ax, 'on');
+        
     % Also plot the MSE of a shuffled version of the signal for comparison
     sig_shuffled = sig(randperm(N));
-    [mse_shuffled, ~] = mse(sig_shuffled, 'mse_max_scale', mse_max_scale, 'sampen_r', sampen_r, 'sampen_m', sampen_m);
-    plot(scale_axis, mse_shuffled, '--rx', 'MarkerSize', 7);
+    [~, ~, plot_data2] = mse(sig_shuffled, 'mse_max_scale', mse_max_scale, 'sampen_r', sampen_r, 'sampen_m', sampen_m);
+    plot_mse(ax, plot_data2, 'linespec', '--ro', 'clear', false);
 
-    grid on;
-    xlabel('Scale factor'); ylabel('Sample Entropy');
-    title(['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)]);
     legend('Original', 'Shuffled');
 end
 end

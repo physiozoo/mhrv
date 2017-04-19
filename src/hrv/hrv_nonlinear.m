@@ -1,4 +1,4 @@
-function [ hrv_nl ] = hrv_nonlinear( nni, varargin )
+function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %HRV_NONLINEAR Calcualte non-linear HRV metrics.
 %   Inputs:
 %       - nni: RR/NN intervals, in seconds.
@@ -52,20 +52,16 @@ tnn = [0; cumsum(nni(1:end-1))];
 hrv_nl.SD1 = sd1;
 hrv_nl.SD2 = sd2;
 
-%% === DFA-based Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
+%% DFA-based Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
 
 % Calcualte DFA
-[~, ~, alpha1, alpha2] = dfa(tnn, nni, 'plot', should_plot);
-if should_plot
-    fig_dfa = gcf;
-    fig_ax_dfa = gca;
-end
+[~, ~, alpha1, alpha2, dfa_plot_data] = dfa(tnn, nni);
 
 % Save the scaling exponents
 hrv_nl.alpha1 = alpha1;
 hrv_nl.alpha2 = alpha2;
 
-%% === Beta: Spectral power-law exponent
+%% Beta: Spectral power-law exponent
 
 % Select window size for spectrum calculation. Since we need a minimal frequency resolution of
 % beta_band(1), so the minimal window we need to resolve this frequency is
@@ -92,43 +88,34 @@ f_axis_log = log10(f_axis(beta_band_idx));
 pxx_fit_beta = polyfit(f_axis_log, pxx_log, 1);
 hrv_nl.beta = pxx_fit_beta(1);
 
-%% === Multiscale sample entropy
+%% Multiscale sample entropy
 
 % Calculate the MSE graph
-[ mse_values, scale_axis ] = mse(nni, 'mse_max_scale', mse_max_scale, 'sampen_m', sampen_m, 'sampen_r',sampen_r);
+[ mse_values, scale_axis, mse_plot_data ] = mse(nni, 'mse_max_scale', mse_max_scale, 'sampen_m', sampen_m, 'sampen_r',sampen_r);
 
 % Save the first MSE value (this is the sample entropy).
 hrv_nl.SampEn = mse_values(1);
 
-%% === Display output if requested
-if (should_plot)
-    lw = 3.8; ls = ':';
-    hfigure = figure;
+%% Create plot data
+plot_data.beta_band_idx = beta_band_idx;
+plot_data.f_axis = f_axis;
+plot_data.pxx = pxx;
+plot_data.pxx_fit_beta = pxx_fit_beta;
+plot_data.hrv_nl = hrv_nl;
 
+%% Display output if requested
+if (should_plot) 
+    figure('Name', 'Nonlinear HRV');
+    
     % Move the DFA plot into a subplot
     hsub1 = subplot(3, 1, 1);
-    hsub1_pos = get(hsub1,'Position');
-    delete(hsub1);
-    set(fig_ax_dfa,'Parent',hfigure,'Position',hsub1_pos);
-    delete(fig_dfa);
+    plot_dfa_fn(hsub1, dfa_plot_data);
 
-    % Plot the spectrum (only plot every x samples)
-    f_beta_plot = f_axis(beta_band_idx);
-    pxx_beta_plot = pxx(beta_band_idx);
-    decimation_factor = 1;
-    subplot(3, 1, 2);
-    loglog(f_beta_plot(1:decimation_factor:end), pxx_beta_plot(1:decimation_factor:end), 'ko', 'MarkerSize', 7);
-    hold on; grid on;  axis tight;
-
-    % Plot the beta line
-    beta_line = pxx_fit_beta(1) * f_axis_log + pxx_fit_beta(2);
-    loglog(10.^f_axis_log, 10.^beta_line, 'Color', 'magenta', 'LineStyle', ls, 'LineWidth', lw);
-    xlabel('log(frequency [hz])'); ylabel('log(PSD [s^2/Hz])');
-    legend('PSD', ['\beta = ' num2str(hrv_nl.beta)], 'Location', 'southwest');
+    hsub2 = subplot(3, 1, 2);
+    plot_hrv_nl_beta(hsub2, plot_data);
 
     % Plot MSE & linefit
-    subplot(3, 1, 3);
-    plot(scale_axis, mse_values, '--ko', 'MarkerSize', 7); grid on;
-    xlabel('Scale factor'); ylabel('Sample Entropy');
-    legend(['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)]);
+    hsub3 = subplot(3, 1, 3);
+    plot_mse(hsub3, mse_plot_data);
+    legend(hsub3, ['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)]);
 end

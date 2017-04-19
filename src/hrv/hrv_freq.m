@@ -1,4 +1,4 @@
-function [ hrv_fd, pxx, f_axis ] = hrv_freq( nni, varargin )
+function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %HRV_FREQ NN interval spectrum and frequency-domain HRV metrics
 %   This function estimates the PSD (power spectral density) of a given nn-interval sequence, and
 %   calculates the power in various frequency bands.
@@ -270,46 +270,24 @@ hrv_fd.HF_to_TOT  = hrv_fd.HF_PWR  / hrv_fd.TOT_PWR;
 % Calculate LF/HF ratio
 hrv_fd.LF_to_HF  = hrv_fd.LF_PWR  / hrv_fd.HF_PWR;
 
+%% Create plot data
+plot_data.f_axis = f_axis;
+plot_data.pxx_lomb = pxx_lomb;
+plot_data.pxx_ar = pxx_ar;
+plot_data.pxx_welch = pxx_welch;
+plot_data.pxx_fft = pxx_fft;
+plot_data.vlf_band = vlf_band;
+plot_data.lf_band = lf_band;
+plot_data.hf_band = hf_band;
+plot_data.f_max = f_max;
+plot_data.t_win = t_win;
+plot_data.welch_overlap = welch_overlap;
+plot_data.ar_order = ar_order;
+plot_data.num_windows = num_windows;
 %% Display output if requested
 if (should_plot)
-    figure;
-    legend_entries = {};
-    
-    if (calc_lomb)
-        semilogy(f_axis, pxx_lomb); grid on; hold on;
-        legend_entries{end+1} = sprintf('Lomb (t_{win}=%.1fm, n_{win}=%d)', t_win/60, num_windows);
-    end
-    if (calc_ar)
-        semilogy(f_axis, pxx_ar); grid on; hold on;
-        legend_entries{end+1} = sprintf('AR (order=%d)', ar_order);
-    end
-    if (calc_welch)
-        semilogy(f_axis, pxx_welch); grid on; hold on;
-        legend_entries{end+1} = sprintf('Welch (t_{win}=%.1fm, %d%% ovl.)', t_win/60, welch_overlap);
-    end
-    if (calc_fft)
-        semilogy(f_axis, pxx_fft); grid on; hold on;
-        legend_entries{end+1} = sprintf('FFT (twin=%.1fm, nwin=%d)', t_win/60, num_windows);
-    end
-
-    % Vertical lines of frequency ranges
-    lw = 3; ls = ':'; lc = 'black';
-    xrange = [0,f_max*1.01];
-    yrange = [1e-5, 1e0];
-    line(vlf_band(1) * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
-    line(lf_band(1)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
-    line(hf_band(1)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
-    line(hf_band(2)  * ones(1,2), yrange, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
-    xlim(xrange); ylim(yrange);
-
-    % Names of frequency ranges
-    text(vlf_band(1), yrange(2) * 0.5, ' VLF');
-    text( lf_band(1), yrange(2) * 0.5,  ' LF');
-    text( hf_band(1), yrange(2) * 0.5,  ' HF');
-
-    legend_entries{end+1} = 'Freq. Band Limit';
-    legend(legend_entries);
-    xlabel('Frequency [hz]'); ylabel('Log Power Density [s^2/Hz]');
+    figure('Name', 'Freq. Domain HRV');
+    plot_hrv_freq_spectrum(gca, plot_data);
 end
 
 end
