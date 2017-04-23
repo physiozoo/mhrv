@@ -34,7 +34,7 @@ line(ones(1,2)*(hrv_td.AVNN - hrv_td.SDNN), ylim(ax), 'Parent', ax, 'LineStyle',
 legend(ax, {'Interval Probability', sprintf('AVNN = %.3f', hrv_td.AVNN), sprintf('SDNN = %.3f', hrv_td.SDNN)});
 
 %% Tag
-ax.Tag = tag
+ax.Tag = tag;
 
 end
 

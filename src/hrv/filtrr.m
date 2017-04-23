@@ -1,4 +1,4 @@
-function [ nni, tnn ] = filtrr( rri, trr, varargin )
+function [ nni, tnn, plot_data ] = filtrr( rri, trr, varargin )
 %FILTRR Calculate an NN-interval time series (filtered RR intervals).
 % Performs outlier detection and removal on RR interval data.
 % This function can perform two types of different outlier detection, based on user input: Poincare
@@ -54,12 +54,12 @@ should_plot = p.Results.plot;
 
 poincare_outliers = [];
 if (filter_poincare)
-    [~, ~, poincare_outliers] = poincare(rri, 'plot', should_plot);
+    [~, ~, poincare_outliers, plot_data] = poincare(rri);
 end
 
 %% Lowpass-filter-based outlier detection
 
-lp_outliers = [];
+lp_outliers = []; rri_lp = [];
 if (filter_lowpass)
     % Filter the NN intervals with a moving average window
     b_fir = 1/(2 * win_samples) .* [ones(win_samples,1); 0; ones(win_samples,1)];
@@ -67,12 +67,6 @@ if (filter_lowpass)
 
     % Find outliers
     lp_outliers = find( abs(rri - rri_lp) > (win_percent/100) .* rri_lp );
-
-    % Save threshold lines if necessary
-    if (should_plot)
-        tresh_low   = rri_lp.*(1.0-win_percent/100);
-        thresh_high = rri_lp.*(1.0+win_percent/100);
-    end
 end
 
 %% Calculate filtered intervals
@@ -85,37 +79,18 @@ tnn(all_outliers) = [];
 nni(all_outliers) = [];
 
 %% Plot if no output args or if requested
+plot_data.trr = trr;
+plot_data.rri = rri;
+plot_data.tnn = tnn;
+plot_data.nni = nni;
+plot_data.poincare_outliers = poincare_outliers;
+plot_data.lp_outliers = lp_outliers;
+plot_data.rri_lp = rri_lp;
+plot_data.win_percent = win_percent;
+
 if (should_plot)
-    markersize = 8.0;
-
-    figure; hold on; grid on;
-    xlabel('time [s]'); ylabel('RR Intervals [s]');
-
-    % Plot original intervals
-    plot(trr, rri ,'b-', 'LineWidth', 2);
-    legend_labels = {'RR intervals'};
-
-    % Plot filtered intervals
-    plot(tnn, nni, 'g-', 'LineWidth', 1);
-    legend_labels{end+1} = 'Filtered intervals';
-
-    if (~isempty(poincare_outliers))
-        plot(trr(poincare_outliers), rri(poincare_outliers), 'rx', 'MarkerSize', markersize);
-        legend_labels{end+1} = 'Poincare outliers';
-    end
-
-    if (~isempty(lp_outliers))
-        plot(trr(lp_outliers), rri(lp_outliers), 'ko', 'MarkerSize', markersize);
-        legend_labels{end+1} = 'Lowpass outliers';
-    end
-
-    % Plot window average and thresholds
-    if (filter_lowpass)
-        plot(trr, rri_lp, 'k', trr, tresh_low, 'k--', trr, thresh_high, 'k--');
-        legend_labels = [legend_labels, {'window average', 'window threshold'}];
-    end
-
-    legend(legend_labels);
+    figure('Name', 'RR Interval Filtering');
+    plot_filtrr(gca, plot_data);
 end
 
 end

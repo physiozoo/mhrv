@@ -1,4 +1,4 @@
-function [ rri, trr ] = ecgrr( rec_name, varargin )
+function [ rri, trr, plot_data ] = ecgrr( rec_name, varargin )
 %ECGRR Calculate an RR-interval time series from PhysioNet ECG data.
 % Detects QRS in a given sigal and calculates the RR intervals.
 %   Inputs:
@@ -81,14 +81,16 @@ trr(rr_outliers) = [];
 rri(rr_outliers) = [];
 
 %% Plot if no output args or if requested
-if (should_plot)
-    qrs_no_outliers = setdiff(qrs, qrs_outliers);
+plot_data.tm = tm;
+plot_data.sig = sig;
+plot_data.qrs = qrs;
+plot_data.qrs_outliers = qrs_outliers;
+plot_data.trr = trr;
+plot_data.rri = rri;
 
-    figure;
-    plot(tm, sig); hold on; grid on;
-    plot(tm(qrs_no_outliers), sig(qrs_no_outliers,1), 'rx');
-    xlabel('time [s]'); ylabel('ECG [mV]');
-    legend('ECG signal', 'R-peaks');
+if (should_plot)
+    figure('Name', 'ECG R-peaks');
+    plot_ecgrr(gca, plot_data);
 end
 end
 

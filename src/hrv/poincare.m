@@ -1,4 +1,4 @@
-function [ sd1, sd2, outlier_idx ] = poincare( rri, varargin )
+function [ sd1, sd2, outlier_idx, plot_data ] = poincare( rri, varargin )
 %POINCARE Poincare-plot HRV metrics and outlier detection
 %   Calculates HRV statistics from a poincare plot of the input data. In adition, this function fits
 %   an ellipse to the data and finds suspected outliers, i.e. intervals that lie outside the
@@ -151,17 +151,19 @@ sd1_line_old = rotation_matrix(-alpha) * sd1_line_new;
 sd2_line_old = rotation_matrix(-alpha) * sd2_line_new;
 
 %% Plotting
-if (should_plot)
-    msz = 4; lw1 = 1.5; lw2 = 3;
-    figure; hold on; axis equal tight; grid on;
-    xlabel('RR(n) [sec]'); ylabel('RR(n+1) [sec]');
 
-    plot(x_orig, y_orig, 'b+', 'MarkerSize', msz);
-    plot(x_orig(filter_idx_pp), y_orig(filter_idx_pp), 'ro', 'MarkerSize', msz*1.25);
-    plot(ellipse_old(1,:), ellipse_old(2,:), 'k--', 'LineWidth', lw1);
-    plot(sd1_line_old(1,:), sd1_line_old(2,:), 'r-', 'LineWidth', lw2);
-    plot(sd2_line_old(1,:), sd2_line_old(2,:), 'g-', 'LineWidth', lw2);
-    legend({'RR intervals', 'Outliers', 'Ellipse fit', sprintf('SD1=%.4f', sd1), sprintf('SD2=%.4f', sd2)}, 'Location', 'southeast');
+plot_data.x_orig = x_orig;
+plot_data.y_orig = y_orig;
+plot_data.filter_idx_pp = filter_idx_pp;
+plot_data.ellipse_old = ellipse_old;
+plot_data.sd1_line_old = sd1_line_old;
+plot_data.sd2_line_old = sd2_line_old;
+plot_data.sd1 = sd1;
+plot_data.sd2 = sd2;
+
+if (should_plot)
+    figure('Name', 'RR Interval Poincare Plot');
+    plot_poincare_ellipse(gca, plot_data);
 end
 
 %% Helper functions
