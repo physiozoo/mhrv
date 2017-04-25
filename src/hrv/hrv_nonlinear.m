@@ -97,25 +97,26 @@ hrv_nl.beta = pxx_fit_beta(1);
 hrv_nl.SampEn = mse_values(1);
 
 %% Create plot data
-plot_data.beta_band_idx = beta_band_idx;
-plot_data.f_axis = f_axis;
-plot_data.pxx = pxx;
-plot_data.pxx_fit_beta = pxx_fit_beta;
-plot_data.hrv_nl = hrv_nl;
+plot_data.name = 'Nonlinear HRV';
+plot_data.dfa = dfa_plot_data;
+plot_data.mse = mse_plot_data;
+plot_data.beta.name = 'Beta';
+plot_data.beta.beta_band_idx = beta_band_idx;
+plot_data.beta.f_axis = f_axis;
+plot_data.beta.pxx = pxx;
+plot_data.beta.pxx_fit_beta = pxx_fit_beta;
+plot_data.beta.hrv_nl = hrv_nl;
 
 %% Display output if requested
 if (should_plot) 
-    figure('Name', 'Nonlinear HRV');
+    figure('Name', plot_data.name);
     
-    % Move the DFA plot into a subplot
     hsub1 = subplot(3, 1, 1);
-    plot_dfa_fn(hsub1, dfa_plot_data);
+    plot_dfa_fn(hsub1, plot_data.dfa);
 
     hsub2 = subplot(3, 1, 2);
-    plot_hrv_nl_beta(hsub2, plot_data);
+    plot_hrv_nl_beta(hsub2, plot_data.beta);
 
-    % Plot MSE & linefit
     hsub3 = subplot(3, 1, 3);
-    plot_mse(hsub3, mse_plot_data);
-    legend(hsub3, ['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)]);
+    plot_mse(hsub3, plot_data.mse);
 end

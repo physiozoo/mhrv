@@ -98,7 +98,8 @@ fit_alpha2 = polyfit(n_log(alpha2_idx), fn_log(alpha2_idx), 1);
 alpha1 = fit_alpha1(1);
 alpha2 = fit_alpha2(1);
 
-%% Create plot data
+%% Plot
+plot_data.name = 'DFA';
 plot_data.n             = n;
 plot_data.fn            = fn;
 plot_data.alpha1_idx    = alpha1_idx;
@@ -106,9 +107,8 @@ plot_data.alpha2_idx    = alpha2_idx;
 plot_data.fit_alpha1    = fit_alpha1;
 plot_data.fit_alpha2    = fit_alpha2;
 
-%% Plot
 if should_plot
-    figure('Name', 'DFA');
+    figure('Name', plot_data.name);
     plot_dfa_fn(gca, plot_data);
 end
 

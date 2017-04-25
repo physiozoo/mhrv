@@ -68,15 +68,15 @@ for scale = scale_axis
     mse_result(scale) = sample_entropy(sig_coarse, sampen_m, sampen_r);
 end
 
-%% Create plot data
+%% Plot
+plot_data.name = ['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)];
 plot_data.scale_axis = scale_axis;
 plot_data.mse_result = mse_result;
 plot_data.sampen_r = sampen_r;
 plot_data.sampen_m = sampen_m;
 
-%% Plot
 if (should_plot)
-    figure('Name', ['MSE, ', 'r=' num2str(sampen_r), ' m=' num2str(sampen_m)]);
+    figure('Name', plot_data.name);
     ax = gca;
     
     plot_mse(ax, plot_data);

@@ -54,7 +54,7 @@ should_plot = p.Results.plot;
 
 poincare_outliers = [];
 if (filter_poincare)
-    [~, ~, poincare_outliers, plot_data] = poincare(rri);
+    [~, ~, poincare_outliers, poincare_plot_data] = poincare(rri);
 end
 
 %% Lowpass-filter-based outlier detection
@@ -79,18 +79,21 @@ tnn(all_outliers) = [];
 nni(all_outliers) = [];
 
 %% Plot if no output args or if requested
-plot_data.trr = trr;
-plot_data.rri = rri;
-plot_data.tnn = tnn;
-plot_data.nni = nni;
-plot_data.poincare_outliers = poincare_outliers;
-plot_data.lp_outliers = lp_outliers;
-plot_data.rri_lp = rri_lp;
-plot_data.win_percent = win_percent;
+plot_data.name = 'RR Interval filtering';
+plot_data.poincare = poincare_plot_data;
+plot_data.filtrr.name = 'Filtered RR Intervals';
+plot_data.filtrr.trr = trr;
+plot_data.filtrr.rri = rri;
+plot_data.filtrr.tnn = tnn;
+plot_data.filtrr.nni = nni;
+plot_data.filtrr.poincare_outliers = poincare_outliers;
+plot_data.filtrr.lp_outliers = lp_outliers;
+plot_data.filtrr.rri_lp = rri_lp;
+plot_data.filtrr.win_percent = win_percent;
 
 if (should_plot)
-    figure('Name', 'RR Interval Filtering');
-    plot_filtrr(gca, plot_data);
+    figure('Name', plot_data.filtrr.name);
+    plot_filtrr(gca, plot_data.filtrr);
 end
 
 end

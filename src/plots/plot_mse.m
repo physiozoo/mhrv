@@ -26,6 +26,7 @@ end
 plot(ax, plot_data.scale_axis, plot_data.mse_result, linespec, 'MarkerSize', 7);
 grid(ax, 'on');
 xlabel(ax, 'Scale factor'); ylabel(ax, 'Sample Entropy');
+legend(ax, ['MSE, ', 'r=' num2str(plot_data.sampen_r), ' m=' num2str(plot_data.sampen_m)]);
 
 %% Tag
 ax.Tag = tag;

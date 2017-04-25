@@ -270,7 +270,8 @@ hrv_fd.HF_to_TOT  = hrv_fd.HF_PWR  / hrv_fd.TOT_PWR;
 % Calculate LF/HF ratio
 hrv_fd.LF_to_HF  = hrv_fd.LF_PWR  / hrv_fd.HF_PWR;
 
-%% Create plot data
+%% Plot
+plot_data.name = 'Intervals Spectrum';
 plot_data.f_axis = f_axis;
 plot_data.pxx_lomb = pxx_lomb;
 plot_data.pxx_ar = pxx_ar;
@@ -284,9 +285,9 @@ plot_data.t_win = t_win;
 plot_data.welch_overlap = welch_overlap;
 plot_data.ar_order = ar_order;
 plot_data.num_windows = num_windows;
-%% Display output if requested
+
 if (should_plot)
-    figure('Name', 'Freq. Domain HRV');
+    figure('Name', plot_data.name);
     plot_hrv_freq_spectrum(gca, plot_data);
 end
 

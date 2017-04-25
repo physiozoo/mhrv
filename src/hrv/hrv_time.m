@@ -41,13 +41,13 @@ hrv_td.RMSSD = sqrt(mean(diff(nni).^2));
 hrv_td.pNNx = sum(abs(diff(nni)) > (pnn_thresh_ms / 1000))/(length(nni)-1);
 hrv_td.SEM = (hrv_td.SDNN / sqrt(length(nni))) * 100;
 
-%% Create plot data
+%% Plot
+plot_data.name = 'Intervals Histogram';
 plot_data.nni = nni;
 plot_data.hrv_td = hrv_td;
 
-%% Plot
 if should_plot
-    figure('Name', 'Time Domain HRV');
+    figure('Name', plot_data.name);
     plot_hrv_time_hist(gca, plot_data);
 end
 

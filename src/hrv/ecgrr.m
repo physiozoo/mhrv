@@ -81,6 +81,7 @@ trr(rr_outliers) = [];
 rri(rr_outliers) = [];
 
 %% Plot if no output args or if requested
+plot_data.name = 'ECG R-peaks';
 plot_data.tm = tm;
 plot_data.sig = sig;
 plot_data.qrs = qrs;
@@ -89,7 +90,7 @@ plot_data.trr = trr;
 plot_data.rri = rri;
 
 if (should_plot)
-    figure('Name', 'ECG R-peaks');
+    figure('Name', plot_data.name);
     plot_ecgrr(gca, plot_data);
 end
 end

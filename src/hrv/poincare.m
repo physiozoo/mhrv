@@ -151,7 +151,7 @@ sd1_line_old = rotation_matrix(-alpha) * sd1_line_new;
 sd2_line_old = rotation_matrix(-alpha) * sd2_line_new;
 
 %% Plotting
-
+plot_data.name = 'RR Interval Poincare Plot';
 plot_data.x_orig = x_orig;
 plot_data.y_orig = y_orig;
 plot_data.filter_idx_pp = filter_idx_pp;
@@ -162,7 +162,7 @@ plot_data.sd1 = sd1;
 plot_data.sd2 = sd2;
 
 if (should_plot)
-    figure('Name', 'RR Interval Poincare Plot');
+    figure('Name', plot_data.name);
     plot_poincare_ellipse(gca, plot_data);
 end
 
