@@ -53,6 +53,7 @@ should_plot = p.Results.plot;
 %% Poincare-based outlier detection
 
 poincare_outliers = [];
+poincare_plot_data = struct;
 if (filter_poincare)
     [~, ~, poincare_outliers, poincare_plot_data] = poincare(rri);
 end
