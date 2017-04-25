@@ -94,6 +94,7 @@ window_max_index = min(num_win, window_index_offset + window_index_limit) - 1;
 
 % Output initialization
 hrv_metrics_tables = cell(num_win, 1);
+plot_datas = cell(num_win,1);
 
 % Loop over all windows
 for curr_win_idx = window_index_offset : window_max_index
@@ -105,12 +106,11 @@ for curr_win_idx = window_index_offset : window_max_index
 
     % Read & process RR intervals from ECG signal
     fprintf('[%.3f] >> rhrv: [%d/%d] Detecting QRS end RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
-    [rri_window, trr_window] = ecgrr(rec_name, 'ecg_channel', ecg_channel,...
-        'from', window_start_sample, 'to', window_end_sample, 'plot', should_plot);
+    [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
 
     % Filter RR intervals to produce NN intervals
     fprintf('[%.3f] >> rhrv: [%d/%d] Filtering RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
-    [nni_window, tnn_window] = filtrr(rri_window, trr_window, 'plot', should_plot);
+    [nni_window, tnn_window, pd_filtrr] = filtrr(rri_window, trr_window);
 
     if (isempty(nni_window))
         warning('[%.3f] >> rhrv: [%d/%d] No R-peaks detected in window, skipping\n', cputime-t0, curr_win_idx+1, num_win);
@@ -122,20 +122,27 @@ for curr_win_idx = window_index_offset : window_max_index
 
     % Time Domain metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating time-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    hrv_td = hrv_time(nni_window, 'plot', should_plot);
+    [hrv_td, pd_time ]= hrv_time(nni_window);
 
     % Freq domain metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating frequency-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [ hrv_fd, ~, ~ ] = hrv_freq(nni_window, 'plot', should_plot);
+    [ hrv_fd, ~, ~,  pd_freq ] = hrv_freq(nni_window);
 
     % Non linear metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    hrv_nl = hrv_nonlinear(nni_window, 'plot', should_plot);
+    [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
 
     % Update metrics table
     intervals_count.RR = length(rri_window);
     intervals_count.NN = length(nni_window);
     hrv_metrics_tables{curr_win_idx+1} = [struct2table(intervals_count), struct2table(hrv_td), struct2table(hrv_fd), struct2table(hrv_nl)];
+    
+    % Save plot data
+    plot_datas{curr_win_idx+1}.ecgrr = pd_ecgrr;
+    plot_datas{curr_win_idx+1}.filtrr = pd_filtrr;
+    plot_datas{curr_win_idx+1}.time = pd_time;
+    plot_datas{curr_win_idx+1}.freq = pd_freq;
+    plot_datas{curr_win_idx+1}.nl = pd_nl;
 end
 
 %% Create output table
@@ -169,8 +176,42 @@ if (nargout == 0)
          'LF_to_TOT','HF_to_TOT', 'LF_to_HF',...
          'SD1', 'SD2', 'alpha1','alpha2','beta', 'SampEn'}));
 end
+
 if (should_plot)
-    tilefigs;
+    fprintf('[%.3f] >> rhrv: Generating plots...\n', cputime-t0);
+    [~, filename] = fileparts(rec_name);
+    for ii = 1:length(plot_datas)
+        window = sprintf('%d/%d', ii, length(plot_datas));
+        
+        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.ecgrr.name);
+        figure('NumberTitle','off', 'Name', fig_name);
+        plot_ecgrr(gca, plot_datas{ii}.ecgrr);
+
+        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.filtrr.filtrr.name);
+        figure('NumberTitle','off', 'Name', fig_name);
+        plot_filtrr(gca, plot_datas{ii}.filtrr.filtrr);
+
+        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.filtrr.poincare.name);
+        figure('NumberTitle','off', 'Name', fig_name);
+        plot_poincare_ellipse(gca, plot_datas{ii}.filtrr.poincare);
+        
+        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.time.name);
+        figure('NumberTitle','off', 'Name', fig_name);
+        plot_hrv_time_hist(gca, plot_datas{ii}.time);
+
+        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.freq.name);
+        figure('NumberTitle','off', 'Name', fig_name);
+        plot_hrv_freq_spectrum(gca, plot_datas{ii}.freq);
+
+        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.nl.name);
+        figure('NumberTitle','off', 'Name', fig_name);
+        subax1 = subplot(3, 1, 1);
+        plot_dfa_fn(subax1, plot_datas{ii}.nl.dfa);
+        subax2 = subplot(3, 1, 2);
+        plot_hrv_nl_beta(subax2, plot_datas{ii}.nl.beta);
+        subax3 = subplot(3, 1, 3);
+        plot_mse(subax3, plot_datas{ii}.nl.mse);
+    end
 end
 fprintf('[%.3f] >> rhrv: Finished processing record %s.\n', cputime-t0, rec_name);
 
