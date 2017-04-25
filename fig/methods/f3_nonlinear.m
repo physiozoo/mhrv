@@ -7,48 +7,35 @@ rhrv_load_params('human');
 rec_name = ['db' filesep 'fantasia' filesep 'f1y06']; from = 0*60*250 + 1; to = 120*60*250;
 
 % Calculate intervals
-[rri, trr] = ecgrr(rec_name, 'plot', false, 'from', from, 'to', to);
-[nni, tnn] = filtrr(rri, trr, 'plot', false);
+[rri, trr] = ecgrr(rec_name, 'from', from, 'to', to);
+[nni, tnn] = filtrr(rri, trr);
 
-%% Poincare
-[sd1, sd2, outliers] = poincare(rri, 'plot', true);
-fig_poincare = gcf;
+% Calculate nonlinear metrics
+[~, plot_data] = hrv_nonlinear(nni);
 
-%% DFA (alpha)
-[DFA_n, DFA_Fn] = dfa(tnn, nni, 'n_incr', 2, 'plot', true);
-fig_dfa = gcf;
+%% Plots
+fig_dfa = figure('Name', plot_data.dfa.name);
+plot_dfa_fn(gca, plot_data.dfa);
 
-%% MSE
-[mse_values, scale_axis] = mse(nni, 'plot', true);
-fig_mse = gcf;
+fig_beta = figure('Name', plot_data.beta.name);
+plot_hrv_nl_beta(gca, plot_data.beta);
 
-%% Beta
-[ ~, pxx, f_axis ] = hrv_freq(nni, 'methods', {'ar'}, 'window_minutes', 30);
+fig_mse = figure('Name', plot_data.mse.name);
+plot_mse(gca, plot_data.mse, 'legend_name', 'Original', 'show_sampen', false);
 
-% Fit a line and get the slope
-beta_band_idx = find(f_axis >= 0.005 & f_axis <= 0.042);
-pxx_log = log10(pxx(beta_band_idx));
-f_axis_log = log10(f_axis(beta_band_idx));
-pxx_fit_beta = polyfit(f_axis_log, pxx_log, 1);
-hrv_nl.beta = pxx_fit_beta(1);
-beta_line = pxx_fit_beta(1) * f_axis_log + pxx_fit_beta(2);
-
-fig_beta = figure;
-loglog(f_axis(beta_band_idx), pxx(beta_band_idx), 'bo-'); hold on; grid on;
-loglog(10.^f_axis_log, 10.^beta_line, 'Color', 'magenta', 'LineStyle', ':', 'LineWidth', 4);
-xlabel('log(frequency [hz])'); ylabel('log(PSD [s^2/Hz])');
-legend('PSD', ['\beta = ' num2str(hrv_nl.beta)], 'Location', 'southwest');
-axis tight;
+% Also plot the MSE of a shuffled version of the signal for comparison
+nni_shuffled = nni(randperm(length(nni)));
+[~, ~, plot_data_shuf] = mse(nni_shuffled);
+plot_mse(gca, plot_data_shuf, 'linespec', '--r^', 'show_sampen', false, 'legend_name', 'Shuffled', 'clear', false);
+lgd = legend(gca);
 
 %% Print to file
-
 width  = 18; % cm
 height = 9; % cm
 
 rec_split = strsplit(rec_name, filesep);
 filename_prefix = [output_dir filesep rec_split{end-1} '_' rec_split{end} '_'];
 
-fig_print(fig_poincare, [filename_prefix 'poincare'], 'width', width, 'height', height);
 fig_print(fig_dfa, [filename_prefix 'dfa'], 'width', width, 'height', height);
 fig_print(fig_mse, [filename_prefix 'mse'], 'width', width, 'height', height);
 fig_print(fig_beta, [filename_prefix 'beta'], 'width', width, 'height', height);
