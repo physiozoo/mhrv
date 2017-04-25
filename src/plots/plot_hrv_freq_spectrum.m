@@ -37,19 +37,19 @@ end
 legend_entries = {};
 
 if ~isempty(pxx_lomb)
-    semilogy(f_axis, pxx_lomb, 'Parent', ax); grid on; hold on;
+    semilogy(f_axis, pxx_lomb, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
     legend_entries{end+1} = sprintf('Lomb (t_{win}=%.1fm, n_{win}=%d)', t_win/60, num_windows);
 end
 if ~isempty(pxx_ar)
-    semilogy(f_axis, pxx_ar, 'Parent', ax); grid on; hold on;
+    semilogy(f_axis, pxx_ar, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
     legend_entries{end+1} = sprintf('AR (order=%d)', ar_order);
 end
 if ~isempty(pxx_welch)
-    semilogy(f_axis, pxx_welch, 'Parent', ax); grid on; hold on;
+    semilogy(f_axis, pxx_welch, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
     legend_entries{end+1} = sprintf('Welch (t_{win}=%.1fm, %d%% ovl.)', t_win/60, welch_overlap);
 end
 if ~isempty(pxx_fft)
-    semilogy(f_axis, pxx_fft, 'Parent', ax); grid on; hold on;
+    semilogy(f_axis, pxx_fft, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
     legend_entries{end+1} = sprintf('FFT (twin=%.1fm, nwin=%d)', t_win/60, num_windows);
 end
 
