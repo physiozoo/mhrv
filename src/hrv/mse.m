@@ -77,16 +77,6 @@ plot_data.sampen_m = sampen_m;
 
 if (should_plot)
     figure('Name', plot_data.name);
-    ax = gca;
-    
-    plot_mse(ax, plot_data);
-    hold(ax, 'on');
-        
-    % Also plot the MSE of a shuffled version of the signal for comparison
-    sig_shuffled = sig(randperm(N));
-    [~, ~, plot_data2] = mse(sig_shuffled, 'mse_max_scale', mse_max_scale, 'sampen_r', sampen_r, 'sampen_m', sampen_m);
-    plot_mse(ax, plot_data2, 'linespec', '--ro', 'clear', false);
-
-    legend('Original', 'Shuffled');
+    plot_mse(gca, plot_data);
 end
 end

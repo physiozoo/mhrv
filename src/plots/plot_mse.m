@@ -11,22 +11,51 @@ p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
 p.addParameter('tag', default_axes_tag(mfilename), @ischar);
 p.addParameter('linespec', '--ko', @ischar);
+p.addParameter('msz', 8, @isscalar);
+p.addParameter('show_sampen', true, @islogical);
+p.addParameter('legend_name', 'MSE', @ischar);
 
 p.parse(ax, plot_data, varargin{:});
 clear = p.Results.clear;
 tag = p.Results.tag;
 linespec = p.Results.linespec;
+msz = p.Results.msz;
+show_sampen = p.Results.show_sampen;
+legend_name = p.Results.legend_name;
 
 %% Plot
 if clear
     cla(ax);
 end
 
+curr_legend = legend(ax);
+if curr_legend.isprop('String')
+    legend_labels = curr_legend.String;
+else
+    legend_labels = {};
+end
+
 % Plot MSE of the signal
-plot(ax, plot_data.scale_axis, plot_data.mse_result, linespec, 'MarkerSize', 7);
-grid(ax, 'on');
+h1 = plot(ax, plot_data.scale_axis, plot_data.mse_result, linespec, 'MarkerSize', msz);
+grid(ax, 'on'); hold(ax, 'on');
 xlabel(ax, 'Scale factor'); ylabel(ax, 'Sample Entropy');
-legend(ax, ['MSE, ', 'r=' num2str(plot_data.sampen_r), ' m=' num2str(plot_data.sampen_m)]);
+xticks(ax, plot_data.scale_axis(1):2:plot_data.scale_axis(end));
+legend_labels{end+1} = [legend_name, '(r=' num2str(plot_data.sampen_r), ' m=' num2str(plot_data.sampen_m) ')'];
+
+% If first scale factor is 1, also plot the SampEn value
+if show_sampen && plot_data.scale_axis(1) == 1
+    sampen = plot_data.mse_result(1);
+    plot(ax, 1, sampen, 'r+', 'MarkerSize', 2 * msz);
+    
+    xl = xlim(ax);
+    yl = ylim(ax);
+    line([1, 1], [yl(1), sampen], 'Parent', ax, 'LineStyle', ':', 'Color', 'red', 'LineWidth', 1);
+    line([xl(1), 1], [sampen, sampen], 'Parent', ax, 'LineStyle', ':', 'Color', 'red', 'LineWidth', 1);
+    
+    legend_labels{end+1} = sprintf('SampEn = %.3f', sampen);
+end
+
+legend(ax, legend_labels);
 
 %% Tag
 ax.Tag = tag;
