@@ -37,7 +37,7 @@ axis(ax, 'tight');
 
 % Plot alpha1 line
 alpha1_line = fit_alpha1(1) * n_log(alpha1_idx) + fit_alpha1(2);
-loglog(10.^n_log(alpha1_idx), 10.^alpha1_line, 'Color', 'blue', 'LineStyle', ls, 'LineWidth', lw);
+loglog(10.^n_log(alpha1_idx), 10.^alpha1_line, 'Parent', ax, 'Color', 'blue', 'LineStyle', ls, 'LineWidth', lw);
 
 % Plot alpha2 line
 alpha2_line = fit_alpha2(1) * n_log(alpha2_idx) + fit_alpha2(2);

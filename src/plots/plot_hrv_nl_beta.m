@@ -41,7 +41,9 @@ axis(ax, 'tight');
 % Plot the beta line
 beta_line = plot_data.pxx_fit_beta(1) * f_axis_log + plot_data.pxx_fit_beta(2);
 loglog(10.^f_axis_log, 10.^beta_line, 'Parent', ax, 'Color', 'magenta', 'LineStyle', ls, 'LineWidth', lw);
-xlabel(ax, 'log(frequency [hz])'); ylabel('log(PSD [s^2/Hz])');
+
+xlabel(ax, 'log(frequency [hz])');
+ylabel(ax, 'log(PSD [s^2/Hz])');
 legend(ax, 'PSD', ['\beta = ' num2str(plot_data.hrv_nl.beta)], 'Location', 'southwest');
 
 %% Tag
