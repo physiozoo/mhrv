@@ -10,10 +10,13 @@ p.addRequired('ax', @(x) isgraphics(x, 'axes'));
 p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
 p.addParameter('tag', default_axes_tag(mfilename), @ischar);
+p.addParameter('ylim', 'auto');
+
 
 p.parse(ax, plot_data, varargin{:});
 clear = p.Results.clear;
 tag = p.Results.tag;
+yrange = p.Results.ylim;
 
 f_axis          = plot_data.f_axis;
 pxx_lomb        = plot_data.pxx_lomb;
@@ -55,17 +58,18 @@ if ~isempty(pxx_fft)
     legend_entries{end+1} = sprintf('FFT (twin=%.1fm, nwin=%d)', t_win/60, num_windows);
 end
 
+% Axes limits
+xrange = [0,f_max*1.01];
+xlim(ax, xrange);
+ylim(ax, yrange);
+yrange = ylim; % in case it was 'auto'
+
 % Vertical lines of frequency ranges
 lw = 3; ls = ':'; lc = 'black';
-xrange = [0,f_max*1.01];
-yrange = [1e-5, 1e0];
-
 line(vlf_band(1) * ones(1,2), yrange, 'Parent', ax, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
 line(lf_band(1)  * ones(1,2), yrange, 'Parent', ax, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
 line(hf_band(1)  * ones(1,2), yrange, 'Parent', ax, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
 line(hf_band(2)  * ones(1,2), yrange, 'Parent', ax, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
-
-xlim(ax, xrange); ylim(ax, yrange);
 
 % Names of frequency ranges
 text(vlf_band(1), yrange(2) * 0.5, ' VLF', 'Parent', ax);
