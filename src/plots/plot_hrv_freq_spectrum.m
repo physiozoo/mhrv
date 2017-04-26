@@ -28,6 +28,8 @@ t_win           = plot_data.t_win;
 welch_overlap   = plot_data.welch_overlap;
 ar_order        = plot_data.ar_order;
 num_windows     = plot_data.num_windows;
+lf_peak         = plot_data.lf_peak;
+hf_peak         = plot_data.hf_peak;
 
 %% Plot
 if clear
@@ -70,9 +72,9 @@ text(vlf_band(1), yrange(2) * 0.5, ' VLF', 'Parent', ax);
 text( lf_band(1), yrange(2) * 0.5,  ' LF', 'Parent', ax);
 text( hf_band(1), yrange(2) * 0.5,  ' HF', 'Parent', ax);
 
-legend_entries{end+1} = 'Freq. Band Limit';
 legend(ax, legend_entries);
-xlabel(ax, 'Frequency [hz]'); ylabel(ax, 'Log Power Density [s^2/Hz]');
+xlabel(ax, 'Frequency [hz]');
+ylabel(ax, 'Log Power Density [s^2/Hz]');
 
 %% Tag
 ax.Tag = tag;

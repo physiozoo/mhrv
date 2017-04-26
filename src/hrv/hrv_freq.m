@@ -270,6 +270,21 @@ hrv_fd.HF_to_TOT  = hrv_fd.HF_PWR  / hrv_fd.TOT_PWR;
 % Calculate LF/HF ratio
 hrv_fd.LF_to_HF  = hrv_fd.LF_PWR  / hrv_fd.HF_PWR;
 
+% Find peaks in the spectrum
+lf_band_idx = f_axis >= lf_band(1) & f_axis <= lf_band(2);
+hf_band_idx = f_axis >= hf_band(1) & f_axis <= hf_band(2);
+[~, f_peaks_lf] = findpeaks(pxx(lf_band_idx), f_axis(lf_band_idx), 'SortStr','descend');
+[~, f_peaks_hf] = findpeaks(pxx(hf_band_idx), f_axis(hf_band_idx), 'SortStr','descend');
+
+hrv_fd.LF_PEAK = NaN;
+hrv_fd.HF_PEAK = NaN;
+if ~isempty(f_peaks_lf)
+    hrv_fd.LF_PEAK = f_peaks_lf(1);
+end
+if ~isempty(f_peaks_hf)
+    hrv_fd.HF_PEAK = f_peaks_hf(1);
+end
+
 %% Plot
 plot_data.name = 'Intervals Spectrum';
 plot_data.f_axis = f_axis;
@@ -285,10 +300,11 @@ plot_data.t_win = t_win;
 plot_data.welch_overlap = welch_overlap;
 plot_data.ar_order = ar_order;
 plot_data.num_windows = num_windows;
+plot_data.lf_peak = hrv_fd.LF_PEAK;
+plot_data.hf_peak = hrv_fd.HF_PEAK;
 
 if (should_plot)
     figure('Name', plot_data.name);
     plot_hrv_freq_spectrum(gca, plot_data);
 end
-
 end
