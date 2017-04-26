@@ -93,7 +93,7 @@ window_max_index = min(num_win, window_index_offset + window_index_limit) - 1;
 
 % Output initialization
 hrv_metrics_tables = cell(num_win, 1);
-plot_datas = {}
+plot_datas = cell(num_win, 1);
 
 % Loop over all windows
 for curr_win_idx = window_index_offset : window_max_index
@@ -137,12 +137,11 @@ for curr_win_idx = window_index_offset : window_max_index
     hrv_metrics_tables{curr_win_idx+1} = [struct2table(intervals_count), struct2table(hrv_td), struct2table(hrv_fd), struct2table(hrv_nl)];
     
     % Save plot data
-    pd_idx = length(plot_datas) + 1;
-    plot_datas{pd_idx}.ecgrr = pd_ecgrr;
-    plot_datas{pd_idx}.filtrr = pd_filtrr;
-    plot_datas{pd_idx}.time = pd_time;
-    plot_datas{pd_idx}.freq = pd_freq;
-    plot_datas{pd_idx}.nl = pd_nl;
+    plot_datas{curr_win_idx+1}.ecgrr = pd_ecgrr;
+    plot_datas{curr_win_idx+1}.filtrr = pd_filtrr;
+    plot_datas{curr_win_idx+1}.time = pd_time;
+    plot_datas{curr_win_idx+1}.freq = pd_freq;
+    plot_datas{curr_win_idx+1}.nl = pd_nl;
 end
 
 %% Create output table
@@ -181,6 +180,13 @@ if (should_plot)
     fprintf('[%.3f] >> rhrv: Generating plots...\n', cputime-t0);
     [~, filename] = fileparts(rec_name);
     for ii = 1:length(plot_datas)
+
+        % Might have empty cells in plot_datas because we don't always calculate metrics for all
+        % windows (depends on user input).
+        if isempty(plot_datas{ii})
+            continue;
+        end
+
         window = sprintf('%d/%d', ii, length(plot_datas));
         
         fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.ecgrr.name);
