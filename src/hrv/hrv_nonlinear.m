@@ -51,7 +51,7 @@ tnn = [0; cumsum(nni(1:end-1))];
 
 %% Poincare plot
 
-[sd1, sd2] = poincare(nni, 'plot', false);
+[sd1, sd2, ~, poincare_plot_data] = poincare(nni, 'plot', false);
 hrv_nl.SD1 = sd1;
 hrv_nl.SD2 = sd2;
 
@@ -101,6 +101,7 @@ hrv_nl.SampEn = mse_values(1);
 
 %% Create plot data
 plot_data.name = 'Nonlinear HRV';
+plot_data.poincare = poincare_plot_data;
 plot_data.dfa = dfa_plot_data;
 plot_data.mse = mse_plot_data;
 plot_data.beta.name = 'Beta';
