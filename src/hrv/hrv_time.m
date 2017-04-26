@@ -39,7 +39,7 @@ hrv_td.AVNN = mean(nni);
 hrv_td.SDNN = sqrt(var(nni));
 hrv_td.RMSSD = sqrt(mean(diff(nni).^2));
 hrv_td.pNNx = sum(abs(diff(nni)) > (pnn_thresh_ms / 1000))/(length(nni)-1);
-hrv_td.SEM = (hrv_td.SDNN / sqrt(length(nni))) * 100;
+hrv_td.SEM = hrv_td.SDNN / sqrt(length(nni));
 
 %% Plot
 plot_data.name = 'Intervals Histogram';
