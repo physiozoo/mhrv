@@ -26,6 +26,7 @@ rhrv_init --close;
 %% Handle input
 
 % Defaults
+DEFAULT_ECG_CHANNEL = [];
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_WINDOW_INDEX_LIMIT = Inf;
 DEFAULT_WINDOW_INDEX_OFFSET = 0;
@@ -35,6 +36,7 @@ DEFAULT_PARAMS = '';
 p = inputParser;
 
 p.addRequired('rec_name', @isrecord);
+p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_limit', DEFAULT_WINDOW_INDEX_LIMIT, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_offset', DEFAULT_WINDOW_INDEX_OFFSET, @(x) isnumeric(x) && numel(x) < 2 && x >= 0);
@@ -43,6 +45,7 @@ p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
 p.parse(rec_name, varargin{:});
+ecg_channel = p.Results.ecg_channel;
 params = p.Results.params;
 window_minutes = p.Results.window_minutes;
 window_index_limit = p.Results.window_index_limit;
@@ -58,13 +61,16 @@ end
 % Save processing start time
 t0 = cputime;
 
-fprintf('[%.3f] >> rhrv: Processing ECG signal from record %s...\n', cputime-t0, rec_name);
-
 % Get data about the ECG channel in the signal
-[ecg_channel, ecg_Fs, ecg_N] = get_signal_channel(rec_name);
-if (isempty(ecg_channel))
-    error('No ECG channel found in record %s', rec_name);
+[default_ecg_channel, ecg_Fs, ecg_N] = get_signal_channel(rec_name);
+if isempty(ecg_channel)
+    if isempty(default_ecg_channel)
+        error('No ECG channel found in record %s', rec_name);
+    else
+        ecg_channel = default_ecg_channel;
+    end
 end
+fprintf('[%.3f] >> rhrv: Processing ECG signal from record %s (ch. %d)...\n', cputime-t0, rec_name, ecg_channel);
 
 % Length of signal in seconds
 t_max = ecg_N / ecg_Fs;
