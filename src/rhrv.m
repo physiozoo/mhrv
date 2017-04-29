@@ -203,10 +203,16 @@ if (should_plot)
         figure('NumberTitle','off', 'Name', fig_name);
         plot_filtrr(gca, plot_datas{ii}.filtrr.filtrr);
 
-        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.filtrr.poincare.name);
+        % If using poincare filter, plot from that, otherwize plot it from the NL metrics
+        if rhrv_default('filtrr.filter_poincare')
+            poincare_pd = plot_datas{ii}.filtrr.poincare;
+        else
+            poincare_pd = plot_datas{ii}.nl.poincare;
+        end
+        fig_name = sprintf('[%s %s] %s', filename, window, poincare_pd.name);
         figure('NumberTitle','off', 'Name', fig_name);
-        plot_poincare_ellipse(gca, plot_datas{ii}.filtrr.poincare);
-        
+        plot_poincare_ellipse(gca, poincare_pd);
+
         fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.time.name);
         figure('NumberTitle','off', 'Name', fig_name);
         plot_hrv_time_hist(gca, plot_datas{ii}.time);
