@@ -138,10 +138,12 @@ for curr_win_idx = window_index_offset : window_max_index
     [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
 
     % Update metrics table
-    intervals_count.RR = length(rri_window);
-    intervals_count.NN = length(nni_window);
-    hrv_metrics_tables{curr_win_idx+1} = [struct2table(intervals_count), struct2table(hrv_td), struct2table(hrv_fd), struct2table(hrv_nl)];
+    intervals_count = table(length(rri_window),length(nni_window),'VariableNames',{'RR','NN'});
+    intervals_count.Properties.VariableUnits = {'1','1'};
+    intervals_count.Properties.VariableDescriptions = {'Number of RR intervals','Number of NN intervals'};
     
+    hrv_metrics_tables{curr_win_idx+1} = [intervals_count, hrv_td, hrv_fd, hrv_nl];
+
     % Save plot data
     plot_datas{curr_win_idx+1}.ecgrr = pd_ecgrr;
     plot_datas{curr_win_idx+1}.filtrr = pd_filtrr;
@@ -158,6 +160,7 @@ hrv_metrics = table;
 for ii = 1:num_win
     hrv_metrics = [hrv_metrics; hrv_metrics_tables{ii}];
 end
+hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
 
 % Add an average values row if there is more than one window
 [num_windows, ~] = size(hrv_metrics);
@@ -175,11 +178,7 @@ hrv_metrics.Properties.RowNames = row_names;
 
 %% Display output if no output args
 if (nargout == 0)
-    % Print some of the HRV metrics to user
-    disp(hrv_metrics(:,...
-        {'RR', 'NN', 'AVNN','SDNN','RMSSD','pNNx',...
-         'LF_to_TOT','HF_to_TOT', 'LF_to_HF',...
-         'SD1', 'SD2', 'alpha1','alpha2','beta', 'SampEn'}));
+    disp(hrv_metrics);
 end
 
 if (should_plot)

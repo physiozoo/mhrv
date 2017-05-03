@@ -7,12 +7,14 @@ function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %             calculating the beta parameter. Default: [0.003, 0.04].
 %
 %   Output:
-%       - hrv_nl: Struct containing the following HRV metrics:
+%       - hrv_nl: Table containing the following HRV metrics:
 %           - SD1: Poincare plot SD1 descriptor (std. dev. of intervals along the line perpendicular
 %             to the line of identity).
 %           - SD2: Poincare plot SD2 descriptor (std. dev. of intervals along the line of identity).
-%
-
+%           - alpha1: Log-log slope of DFA in the low-scale region.
+%           - alpha2: Log-log slope of DFA in the high-scale region.
+%           - beta: Log-log slope of frequency in VLF band.
+%           - SampEn: The sample entropy.
 %% === Input
 DEFAULT_BETA_BAND = rhrv_default('hrv_nl.beta_band', [0.003, 0.04]); % hz
 DEFAULT_BETA_METHOD = 'ar';
@@ -40,8 +42,9 @@ sampen_r = p.Results.sampen_r;
 sampen_m = p.Results.sampen_m;
 should_plot = p.Results.plot;
 
-% Create output struct
-hrv_nl = struct;
+% Create output table
+hrv_nl = table;
+hrv_nl.Properties.Description = 'Nonlinear HRV Metrics';
 
 %% Preprocess
 
@@ -52,8 +55,13 @@ tnn = [0; cumsum(nni(1:end-1))];
 %% Poincare plot
 
 [sd1, sd2, ~, poincare_plot_data] = poincare(nni, 'plot', false);
-hrv_nl.SD1 = sd1;
-hrv_nl.SD2 = sd2;
+hrv_nl.SD1 = sd1 * 1000;
+hrv_nl.Properties.VariableUnits{'SD1'} = 'ms';
+hrv_nl.Properties.VariableDescriptions{'SD1'} = 'NN interval standard deviation along the perpendicular';
+
+hrv_nl.SD2 = sd2 * 1000;
+hrv_nl.Properties.VariableUnits{'SD2'} = 'ms';
+hrv_nl.Properties.VariableDescriptions{'SD2'} = 'NN interval standard deviation along the line-of-identity';
 
 %% DFA-based Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
 
@@ -62,7 +70,12 @@ hrv_nl.SD2 = sd2;
 
 % Save the scaling exponents
 hrv_nl.alpha1 = alpha1;
+hrv_nl.Properties.VariableUnits{'alpha1'} = '1';
+hrv_nl.Properties.VariableDescriptions{'alpha1'} = 'DFA low-scale slope';
+
 hrv_nl.alpha2 = alpha2;
+hrv_nl.Properties.VariableUnits{'alpha2'} = '1';
+hrv_nl.Properties.VariableDescriptions{'alpha2'} = 'DFA high-scale slope';
 
 %% Beta: Spectral power-law exponent
 
@@ -89,8 +102,10 @@ f_axis_log = log10(f_axis(beta_band_idx));
 
 % Fit a line and get the slope
 pxx_fit_beta = polyfit(f_axis_log, pxx_log, 1);
-hrv_nl.beta = pxx_fit_beta(1);
 
+hrv_nl.beta = pxx_fit_beta(1);
+hrv_nl.Properties.VariableUnits{'beta'} = '1';
+hrv_nl.Properties.VariableDescriptions{'beta'} = 'VLF slope';
 %% Multiscale sample entropy
 
 % Calculate the MSE graph
@@ -98,6 +113,8 @@ hrv_nl.beta = pxx_fit_beta(1);
 
 % Save the first MSE value (this is the sample entropy).
 hrv_nl.SampEn = mse_values(1);
+hrv_nl.Properties.VariableUnits{'SampEn'} = '1';
+hrv_nl.Properties.VariableDescriptions{'SampEn'} = 'Sample entropy';
 
 %% Create plot data
 plot_data.name = 'Nonlinear HRV';

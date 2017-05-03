@@ -40,7 +40,7 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %           - plot: true/false whether to generate plots. Defaults to true if no output arguments
 %             were specified.
 %   Outputs:
-%       - hrv_fd: Struct containing the following HRV metrics:
+%       - hrv_fd: Table containing the following HRV metrics:
 %           - TOT_PWR: Total power in all three bands combined.
 %           - VLF_PWR: Power in the VLF band.
 %           - LF_PWR: Power in the LF band.
@@ -49,6 +49,8 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %           - LF_to_TOT: Ratio between LF power and total power.
 %           - HF_to_TOT: Ratio between HF power and total power.
 %           - LF_to_HF: Ratio between LF and HF power.
+%           - LF_PEAK: Frequency of highest peak in the LF band.
+%           - HF_PEAK: Frequency of highest peak in the HF band.
 %       - pxx: Power spectrum. It's type is determined by the 'power_method' parameter.
 %       - f_axis: Frequencies, in Hz, at which pxx was calculated.
 
@@ -250,25 +252,48 @@ if (calc_fft)
 end
 
 %% Metrics
+hrv_fd = table;
+hrv_fd.Properties.Description = 'Frequency Domain HRV Metrics';
 
 % Get the PSD for the requested power_method
 pxx = eval(['pxx_' power_method]);
 
 % Calculate power in bands
 total_band = [f_min, f_axis(end)];
-hrv_fd = struct;
-hrv_fd.TOT_PWR = bandpower(pxx, f_axis, total_band,'psd');
-hrv_fd.VLF_PWR = bandpower(pxx, f_axis, vlf_band,'psd');
-hrv_fd.LF_PWR  = bandpower(pxx, f_axis, lf_band, 'psd');
-hrv_fd.HF_PWR  = bandpower(pxx, f_axis, [hf_band(1) f_axis(end)], 'psd');
+
+hrv_fd.TOT_PWR = bandpower(pxx, f_axis, total_band,'psd') * 1e6;
+hrv_fd.Properties.VariableUnits{'TOT_PWR'} = 'ms^2';
+hrv_fd.Properties.VariableDescriptions{'TOT_PWR'} = 'Total power (all bands)';
+
+hrv_fd.VLF_PWR = bandpower(pxx, f_axis, vlf_band,'psd') * 1e6;
+hrv_fd.Properties.VariableUnits{'VLF_PWR'} = 'ms^2';
+hrv_fd.Properties.VariableDescriptions{'VLF_PWR'} = 'Power in VLF band';
+
+hrv_fd.LF_PWR  = bandpower(pxx, f_axis, lf_band, 'psd') * 1e6;
+hrv_fd.Properties.VariableUnits{'LF_PWR'} = 'ms^2';
+hrv_fd.Properties.VariableDescriptions{'LF_PWR'} = 'Power in LF band';
+
+hrv_fd.HF_PWR  = bandpower(pxx, f_axis, [hf_band(1) f_axis(end)], 'psd') * 1e6;
+hrv_fd.Properties.VariableUnits{'HF_PWR'} = 'ms^2';
+hrv_fd.Properties.VariableDescriptions{'HF_PWR'} = 'Power in HF band';
 
 % Calculate ratio of power in each band
 hrv_fd.VLF_to_TOT = hrv_fd.VLF_PWR / hrv_fd.TOT_PWR;
+hrv_fd.Properties.VariableUnits{'VLF_to_TOT'} = '1';
+hrv_fd.Properties.VariableDescriptions{'VLF_to_TOT'} = 'VLF to total power ratio';
+
 hrv_fd.LF_to_TOT  = hrv_fd.LF_PWR  / hrv_fd.TOT_PWR;
+hrv_fd.Properties.VariableUnits{'LF_to_TOT'} = '1';
+hrv_fd.Properties.VariableDescriptions{'LF_to_TOT'} = 'LF to total power ratio';
+
 hrv_fd.HF_to_TOT  = hrv_fd.HF_PWR  / hrv_fd.TOT_PWR;
+hrv_fd.Properties.VariableUnits{'HF_to_TOT'} = '1';
+hrv_fd.Properties.VariableDescriptions{'HF_to_TOT'} = 'HF to total power ratio';
 
 % Calculate LF/HF ratio
 hrv_fd.LF_to_HF  = hrv_fd.LF_PWR  / hrv_fd.HF_PWR;
+hrv_fd.Properties.VariableUnits{'LF_to_HF'} = '1';
+hrv_fd.Properties.VariableDescriptions{'LF_to_HF'} = 'LF to HF power ratio';
 
 % Find peaks in the spectrum
 lf_band_idx = f_axis >= lf_band(1) & f_axis <= lf_band(2);
@@ -284,6 +309,10 @@ end
 if ~isempty(f_peaks_hf)
     hrv_fd.HF_PEAK = f_peaks_hf(1);
 end
+hrv_fd.Properties.VariableUnits{'LF_PEAK'} = 'Hz';
+hrv_fd.Properties.VariableDescriptions{'LF_PEAK'} = 'LF peak frequency';
+hrv_fd.Properties.VariableUnits{'HF_PEAK'} = 'Hz';
+hrv_fd.Properties.VariableDescriptions{'HF_PEAK'} = 'HF peak frequency';
 
 %% Plot
 plot_data.name = 'Intervals Spectrum';
