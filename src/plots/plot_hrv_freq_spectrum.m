@@ -62,7 +62,7 @@ end
 xrange = [0,f_max*1.01];
 xlim(ax, xrange);
 ylim(ax, yrange);
-yrange = ylim; % in case it was 'auto'
+yrange = ylim(ax); % in case it was 'auto'
 
 % Vertical lines of frequency ranges
 lw = 3; ls = ':'; lc = 'black';
