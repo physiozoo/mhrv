@@ -7,6 +7,8 @@ function [ all_tables ] = rhrv_batch( rec_dir, varargin )
 % Defaults
 DEFAULT_REC_TYPES = {'*'};
 DEFAULT_REC_NAMES = {'ALL'};
+DEFAULT_RHRV_PARAMS = 'human';
+DEFAULT_MIN_NN = 300;
 DEFAULT_OUTPUT_FOLDER = '.';
 DEFAULT_OUTPUT_FILENAME = [];
 
@@ -15,14 +17,18 @@ p = inputParser;
 p.addRequired('rec_dir', @(x) exist(x,'dir'));
 p.addParameter('rec_types', DEFAULT_REC_TYPES, @iscellstr);
 p.addParameter('rec_names', DEFAULT_REC_NAMES, @iscellstr);
+p.addParameter('rhrv_params', DEFAULT_RHRV_PARAMS, @ischar);
+p.addParameter('min_nn', DEFAULT_MIN_NN, @isscalar);
 p.addParameter('output_dir', '.', @isstr);
 p.addParameter('output_filename', '', @isstr);
-p.addParameter('writexls', true, @islogical);
+p.addParameter('writexls', false, @islogical);
 
 % Get input
 p.parse(rec_dir, varargin{:});
 rec_types = p.Results.rec_types;
 rec_names = p.Results.rec_names;
+rhrv_params = p.Results.rhrv_params;
+min_nn = p.Results.min_nn;
 output_dir = p.Results.output_dir;
 output_filename = p.Results.output_filename;
 writexls = p.Results.writexls;
@@ -69,11 +75,11 @@ for rec_type_idx = 1:n_rec_types
         
         % Analyze the record
         fprintf('-> Analyzing record %s\n', rec_name);
-        curr_hrv = rhrv(rec_name, 'params', 'canine', 'plot', false);
+        curr_hrv = rhrv(rec_name, 'params', rhrv_params, 'plot', false);
         
         % Make sure we have a minimal amount of data in this file.
-        if curr_hrv.NN < 300
-            warning('Less than 300 NN intervals detected, skipping...');
+        if curr_hrv.NN < min_nn
+            warning('Less than %d NN intervals detected, skipping...', min_nn);
             continue;
         end
         
