@@ -17,7 +17,7 @@ p = inputParser;
 p.addRequired('rec_dir', @(x) exist(x,'dir'));
 p.addParameter('rec_types', DEFAULT_REC_TYPES, @iscellstr);
 p.addParameter('rec_names', DEFAULT_REC_NAMES, @iscellstr);
-p.addParameter('rhrv_params', DEFAULT_RHRV_PARAMS, @ischar);
+p.addParameter('rhrv_params', DEFAULT_RHRV_PARAMS, @(x) ischar(x)||iscell(x));
 p.addParameter('min_nn', DEFAULT_MIN_NN, @isscalar);
 p.addParameter('output_dir', DEFAULT_OUTPUT_FOLDER, @isstr);
 p.addParameter('output_filename', DEFAULT_OUTPUT_FILENAME, @isstr);

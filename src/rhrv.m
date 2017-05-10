@@ -13,7 +13,9 @@ function [ hrv_metrics, hrv_stats, plot_datas ] = rhrv( rec_name, varargin )
 %                                 this allows control of which window to start from and how many
 %                                 windows to process from there.
 %           - params: Name of rhrv defaults file to use (e.g. 'canine'). Default '', i.e. no
-%                     parameters file will be loaded.
+%                     parameters file will be loaded. Alternatively, can also be a cell array
+%                     containing the exact arguments to pass to rhrv_load_params. This allows
+%                     overriding parameters from a script.
 %           - plot: true/false whether to generate plots. Defaults to true if no output arguments
 %                   were specified.
 %   Outputs:
@@ -44,7 +46,7 @@ p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @(x) isnumeric(x) && isscalar
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_limit', DEFAULT_WINDOW_INDEX_LIMIT, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_offset', DEFAULT_WINDOW_INDEX_OFFSET, @(x) isnumeric(x) && numel(x) < 2 && x >= 0);
-p.addParameter('params', DEFAULT_PARAMS, @ischar);
+p.addParameter('params', DEFAULT_PARAMS, @(x) ischar(x)||iscell(x));
 p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
@@ -58,7 +60,11 @@ should_plot = p.Results.plot;
 
 % Load user-specified default parameters
 if ~isempty(params)
-    rhrv_load_params(params);
+    if iscell(params)
+        rhrv_load_params(params{:});
+    else
+        rhrv_load_params(params);
+    end
 end
 
 %% Process ECG Signal
