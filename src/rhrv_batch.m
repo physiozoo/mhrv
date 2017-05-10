@@ -1,4 +1,4 @@
-function [ all_tables ] = rhrv_batch( rec_dir, varargin )
+function [ hrv_tables, stats_tables ] = rhrv_batch( rec_dir, varargin )
 %RHRV_BATCH Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -19,8 +19,8 @@ p.addParameter('rec_types', DEFAULT_REC_TYPES, @iscellstr);
 p.addParameter('rec_names', DEFAULT_REC_NAMES, @iscellstr);
 p.addParameter('rhrv_params', DEFAULT_RHRV_PARAMS, @ischar);
 p.addParameter('min_nn', DEFAULT_MIN_NN, @isscalar);
-p.addParameter('output_dir', '.', @isstr);
-p.addParameter('output_filename', '', @isstr);
+p.addParameter('output_dir', DEFAULT_OUTPUT_FOLDER, @isstr);
+p.addParameter('output_filename', DEFAULT_OUTPUT_FILENAME, @isstr);
 p.addParameter('writexls', false, @islogical);
 
 % Get input
@@ -52,7 +52,8 @@ output_filename = [output_dir filesep output_filename '.xlsx'];
 %% Analyze data
 
 % Allocate cell array the will contain all the tables (one for ear record type).
-all_tables = cell(1, length(rec_types));
+hrv_tables = cell(1, length(rec_types));
+stats_tables = cell(1, length(rec_types));
 
 % Loop over record types and caculate a metrics table
 for rec_type_idx = 1:n_rec_types
@@ -66,7 +67,7 @@ for rec_type_idx = 1:n_rec_types
     end
     
     % Loop over each file in the record type and calculate it's metrics
-    curr_table = table;
+    rec_type_table = table;
     for file_idx = 1:nfiles
         % Extract the rec_name from the filename
         file = files(file_idx);
@@ -87,36 +88,21 @@ for rec_type_idx = 1:n_rec_types
         curr_hrv.Properties.RowNames{1} = name;
         
         % Append current file's metrics to the metrics for the rec type
-        curr_table = [curr_table; curr_hrv];
+        rec_type_table = [rec_type_table; curr_hrv];
     end
-
-    % Get row and column names for the entire rec_type table
-    row_names = curr_table.Properties.RowNames;
-    var_names = curr_table.Properties.VariableNames;
     
-    % Calculate Mean & SE of each column (metric)
-    mean_values = num2cell( mean(curr_table{:, :}) );
-    se_values = num2cell( std(curr_table{:, :})./ sqrt(size(curr_table,1)) );
-    
-    % Append Mean & SE rows to the current table
-    curr_table = [curr_table;
-                  table(mean_values{:}, 'VariableNames', var_names);
-                  table(se_values{:},   'VariableNames', var_names)];
-    
-    % Add row names for the new rows
-    curr_table.Properties.RowNames = [row_names; 'Mean'; 'SE'];
-    
-    % Save rec_type table
-    all_tables{rec_type_idx} = curr_table;
+    % Save rec_type tables
+    hrv_tables{rec_type_idx} = rec_type_table;
+    stats_tables{rec_type_idx} = table_stats(rec_type_table);
 end
 
 % Display tables
 for rec_type_idx = 1:n_rec_types
-    if isempty(all_tables{rec_type_idx})
+    if isempty(hrv_tables{rec_type_idx})
         continue;
     end
     fprintf(['\n' rec_names{rec_type_idx} ' metrics:\n']);
-    disp(all_tables{rec_type_idx});
+    disp([hrv_tables{rec_type_idx}; stats_tables{rec_type_idx}]);
 end
 
 %% Generate output
@@ -133,48 +119,48 @@ if exist(output_filename, 'file')
     delete(output_filename);
 end
 
-summ_titles = {};
+summary_titles = {};
 for rec_type_idx = 1:n_rec_types
-    curr_table = all_tables{rec_type_idx};
-    if isempty(curr_table)
+    curr_hrv = hrv_tables{rec_type_idx};
+    curr_stats = stats_tables{rec_type_idx};
+
+    if isempty(curr_hrv)
         continue;
     end
 
-    % Write results table
+    % Write results table (HRV and Stats combined)
     sheetname = strrep(rec_names{rec_type_idx}, ' ', '_');
-    writetable(curr_table, output_filename,...
+    writetable([curr_hrv; curr_stats], output_filename,...
                 'WriteVariableNames', true, 'WriteRowNames', true, 'Sheet', sheetname);
 
-    % Create a summary table (Mean and SE as columns, HRV metrics as rows)
-    summ_table = table(curr_table{end-1,:}', curr_table{end,:}',...
-                'VariableNames', curr_table.Properties.RowNames(end-1:end),...
-                'RowNames', curr_table.Properties.VariableNames);
+    % Create a summary table (Stats as columns, HRV metrics as rows)
+    summary_table = table_transpose(curr_stats);
 
     % Column number in spreadsheet
-    col_num = (rec_type_idx-1) * (size(summ_table,2) + 1) + 1;
+    col_num = (rec_type_idx-1) * (size(summary_table,2) + 1) + 1;
     
     % Save the current rec type into a cell array at the column we'll write the table to
-    summ_titles{col_num} = rec_names{rec_type_idx};
+    summary_titles{col_num} = rec_names{rec_type_idx};
 
     % Write summary table to file
     write_rows = false; if rec_type_idx == 1; write_rows = true; end
-    writetable(summ_table, output_filename,...
+    writetable(summary_table, output_filename,...
         'WriteVariableNames', true, 'WriteRowNames', false, 'Sheet', 'Summary',...
         'Range', [excel_column(col_num+1) '2']);
     
 end
 
-if isempty(summ_titles)
+if isempty(summary_titles)
     return;
 end
 
 % Write the titles above the summary tables
-writetable(cell2table(summ_titles), output_filename,...
+writetable(cell2table(summary_titles), output_filename,...
         'WriteVariableNames', false, 'WriteRowNames', false, 'Sheet', 'Summary',...
         'Range', 'B1');
 
 % Write the HRV metrics names to the summary table
-writetable(cell2table(summ_table.Properties.RowNames), output_filename,...
+writetable(cell2table(summary_table.Properties.RowNames), output_filename,...
         'WriteVariableNames', false, 'WriteRowNames', false, 'Sheet', 'Summary',...
         'Range', 'A3');
 
