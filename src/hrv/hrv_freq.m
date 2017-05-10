@@ -15,9 +15,9 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %             In all cases, a Hamming window will be used on the samples. Data will not be resampled
 %             for all methods except 'lomb', to 10*hf_band(2) (ten times the maximal frequency).
 %             Default value is {'lomb', 'ar', 'welch'}.
-%           - power_method: The method to use for calculating the power in each band. Can be any one
-%             of the methods given in 'methods'. This also determines the spectrum that will be
-%             returned from this function (pxx).
+%           - power_methods: The method(s) to use for calculating the power in each band. A cell array
+%             where each element can be any one of the methods given in 'methods'. This also
+%             determines the spectrum that will be returned from this function (pxx).
 %             Default: First value in 'methods'.
 %           - band_factor: A factor that will be applied to the frequency bands. Useful for shifting
 %             them linearly to adapt to non-human data. Default: 1.0 (no shift).
@@ -51,7 +51,9 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %           - LF_to_HF: Ratio between LF and HF power.
 %           - LF_PEAK: Frequency of highest peak in the LF band.
 %           - HF_PEAK: Frequency of highest peak in the HF band.
-%       - pxx: Power spectrum. It's type is determined by the 'power_method' parameter.
+%           If more than one value was given in 'power_methods', each of the above metrics will be
+%           calculated for each method, and their names will be suffixed with the method name.
+%       - pxx: Power spectrum. It's type is determined by the first value in 'power_methods'.
 %       - f_axis: Frequencies, in Hz, at which pxx was calculated.
 
 %% Input
@@ -59,6 +61,7 @@ SUPPORTED_METHODS = {'lomb', 'ar', 'welch', 'fft'};
 
 % Defaults
 DEFAULT_METHODS = rhrv_default('hrv_freq.methods', {'lomb', 'ar', 'welch'});
+DEFAULT_POWER_METHODS = rhrv_default('hrv_freq.power_methods', {});
 DEFAULT_BAND_FACTOR = rhrv_default('hrv_freq.band_factor', 1.0);
 DEFAULT_VLF_BAND = rhrv_default('hrv_freq.vlf_band', [0.003, 0.04]);
 DEFAULT_LF_BAND  = rhrv_default('hrv_freq.lf_band', [0.04,  0.15]);
@@ -72,7 +75,7 @@ DEFAULT_DETREND_ORDER = rhrv_default('hrv_freq.detrend_order', 1);
 p = inputParser;
 p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('methods', DEFAULT_METHODS, @(x) iscellstr(x) && ~isempty(x));
-p.addParameter('power_method', [], @ischar);
+p.addParameter('power_methods', DEFAULT_POWER_METHODS, @iscellstr);
 p.addParameter('band_factor', DEFAULT_BAND_FACTOR, @(x) isnumeric(x)&&isscalar(x)&&x>0);
 p.addParameter('vlf_band', DEFAULT_VLF_BAND, @(x) isnumeric(2)&&length(x)==2&&x(2)>x(1));
 p.addParameter('lf_band', DEFAULT_LF_BAND, @(x) isnumeric(2)&&length(x)==2&&x(2)>x(1));
@@ -86,7 +89,7 @@ p.addParameter('plot', nargout == 0, @islogical);
 % Get input
 p.parse(nni, varargin{:});
 methods = p.Results.methods;
-power_method = p.Results.power_method;
+power_methods = p.Results.power_methods;
 band_factor = p.Results.band_factor;
 vlf_band = p.Results.vlf_band .* band_factor;
 lf_band = p.Results.lf_band   .* band_factor;
@@ -105,13 +108,14 @@ if (~all(methods_validity))
 end
 
 % Validate power method
-if (isempty(power_method))
+if (isempty(power_methods))
     % Use the first provided method if power_method not provided
-    power_method = methods{1};
-elseif (~any(strcmp(SUPPORTED_METHODS, power_method)))
-    error('Invalid power_method given: %s.', power_method);
-elseif (~any(strcmp(methods, power_method)))
-    error('No matching method provided for power_method %s', power_method);
+    power_methods = methods(1);
+else
+    power_methods_validity = cellfun(@(power_method) any(strcmp(methods, power_method)), power_methods);
+    if (~all(power_methods_validity))
+        error('Invalid power_method given: %s.', strjoin(power_methods(~power_methods_validity), ', '));
+    end
 end
 
 %% Preprocess
@@ -255,64 +259,81 @@ end
 hrv_fd = table;
 hrv_fd.Properties.Description = 'Frequency Domain HRV Metrics';
 
-% Get the PSD for the requested power_method
-pxx = eval(['pxx_' power_method]);
-
-% Calculate power in bands
+% Get entire frequency range
 total_band = [f_min, f_axis(end)];
 
-hrv_fd.TOT_PWR = bandpower(pxx, f_axis, total_band,'psd') * 1e6;
-hrv_fd.Properties.VariableUnits{'TOT_PWR'} = 'ms^2';
-hrv_fd.Properties.VariableDescriptions{'TOT_PWR'} = 'Total power (all bands)';
+% Loop over power methods and calculate metrics based on each one
+for ii = 1:length(power_methods)
+    % Current PSD for metrics calculations
+    pxx = eval(['pxx_' power_methods{ii}]);
 
-hrv_fd.VLF_PWR = bandpower(pxx, f_axis, vlf_band,'psd') * 1e6;
-hrv_fd.Properties.VariableUnits{'VLF_PWR'} = 'ms^2';
-hrv_fd.Properties.VariableDescriptions{'VLF_PWR'} = 'Power in VLF band';
+    if length(power_methods) == 1
+        suffix =  '';
+    else
+        suffix = ['_' upper(power_methods{ii})];
+    end
 
-hrv_fd.LF_PWR  = bandpower(pxx, f_axis, lf_band, 'psd') * 1e6;
-hrv_fd.Properties.VariableUnits{'LF_PWR'} = 'ms^2';
-hrv_fd.Properties.VariableDescriptions{'LF_PWR'} = 'Power in LF band';
+    % Absolute power in each band
+    hrv_fd.TOT_PWR_x = bandpower(pxx, f_axis, total_band,'psd') * 1e6;
+    hrv_fd.Properties.VariableUnits{'TOT_PWR_x'} = 'ms^2';
+    hrv_fd.Properties.VariableDescriptions{'TOT_PWR_x'} = sprintf('Total power (%s)', power_methods{ii});
 
-hrv_fd.HF_PWR  = bandpower(pxx, f_axis, [hf_band(1) f_axis(end)], 'psd') * 1e6;
-hrv_fd.Properties.VariableUnits{'HF_PWR'} = 'ms^2';
-hrv_fd.Properties.VariableDescriptions{'HF_PWR'} = 'Power in HF band';
+    hrv_fd.VLF_PWR_x = bandpower(pxx, f_axis, vlf_band,'psd') * 1e6;
+    hrv_fd.Properties.VariableUnits{'VLF_PWR_x'} = 'ms^2';
+    hrv_fd.Properties.VariableDescriptions{'VLF_PWR_x'} = sprintf('Power in VLF band (%s)', power_methods{ii});
 
-% Calculate ratio of power in each band
-hrv_fd.VLF_to_TOT = hrv_fd.VLF_PWR / hrv_fd.TOT_PWR;
-hrv_fd.Properties.VariableUnits{'VLF_to_TOT'} = '1';
-hrv_fd.Properties.VariableDescriptions{'VLF_to_TOT'} = 'VLF to total power ratio';
+    hrv_fd.LF_PWR_x  = bandpower(pxx, f_axis, lf_band, 'psd') * 1e6;
+    hrv_fd.Properties.VariableUnits{'LF_PWR_x'} = 'ms^2';
+    hrv_fd.Properties.VariableDescriptions{'LF_PWR_x'} = sprintf('Power in LF band (%s)', power_methods{ii});
 
-hrv_fd.LF_to_TOT  = hrv_fd.LF_PWR  / hrv_fd.TOT_PWR;
-hrv_fd.Properties.VariableUnits{'LF_to_TOT'} = '1';
-hrv_fd.Properties.VariableDescriptions{'LF_to_TOT'} = 'LF to total power ratio';
+    hrv_fd.HF_PWR_x  = bandpower(pxx, f_axis, [hf_band(1) f_axis(end)], 'psd') * 1e6;
+    hrv_fd.Properties.VariableUnits{'HF_PWR_x'} = 'ms^2';
+    hrv_fd.Properties.VariableDescriptions{'HF_PWR_x'} = sprintf('Power in HF band (%s)', power_methods{ii});
 
-hrv_fd.HF_to_TOT  = hrv_fd.HF_PWR  / hrv_fd.TOT_PWR;
-hrv_fd.Properties.VariableUnits{'HF_to_TOT'} = '1';
-hrv_fd.Properties.VariableDescriptions{'HF_to_TOT'} = 'HF to total power ratio';
+    % Calculate ratio of power in each band
+    hrv_fd.VLF_to_TOT_x = hrv_fd.VLF_PWR_x / hrv_fd.TOT_PWR_x;
+    hrv_fd.Properties.VariableUnits{'VLF_to_TOT_x'} = '1';
+    hrv_fd.Properties.VariableDescriptions{'VLF_to_TOT_x'} = sprintf('VLF to total power ratio (%s)', power_methods{ii});
 
-% Calculate LF/HF ratio
-hrv_fd.LF_to_HF  = hrv_fd.LF_PWR  / hrv_fd.HF_PWR;
-hrv_fd.Properties.VariableUnits{'LF_to_HF'} = '1';
-hrv_fd.Properties.VariableDescriptions{'LF_to_HF'} = 'LF to HF power ratio';
+    hrv_fd.LF_to_TOT_x  = hrv_fd.LF_PWR_x  / hrv_fd.TOT_PWR_x;
+    hrv_fd.Properties.VariableUnits{'LF_to_TOT_x'} = '1';
+    hrv_fd.Properties.VariableDescriptions{'LF_to_TOT_x'} = sprintf('LF to total power ratio (%s)', power_methods{ii});
 
-% Find peaks in the spectrum
-lf_band_idx = f_axis >= lf_band(1) & f_axis <= lf_band(2);
-hf_band_idx = f_axis >= hf_band(1) & f_axis <= hf_band(2);
-[~, f_peaks_lf] = findpeaks(pxx(lf_band_idx), f_axis(lf_band_idx), 'SortStr','descend');
-[~, f_peaks_hf] = findpeaks(pxx(hf_band_idx), f_axis(hf_band_idx), 'SortStr','descend');
+    hrv_fd.HF_to_TOT_x  = hrv_fd.HF_PWR_x  / hrv_fd.TOT_PWR_x;
+    hrv_fd.Properties.VariableUnits{'HF_to_TOT_x'} = '1';
+    hrv_fd.Properties.VariableDescriptions{'HF_to_TOT_x'} = sprintf('HF to total power ratio (%s)', power_methods{ii});
 
-hrv_fd.LF_PEAK = NaN;
-hrv_fd.HF_PEAK = NaN;
-if ~isempty(f_peaks_lf)
-    hrv_fd.LF_PEAK = f_peaks_lf(1);
+    % Calculate LF/HF ratio
+    hrv_fd.LF_to_HF_x  = hrv_fd.LF_PWR_x  / hrv_fd.HF_PWR_x;
+    hrv_fd.Properties.VariableUnits{'LF_to_HF_x'} = '1';
+    hrv_fd.Properties.VariableDescriptions{'LF_to_HF_x'} = sprintf('LF to HF power ratio (%s)', power_methods{ii});
+
+    % Find peaks in the spectrum
+    lf_band_idx = f_axis >= lf_band(1) & f_axis <= lf_band(2);
+    hf_band_idx = f_axis >= hf_band(1) & f_axis <= hf_band(2);
+    [~, f_peaks_lf] = findpeaks(pxx(lf_band_idx), f_axis(lf_band_idx), 'SortStr','descend');
+    [~, f_peaks_hf] = findpeaks(pxx(hf_band_idx), f_axis(hf_band_idx), 'SortStr','descend');
+
+    hrv_fd.LF_PEAK_x = NaN;
+    hrv_fd.HF_PEAK_x = NaN;
+    if ~isempty(f_peaks_lf)
+        hrv_fd.LF_PEAK_x = f_peaks_lf(1);
+    end
+    if ~isempty(f_peaks_hf)
+        hrv_fd.HF_PEAK_x = f_peaks_hf(1);
+    end
+    hrv_fd.Properties.VariableUnits{'LF_PEAK_x'} = 'Hz';
+    hrv_fd.Properties.VariableDescriptions{'LF_PEAK_x'} = sprintf('LF peak frequency (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableUnits{'HF_PEAK_x'} = 'Hz';
+    hrv_fd.Properties.VariableDescriptions{'HF_PEAK_x'} = sprintf('HF peak frequency (%s)', power_methods{ii});
+
+    % Replace the '_x' with the actual suffix
+    varnames = hrv_fd.Properties.VariableNames;
+    hrv_fd.Properties.VariableNames = cellfun(@(varname) strrep(varname, '_x', suffix), varnames, 'UniformOutput', false);
 end
-if ~isempty(f_peaks_hf)
-    hrv_fd.HF_PEAK = f_peaks_hf(1);
-end
-hrv_fd.Properties.VariableUnits{'LF_PEAK'} = 'Hz';
-hrv_fd.Properties.VariableDescriptions{'LF_PEAK'} = 'LF peak frequency';
-hrv_fd.Properties.VariableUnits{'HF_PEAK'} = 'Hz';
-hrv_fd.Properties.VariableDescriptions{'HF_PEAK'} = 'HF peak frequency';
+
+% The returned PSD should be the first power_method
+pxx = eval(['pxx_' power_methods{1}]);
 
 %% Plot
 plot_data.name = 'Intervals Spectrum';
@@ -329,8 +350,6 @@ plot_data.t_win = t_win;
 plot_data.welch_overlap = welch_overlap;
 plot_data.ar_order = ar_order;
 plot_data.num_windows = num_windows;
-plot_data.lf_peak = hrv_fd.LF_PEAK;
-plot_data.hf_peak = hrv_fd.HF_PEAK;
 
 if (should_plot)
     figure('Name', plot_data.name);

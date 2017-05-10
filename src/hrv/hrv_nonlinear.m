@@ -93,7 +93,7 @@ if ((tnn(end) / 60) < window_minutes)
 end
 
 % Calculate spectrum
-[ ~, pxx, f_axis ] = hrv_freq(nni, 'methods', {beta_method}, 'window_minutes', window_minutes);
+[ ~, pxx, f_axis ] = hrv_freq(nni, 'methods', {beta_method}, 'power_methods', {}, 'window_minutes', window_minutes);
 
 % Take the log of the spectrum in the beta frequency band
 beta_band_idx = find(f_axis >= beta_band(1) & f_axis <= beta_band(2));
