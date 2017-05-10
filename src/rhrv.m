@@ -103,7 +103,6 @@ window_max_index = min(num_win, window_index_offset + window_index_limit) - 1;
 
 % Output initialization
 hrv_metrics = table;
-hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
 plot_datas = cell(num_win, 1);
 
 % Loop over all windows
@@ -149,7 +148,7 @@ for curr_win_idx = window_index_offset : window_max_index
     
     % Add a new row to the output table for the current window
     curr_win_table = [intervals_count, hrv_td, hrv_fd, hrv_nl];
-    curr_win_table.Properties.RowNames = {sprintf('%d', curr_win_idx+1)};
+    curr_win_table.Properties.RowNames{1} = sprintf('%d', curr_win_idx+1);
     hrv_metrics = [hrv_metrics; curr_win_table];
 
     % Save plot data
@@ -160,24 +159,12 @@ for curr_win_idx = window_index_offset : window_max_index
     plot_datas{curr_win_idx+1}.nl = pd_nl;
 end
 
+% Set table description
+hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
+
 %% Create stats table
 fprintf('[%.3f] >> rhrv: Building statistics table...\n', cputime-t0);
-
-% All table data as a matrix
-hrv_metrics_data = hrv_metrics{:, :};
-
-% Calculate stats of each column (metric)
-mean_values = mean(hrv_metrics_data, 1);
-se_values = std(hrv_metrics_data, 0, 1)./ sqrt(size(hrv_metrics, 1));
-median_values = median(hrv_metrics_data, 1);
-
-% Build stats table
-var_names = hrv_metrics.Properties.VariableNames;
-hrv_stats = [
-    array2table(  mean_values, 'VariableNames', var_names, 'RowNames', {'Mean'});
-    array2table(median_values, 'VariableNames', var_names, 'RowNames', {'Median'});
-    array2table(    se_values, 'VariableNames', var_names, 'RowNames', {'SE'});
-];
+hrv_stats = table_stats(hrv_metrics);
 
 %% Display output if no output args
 if (nargout == 0)
