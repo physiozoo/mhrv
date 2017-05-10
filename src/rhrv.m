@@ -1,4 +1,4 @@
-function [ hrv_metrics ] = rhrv( rec_name, varargin )
+function [ hrv_metrics, hrv_stats, plot_datas ] = rhrv( rec_name, varargin )
 %RHRV Heart Rate Variability metrics
 % Analyzes an ECG signal, detects and filters R-peaks and calculates various heart-rate variability
 % (HRV) metrics on them.
@@ -19,6 +19,10 @@ function [ hrv_metrics ] = rhrv( rec_name, varargin )
 %   Outputs:
 %       - hrv_metrics: A table where each row is a window and each column is an HRV metrics that was
 %                      calculated in that window.
+%       - hrv_stats: A table containing various statistics about each metric, calculated over all
+%                    windows.
+%       - plot_datas: Cell array containing the plot_data structs for each window.
+%
 
 %% Make sure environment is set up
 rhrv_init --close;
@@ -98,7 +102,8 @@ end
 window_max_index = min(num_win, window_index_offset + window_index_limit) - 1;
 
 % Output initialization
-hrv_metrics_tables = cell(num_win, 1);
+hrv_metrics = table;
+hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
 plot_datas = cell(num_win, 1);
 
 % Loop over all windows
@@ -142,7 +147,10 @@ for curr_win_idx = window_index_offset : window_max_index
     intervals_count.Properties.VariableUnits = {'1','1'};
     intervals_count.Properties.VariableDescriptions = {'Number of RR intervals','Number of NN intervals'};
     
-    hrv_metrics_tables{curr_win_idx+1} = [intervals_count, hrv_td, hrv_fd, hrv_nl];
+    % Add a new row to the output table for the current window
+    curr_win_table = [intervals_count, hrv_td, hrv_fd, hrv_nl];
+    curr_win_table.Properties.RowNames = {sprintf('%d', curr_win_idx+1)};
+    hrv_metrics = [hrv_metrics; curr_win_table];
 
     % Save plot data
     plot_datas{curr_win_idx+1}.ecgrr = pd_ecgrr;
@@ -152,33 +160,34 @@ for curr_win_idx = window_index_offset : window_max_index
     plot_datas{curr_win_idx+1}.nl = pd_nl;
 end
 
-%% Create output table
-fprintf('[%.3f] >> rhrv: Building output table...\n', cputime-t0);
+%% Create stats table
+fprintf('[%.3f] >> rhrv: Building statistics table...\n', cputime-t0);
 
-% Concatenate the tables from each window into one final table
-hrv_metrics = table;
-for ii = 1:num_win
-    hrv_metrics = [hrv_metrics; hrv_metrics_tables{ii}];
-end
-hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
+% All table data as a matrix
+hrv_metrics_data = hrv_metrics{:, :};
 
-% Add an average values row if there is more than one window
-[num_windows, ~] = size(hrv_metrics);
-row_names = cellstr(num2str(transpose(1:num_windows)));
-if (num_windows > 1)
-    mean_values = num2cell(mean(hrv_metrics{:, 1:end}));
-    mean_table = table(mean_values{1:end});
-    mean_table.Properties.VariableNames = hrv_metrics.Properties.VariableNames;
-    hrv_metrics = [hrv_metrics; mean_table];
-    row_names{end+1} = 'Avg.';
-end
+% Calculate stats of each column (metric)
+mean_values = mean(hrv_metrics_data, 1);
+se_values = std(hrv_metrics_data, 0, 1)./ sqrt(size(hrv_metrics, 1));
+median_values = median(hrv_metrics_data, 1);
 
-% Set the row names of the final table
-hrv_metrics.Properties.RowNames = row_names;
+% Build stats table
+var_names = hrv_metrics.Properties.VariableNames;
+hrv_stats = [
+    array2table(  mean_values, 'VariableNames', var_names, 'RowNames', {'Mean'});
+    array2table(median_values, 'VariableNames', var_names, 'RowNames', {'Median'});
+    array2table(    se_values, 'VariableNames', var_names, 'RowNames', {'SE'});
+];
 
 %% Display output if no output args
 if (nargout == 0)
-    disp(hrv_metrics);
+    fprintf('[%.3f] >> rhrv: Displaying Results...\n', cputime-t0);
+    % Display statistics if there is more than one window
+    if (size(hrv_metrics,1) > 1)
+        disp([hrv_metrics; hrv_stats]);
+    else
+        disp(hrv_metrics);
+    end
 end
 
 if (should_plot)
