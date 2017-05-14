@@ -1,6 +1,15 @@
-### Generated files
+### Physionet ###
+# Physionet data files
+*.dat
+*.hea
+*.atr
+*.qrs*
+
+# Default local physionet install directory
+bin/wfdb/
+
+### Generated files ###
 *.eps
-fig/out/
 *.xlsx
 
 ### Matlab ###
@@ -16,27 +25,13 @@ fig/out/
 # Simulink Code Generation
 slprj/
 
-### Physionet ###
-db/
-*.dat
-*.hea
-*.atr
-*.qrs*
-
-bin/wfdb/
-
 ### OSX ###
 .DS_Store
 .AppleDouble
 .LSOverride
 
-### Local helper scripts ###
-# A folder for local scripts that use the rhrv tools.
-scripts/
-
 # Icon must end with two \r
 Icon
-
 
 # Thumbnails
 ._*
