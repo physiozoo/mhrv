@@ -54,6 +54,7 @@ global rhrv_basepath;
 rhrv_basepath = basepath_;
 
 % Add them to matlab's path including subfolders
+addpath(basepath_);
 addpath(genpath(lib_dir_));
 addpath(genpath(cfg_dir_));
 addpath(genpath(src_dir_));
