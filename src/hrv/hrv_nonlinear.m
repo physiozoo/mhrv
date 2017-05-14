@@ -17,8 +17,9 @@ function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %           - SampEn: The sample entropy.
 %% === Input
 DEFAULT_BETA_BAND = rhrv_default('hrv_nl.beta_band', [0.003, 0.04]); % hz
-DEFAULT_BETA_METHOD = 'ar';
+DEFAULT_BETA_METHOD = rhrv_default('hrv_nl.beta_method', 'ar');
 DEFAULT_MSE_MAX_SCALE = rhrv_default('mse.mse_max_scale', 20);
+DEFAULT_MSE_METRICS = rhrv_default('mse.mse_metrics', false);
 DEFAULT_SAMPEN_R = rhrv_default('mse.sampen_r', 0.2); % percent of std. dev.
 DEFAULT_SAMPEN_M = rhrv_default('mse.sampen_m', 2);
 
@@ -29,6 +30,7 @@ p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('beta_band',  DEFAULT_BETA_BAND, @(x) isnumeric(x) && numel(x) == 2);
 p.addParameter('beta_method', DEFAULT_BETA_METHOD, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('mse_max_scale', DEFAULT_MSE_MAX_SCALE, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('mse_metrics', DEFAULT_MSE_METRICS, @(x) islogical(x) && isscalar(x));
 p.addParameter('sampen_r', DEFAULT_SAMPEN_R, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('sampen_m', DEFAULT_SAMPEN_M, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('plot', nargout == 0, @islogical);
@@ -38,6 +40,7 @@ p.parse(nni, varargin{:});
 beta_band = p.Results.beta_band;
 beta_method = p.Results.beta_method;
 mse_max_scale = p.Results.mse_max_scale;
+mse_metrics = p.Results.mse_metrics;
 sampen_r = p.Results.sampen_r;
 sampen_m = p.Results.sampen_m;
 should_plot = p.Results.plot;
@@ -115,6 +118,15 @@ hrv_nl.Properties.VariableDescriptions{'beta'} = 'VLF slope';
 hrv_nl.SampEn = mse_values(1);
 hrv_nl.Properties.VariableUnits{'SampEn'} = '1';
 hrv_nl.Properties.VariableDescriptions{'SampEn'} = 'Sample entropy';
+
+if mse_metrics
+    for ii = 1:length(mse_values)
+        curr_metric_name = ['MSE' num2str(scale_axis(ii))];
+        hrv_nl{:, curr_metric_name} = mse_values(ii);
+        hrv_nl.Properties.VariableUnits{curr_metric_name} = '1';
+        hrv_nl.Properties.VariableDescriptions{curr_metric_name} = sprintf('MSE value at scale %d', scale_axis(ii));
+    end
+end
 
 %% Create plot data
 plot_data.name = 'Nonlinear HRV';
