@@ -56,7 +56,9 @@ hrv_tables = cell(1, length(rec_types));
 stats_tables = cell(1, length(rec_types));
 
 % Loop over record types and caculate a metrics table
-for rec_type_idx = 1:n_rec_types
+fprintf('-> Starting batch processing...\n');
+t0 = tic;
+parfor rec_type_idx = 1:n_rec_types
     % Get files matching the currect record type's pattern
     files = dir([rec_dir sprintf('%s.dat', rec_types{rec_type_idx})])';
     nfiles = length(files);
@@ -95,6 +97,7 @@ for rec_type_idx = 1:n_rec_types
     hrv_tables{rec_type_idx} = rec_type_table;
     stats_tables{rec_type_idx} = table_stats(rec_type_table);
 end
+fprintf('-> Batch processing complete (%.3f[s])\n', toc(t0));
 
 % Display tables
 for rec_type_idx = 1:n_rec_types
