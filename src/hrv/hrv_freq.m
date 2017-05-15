@@ -66,6 +66,7 @@ DEFAULT_BAND_FACTOR = rhrv_default('hrv_freq.band_factor', 1.0);
 DEFAULT_VLF_BAND = rhrv_default('hrv_freq.vlf_band', [0.003, 0.04]);
 DEFAULT_LF_BAND  = rhrv_default('hrv_freq.lf_band', [0.04,  0.15]);
 DEFAULT_HF_BAND  = rhrv_default('hrv_freq.hf_band', [0.15,  0.4]);
+DEFAULT_EXTRA_BANDS = rhrv_default('hrv_freq.extra_bands', {});
 DEFAULT_WINDOW_MINUTES = rhrv_default('hrv_freq.window_minutes', 5);
 DEFAULT_AR_ORDER = rhrv_default('hrv_freq.ar_order', 24);
 DEFAULT_WELCH_OVERLAP = rhrv_default('hrv_freq.welch_overlap', 50); % percent
@@ -77,9 +78,10 @@ p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('methods', DEFAULT_METHODS, @(x) iscellstr(x) && ~isempty(x));
 p.addParameter('power_methods', DEFAULT_POWER_METHODS, @iscellstr);
 p.addParameter('band_factor', DEFAULT_BAND_FACTOR, @(x) isnumeric(x)&&isscalar(x)&&x>0);
-p.addParameter('vlf_band', DEFAULT_VLF_BAND, @(x) isnumeric(2)&&length(x)==2&&x(2)>x(1));
-p.addParameter('lf_band', DEFAULT_LF_BAND, @(x) isnumeric(2)&&length(x)==2&&x(2)>x(1));
-p.addParameter('hf_band', DEFAULT_HF_BAND, @(x) isnumeric(2)&&length(x)==2&&x(2)>x(1));
+p.addParameter('vlf_band', DEFAULT_VLF_BAND, @(x) isnumeric(x)&&length(x)==2&&x(2)>x(1));
+p.addParameter('lf_band', DEFAULT_LF_BAND, @(x) isnumeric(x)&&length(x)==2&&x(2)>x(1));
+p.addParameter('hf_band', DEFAULT_HF_BAND, @(x) isnumeric(x)&&length(x)==2&&x(2)>x(1));
+p.addParameter('extra_bands', DEFAULT_EXTRA_BANDS, @(x) all(cellfun(@(y)isnumeric(y)&&length(y)==2&&y()>y(1), x)));
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x));
 p.addParameter('detrend_order', DEFAULT_DETREND_ORDER, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('ar_order', DEFAULT_AR_ORDER, @(x) isnumeric(x)&&isscalar(x));
@@ -94,6 +96,7 @@ band_factor = p.Results.band_factor;
 vlf_band = p.Results.vlf_band .* band_factor;
 lf_band = p.Results.lf_band   .* band_factor;
 hf_band = p.Results.hf_band   .* band_factor;
+extra_bands = p.Results.extra_bands;
 window_minutes = p.Results.window_minutes;
 detrend_order = p.Results.detrend_order;
 ar_order = p.Results.ar_order;
@@ -307,6 +310,24 @@ for ii = 1:length(power_methods)
     hrv_fd.LF_to_HF_x  = hrv_fd.LF_PWR_x  / hrv_fd.HF_PWR_x;
     hrv_fd.Properties.VariableUnits{'LF_to_HF_x'} = '1';
     hrv_fd.Properties.VariableDescriptions{'LF_to_HF_x'} = sprintf('LF to HF power ratio (%s)', power_methods{ii});
+
+    % Calculate power in the extra bands
+    for jj = 1:length(extra_bands)
+        extra_band = extra_bands{jj};
+        extra_band_power = bandpower(pxx, f_axis, extra_band, 'psd') * 1e6;
+
+        column_name = sprintf('EX%d_PWR%s', jj, suffix);
+        hrv_fd{:, column_name} = extra_band_power;
+        hrv_fd.Properties.VariableUnits{column_name} = 'ms^2';
+        hrv_fd.Properties.VariableDescriptions{column_name} =...
+            sprintf('Power in custom band [%.5f,%.5f] (%s)', extra_band(1), extra_band(2), power_methods{ii});
+
+        column_name = sprintf('EX%d_to_TOT%s', jj, suffix);
+        hrv_fd{:, column_name}  = extra_band_power / hrv_fd.TOT_PWR_x;
+        hrv_fd.Properties.VariableUnits{column_name} = '1';
+        hrv_fd.Properties.VariableDescriptions{column_name} =...
+            sprintf('Custom band %d to total power ratio (%s)', ii, power_methods{ii});
+    end
 
     % Find peaks in the spectrum
     lf_band_idx = f_axis >= lf_band(1) & f_axis <= lf_band(2);
