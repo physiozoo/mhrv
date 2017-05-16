@@ -18,7 +18,7 @@ function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %% === Input
 DEFAULT_BETA_BAND = rhrv_default('hrv_nl.beta_band', [0.003, 0.04]); % hz
 DEFAULT_BETA_METHOD = rhrv_default('hrv_nl.beta_method', 'ar');
-DEFAULT_MSE_MAX_SCALE = rhrv_default('mse.mse_max_scale', 20);
+DEFAULT_MSE_MAX_SCALE = rhrv_default('mse.mse_max_scale', 15);
 DEFAULT_MSE_METRICS = rhrv_default('mse.mse_metrics', false);
 DEFAULT_SAMPEN_R = rhrv_default('mse.sampen_r', 0.2); % percent of std. dev.
 DEFAULT_SAMPEN_M = rhrv_default('mse.sampen_m', 2);

@@ -44,6 +44,6 @@ defaults('dfa.alpha1_range') = [4, 15];
 defaults('dfa.alpha2_range') = [16, 128];
 
 %% MSE
-defaults('mse.mse_max_scale') = 20;
+defaults('mse.mse_max_scale') = 15;
 defaults('mse.sampen_r') = 0.2; % percent of std. dev.
 defaults('mse.sampen_m') = 2;
