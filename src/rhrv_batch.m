@@ -1,4 +1,4 @@
-function [ hrv_tables, stats_tables ] = rhrv_batch( rec_dir, varargin )
+function [ hrv_tables, stats_tables, plot_datas ] = rhrv_batch( rec_dir, varargin )
 %RHRV_BATCH Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -32,6 +32,7 @@ min_nn = p.Results.min_nn;
 output_dir = p.Results.output_dir;
 output_filename = p.Results.output_filename;
 writexls = p.Results.writexls;
+save_plot_data = nargout > 2;
 
 if ~strcmp(rec_dir(end),filesep)
     rec_dir = [rec_dir filesep];
@@ -54,6 +55,7 @@ output_filename = [output_dir filesep output_filename '.xlsx'];
 % Allocate cell array the will contain all the tables (one for ear record type).
 hrv_tables = cell(1, length(rec_types));
 stats_tables = cell(1, length(rec_types));
+plot_datas = cell(1, length(rec_types));
 
 % Loop over record types and caculate a metrics table
 fprintf('-> Starting batch processing...\n');
@@ -70,6 +72,7 @@ parfor rec_type_idx = 1:n_rec_types
     
     % Loop over each file in the record type and calculate it's metrics
     rec_type_table = table;
+    rec_type_plot_datas = cell(nfiles, 1);
     for file_idx = 1:nfiles
         % Extract the rec_name from the filename
         file = files(file_idx);
@@ -78,8 +81,11 @@ parfor rec_type_idx = 1:n_rec_types
         
         % Analyze the record
         fprintf('-> Analyzing record %s\n', rec_name);
-        curr_hrv = rhrv(rec_name, 'params', rhrv_params, 'plot', false);
-        
+        [curr_hrv, ~, curr_plot_data] = rhrv(rec_name, 'params', rhrv_params, 'plot', false);
+        if save_plot_data
+            rec_type_plot_datas{file_idx} = curr_plot_data;
+        end
+
         % Make sure we have a minimal amount of data in this file.
         if curr_hrv.NN < min_nn
             warning('Less than %d NN intervals detected, skipping...', min_nn);
@@ -96,6 +102,7 @@ parfor rec_type_idx = 1:n_rec_types
     % Save rec_type tables
     hrv_tables{rec_type_idx} = rec_type_table;
     stats_tables{rec_type_idx} = table_stats(rec_type_table);
+    plot_datas{rec_type_idx} = rec_type_plot_datas;
 end
 fprintf('-> Batch processing complete (%.3f[s])\n', toc(t0));
 
