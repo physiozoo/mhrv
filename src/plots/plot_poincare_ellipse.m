@@ -33,14 +33,16 @@ xlabel(ax, 'RR(n) [sec]');
 ylabel(ax, 'RR(n+1) [sec]');
 
 h_rr = plot(ax, plot_data.x_orig, plot_data.y_orig, 'b+', 'MarkerSize', msz);
-h_outliers = plot(ax, plot_data.x_orig(plot_data.filter_idx_pp), plot_data.y_orig(plot_data.filter_idx_pp), 'ro', 'MarkerSize', msz*1.25);
-h_ellipse = plot(ax, plot_data.ellipse_old(1,:), plot_data.ellipse_old(2,:), 'k--', 'LineWidth', lw_ellipse);
+h_ellipse = plot(ax, plot_data.ellipse_old(1,:), plot_data.ellipse_old(2,:),'k--', 'LineWidth', lw_ellipse);
+
+h_outliers = plot(ax, plot_data.x_orig(plot_data.filter_idx_pp), plot_data.y_orig(plot_data.filter_idx_pp), 'ro', 'MarkerSize', msz*1.25, 'DisplayName', 'Outliers');
 h_sd1 = plot(ax, plot_data.sd1_line_old(1,:), plot_data.sd1_line_old(2,:), 'r-', 'LineWidth', lw_sdline);
 h_sd2 = plot(ax, plot_data.sd2_line_old(1,:), plot_data.sd2_line_old(2,:), 'g-', 'LineWidth', lw_sdline);
 
-legend([h_outliers, h_sd1, h_sd2],...
-    {'Outliers', sprintf('SD1=%.4f', plot_data.sd1), sprintf('SD2=%.4f', plot_data.sd2)},...
-    'Location', 'southeast');
+lgd = legend([h_sd1,h_sd2], {sprintf('SD1=%.4f', plot_data.sd1), sprintf('SD2=%.4f', plot_data.sd2)});
+if ~isempty(h_outliers)
+    legend([lgd.PlotChildren; h_outliers], [lgd.String, 'Outliers']);
+end
 
 %% Tag
 ax.Tag = tag;
