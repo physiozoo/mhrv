@@ -41,14 +41,14 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %             were specified.
 %   Outputs:
 %       - hrv_fd: Table containing the following HRV metrics:
-%           - TOT_PWR: Total power in all three bands combined.
-%           - VLF_PWR: Power in the VLF band.
-%           - LF_PWR: Power in the LF band.
-%           - HF_PWR: Power in the HF band.
-%           - VLF_to_TOT: Ratio between VLF power and total power.
-%           - LF_to_TOT: Ratio between LF power and total power.
-%           - HF_to_TOT: Ratio between HF power and total power.
-%           - LF_to_HF: Ratio between LF and HF power.
+%           - TOTAL_POWER: Total power in all three bands combined.
+%           - VLF_POWER: Power in the VLF band.
+%           - LF_POWER: Power in the LF band.
+%           - HF_POWER: Power in the HF band.
+%           - VLF_NORM: Ratio between VLF power and total power.
+%           - LF_NORM: Ratio between LF power and total power.
+%           - HF_NORM: Ratio between HF power and total power.
+%           - LF_TO_HF: Ratio between LF and HF power.
 %           - LF_PEAK: Frequency of highest peak in the LF band.
 %           - HF_PEAK: Frequency of highest peak in the HF band.
 %           If more than one value was given in 'power_methods', each of the above metrics will be
@@ -277,53 +277,61 @@ for ii = 1:length(power_methods)
     end
 
     % Absolute power in each band
-    hrv_fd.TOT_PWR_x = bandpower(pxx, f_axis, total_band,'psd') * 1e6;
-    hrv_fd.Properties.VariableUnits{'TOT_PWR_x'} = 'ms^2';
-    hrv_fd.Properties.VariableDescriptions{'TOT_PWR_x'} = sprintf('Total power (%s)', power_methods{ii});
+    col_total_power = ['TOTAL_POWER' suffix];
+    hrv_fd{:,col_total_power} = bandpower(pxx, f_axis, total_band,'psd') * 1e6;
+    hrv_fd.Properties.VariableUnits{col_total_power} = 'ms^2';
+    hrv_fd.Properties.VariableDescriptions{col_total_power} = sprintf('Total power (%s)', power_methods{ii});
 
-    hrv_fd.VLF_PWR_x = bandpower(pxx, f_axis, vlf_band,'psd') * 1e6;
-    hrv_fd.Properties.VariableUnits{'VLF_PWR_x'} = 'ms^2';
-    hrv_fd.Properties.VariableDescriptions{'VLF_PWR_x'} = sprintf('Power in VLF band (%s)', power_methods{ii});
+    col_vlf_power = ['VLF_POWER' suffix];
+    hrv_fd{:,col_vlf_power} = bandpower(pxx, f_axis, vlf_band,'psd') * 1e6;
+    hrv_fd.Properties.VariableUnits{col_vlf_power} = 'ms^2';
+    hrv_fd.Properties.VariableDescriptions{col_vlf_power} = sprintf('Power in VLF band (%s)', power_methods{ii});
 
-    hrv_fd.LF_PWR_x  = bandpower(pxx, f_axis, lf_band, 'psd') * 1e6;
-    hrv_fd.Properties.VariableUnits{'LF_PWR_x'} = 'ms^2';
-    hrv_fd.Properties.VariableDescriptions{'LF_PWR_x'} = sprintf('Power in LF band (%s)', power_methods{ii});
+    col_lf_power = ['LF_POWER' suffix];
+    hrv_fd{:,col_lf_power}  = bandpower(pxx, f_axis, lf_band, 'psd') * 1e6;
+    hrv_fd.Properties.VariableUnits{col_lf_power} = 'ms^2';
+    hrv_fd.Properties.VariableDescriptions{col_lf_power} = sprintf('Power in LF band (%s)', power_methods{ii});
 
-    hrv_fd.HF_PWR_x  = bandpower(pxx, f_axis, [hf_band(1) f_axis(end)], 'psd') * 1e6;
-    hrv_fd.Properties.VariableUnits{'HF_PWR_x'} = 'ms^2';
-    hrv_fd.Properties.VariableDescriptions{'HF_PWR_x'} = sprintf('Power in HF band (%s)', power_methods{ii});
+    col_hf_power = ['HF_POWER' suffix];
+    hrv_fd{:,col_hf_power}  = bandpower(pxx, f_axis, [hf_band(1) f_axis(end)], 'psd') * 1e6;
+    hrv_fd.Properties.VariableUnits{col_hf_power} = 'ms^2';
+    hrv_fd.Properties.VariableDescriptions{col_hf_power} = sprintf('Power in HF band (%s)', power_methods{ii});
 
-    % Calculate ratio of power in each band
-    hrv_fd.VLF_to_TOT_x = hrv_fd.VLF_PWR_x / hrv_fd.TOT_PWR_x;
-    hrv_fd.Properties.VariableUnits{'VLF_to_TOT_x'} = '1';
-    hrv_fd.Properties.VariableDescriptions{'VLF_to_TOT_x'} = sprintf('VLF to total power ratio (%s)', power_methods{ii});
+    % Calculate normalized power in each band
+    col_vlf_norm = ['VLF_NORM' suffix];
+    hrv_fd{:,col_vlf_norm} = hrv_fd{:,col_vlf_power} / hrv_fd{:,col_total_power};
+    hrv_fd.Properties.VariableUnits{col_vlf_norm} = '1';
+    hrv_fd.Properties.VariableDescriptions{col_vlf_norm} = sprintf('VLF to total power ratio (%s)', power_methods{ii});
 
-    hrv_fd.LF_to_TOT_x  = hrv_fd.LF_PWR_x  / hrv_fd.TOT_PWR_x;
-    hrv_fd.Properties.VariableUnits{'LF_to_TOT_x'} = '1';
-    hrv_fd.Properties.VariableDescriptions{'LF_to_TOT_x'} = sprintf('LF to total power ratio (%s)', power_methods{ii});
+    col_lf_norm = ['LF_NORM' suffix];
+    hrv_fd{:,col_lf_norm} = hrv_fd{:,col_lf_power} / hrv_fd{:,col_total_power};
+    hrv_fd.Properties.VariableUnits{col_lf_norm} = '1';
+    hrv_fd.Properties.VariableDescriptions{col_lf_norm} = sprintf('LF to total power ratio (%s)', power_methods{ii});
 
-    hrv_fd.HF_to_TOT_x  = hrv_fd.HF_PWR_x  / hrv_fd.TOT_PWR_x;
-    hrv_fd.Properties.VariableUnits{'HF_to_TOT_x'} = '1';
-    hrv_fd.Properties.VariableDescriptions{'HF_to_TOT_x'} = sprintf('HF to total power ratio (%s)', power_methods{ii});
+    col_hf_norm = ['HF_NORM' suffix];
+    hrv_fd{:,col_hf_norm} = hrv_fd{:,col_hf_power} / hrv_fd{:,col_total_power};
+    hrv_fd.Properties.VariableUnits{col_hf_norm} = '1';
+    hrv_fd.Properties.VariableDescriptions{col_hf_norm} = sprintf('HF to total power ratio (%s)', power_methods{ii});
 
     % Calculate LF/HF ratio
-    hrv_fd.LF_to_HF_x  = hrv_fd.LF_PWR_x  / hrv_fd.HF_PWR_x;
-    hrv_fd.Properties.VariableUnits{'LF_to_HF_x'} = '1';
-    hrv_fd.Properties.VariableDescriptions{'LF_to_HF_x'} = sprintf('LF to HF power ratio (%s)', power_methods{ii});
+    col_lf_to_hf = ['LF_TO_HF' suffix];
+    hrv_fd{:,col_lf_to_hf}  = hrv_fd{:,col_lf_power}  / hrv_fd{:,col_hf_power};
+    hrv_fd.Properties.VariableUnits{col_lf_to_hf} = '1';
+    hrv_fd.Properties.VariableDescriptions{col_lf_to_hf} = sprintf('LF to HF power ratio (%s)', power_methods{ii});
 
     % Calculate power in the extra bands
     for jj = 1:length(extra_bands)
         extra_band = extra_bands{jj};
         extra_band_power = bandpower(pxx, f_axis, extra_band, 'psd') * 1e6;
 
-        column_name = sprintf('EX%d_PWR%s', jj, suffix);
-        hrv_fd{:, column_name} = extra_band_power;
+        column_name = sprintf('EX%d_POWER%s', jj, suffix);
+        hrv_fd{:,column_name} = extra_band_power;
         hrv_fd.Properties.VariableUnits{column_name} = 'ms^2';
         hrv_fd.Properties.VariableDescriptions{column_name} =...
             sprintf('Power in custom band [%.5f,%.5f] (%s)', extra_band(1), extra_band(2), power_methods{ii});
 
-        column_name = sprintf('EX%d_to_TOT%s', jj, suffix);
-        hrv_fd{:, column_name}  = extra_band_power / hrv_fd.TOT_PWR_x;
+        column_name = sprintf('EX%d_NORM%s', jj, suffix);
+        hrv_fd{:,column_name}  = extra_band_power / hrv_fd{:,col_total_power};
         hrv_fd.Properties.VariableUnits{column_name} = '1';
         hrv_fd.Properties.VariableDescriptions{column_name} =...
             sprintf('Custom band %d to total power ratio (%s)', ii, power_methods{ii});
@@ -334,23 +342,18 @@ for ii = 1:length(power_methods)
     hf_band_idx = f_axis >= hf_band(1) & f_axis <= hf_band(2);
     [~, f_peaks_lf] = findpeaks(pxx(lf_band_idx), f_axis(lf_band_idx), 'SortStr','descend');
     [~, f_peaks_hf] = findpeaks(pxx(hf_band_idx), f_axis(hf_band_idx), 'SortStr','descend');
+    if isempty(f_peaks_lf); f_peaks_lf(1) = NaN; end
+    if isempty(f_peaks_hf); f_peaks_hf(1) = NaN; end
 
-    hrv_fd.LF_PEAK_x = NaN;
-    hrv_fd.HF_PEAK_x = NaN;
-    if ~isempty(f_peaks_lf)
-        hrv_fd.LF_PEAK_x = f_peaks_lf(1);
-    end
-    if ~isempty(f_peaks_hf)
-        hrv_fd.HF_PEAK_x = f_peaks_hf(1);
-    end
-    hrv_fd.Properties.VariableUnits{'LF_PEAK_x'} = 'Hz';
-    hrv_fd.Properties.VariableDescriptions{'LF_PEAK_x'} = sprintf('LF peak frequency (%s)', power_methods{ii});
-    hrv_fd.Properties.VariableUnits{'HF_PEAK_x'} = 'Hz';
-    hrv_fd.Properties.VariableDescriptions{'HF_PEAK_x'} = sprintf('HF peak frequency (%s)', power_methods{ii});
+    col_lf_peak = ['LF_PEAK' suffix];
+    hrv_fd{:,col_lf_peak} = f_peaks_lf(1);
+    hrv_fd.Properties.VariableUnits{col_lf_peak} = 'Hz';
+    hrv_fd.Properties.VariableDescriptions{col_lf_peak} = sprintf('LF peak frequency (%s)', power_methods{ii});
 
-    % Replace the '_x' with the actual suffix
-    varnames = hrv_fd.Properties.VariableNames;
-    hrv_fd.Properties.VariableNames = cellfun(@(varname) strrep(varname, '_x', suffix), varnames, 'UniformOutput', false);
+    col_hf_peak = ['HF_PEAK' suffix];
+    hrv_fd{:,col_hf_peak} = f_peaks_hf(1);
+    hrv_fd.Properties.VariableUnits{col_hf_peak} = 'Hz';
+    hrv_fd.Properties.VariableDescriptions{col_hf_peak} = sprintf('HF peak frequency (%s)', power_methods{ii});
 end
 
 % The returned PSD should be the first power_method
