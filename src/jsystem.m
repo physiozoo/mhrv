@@ -7,10 +7,10 @@ function [ res, out ] = jsystem( cmd, shell, dir )
 %   Input arguments:
 %   cmd -   A string, command to execute (with args and any shell
 %           directives), e.g. 'ls -al /foo | grep bar > baz.txt'
-%   shell - Optional. If specified, can be either a path of the shell to
-%          invoke (e.g. '/bin/zsh') or the string 'noshell' in which case the
-%          command will be run directly. In case this argument is omitted,
-%          defatuls to '/bin/sh'.
+%   shell - Optional. If specified and not empty, can be either a path of the shell to
+%           invoke (e.g. '/bin/zsh') or the string 'noshell' in which case the command
+%           will be run directly. In case this argument is omitted or empty,
+%           defatuls to '/bin/sh -c' on linux/mac or 'cmd.exe /c' on windows.
 %   dir -  Optional. Working directory for the process running the command.
 %          If omitted defaults to the current matlab working
 %          directory.
@@ -26,9 +26,9 @@ function [ res, out ] = jsystem( cmd, shell, dir )
 
 %% Platform-specific initialization
 if (ispc)
-    DEFAULT_SHELL       = 'cmd.exe /c';
+    DEFAULT_SHELL = 'cmd.exe /c';
 else
-    DEFAULT_SHELL       = '/bin/sh -c';
+    DEFAULT_SHELL = '/bin/sh -c';
 end
 
 %% Handle input
@@ -36,7 +36,7 @@ global jsystem_path;
 if (nargin == 0)
     error('No command specified');
 end
-if (~exist('shell', 'var'))
+if (~exist('shell', 'var') || isempty(shell))
     shell = DEFAULT_SHELL;
 end
 if (~exist('dir', 'var'))
