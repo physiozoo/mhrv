@@ -37,11 +37,13 @@ to_sample = p.Results.to;
 
 %% === Run rdsamp
 
-temp_file = sprintf('%s.rdsamp', rec_name);
+[rec_path, rec_filename, ~] = fileparts(rec_name);
+temp_filename = sprintf('%s.rdsamp', rec_filename);
+temp_file = [rec_path filesep temp_filename];
 
 % Command to run rdann with natural units
 rdsamp_path = get_wfdb_tool_path('rdsamp');
-command = sprintf('%s -P -c -r %s -f s%d', rdsamp_path, rec_name, from_sample-1);
+command = sprintf('%s -P -c -r %s -f s%d', rdsamp_path, rec_filename, from_sample-1);
 if (~isempty(to_sample))
     command = sprintf('%s -t s%d', command, to_sample-1);
 end
@@ -57,8 +59,8 @@ if (~isempty(sig_list))
 end
 
 % run the command and write results to a temp file
-command = sprintf('%s > %s', command, temp_file);
-[res, out] = jsystem(command);
+command = sprintf('%s > %s', command, temp_filename);
+[res, out] = jsystem(command,[], rec_path);
 if(res ~= 0)
     error('rdann error: %s', out);
 end

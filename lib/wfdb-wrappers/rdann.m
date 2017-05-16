@@ -29,17 +29,18 @@ p.parse(rec_name, ann_ext, varargin{:});
 ann_types = p.Results.ann_types;
 
 %% === Run rdann
+[rec_path, rec_filename, ~] = fileparts(rec_name);
 
 % Command to run rdann and cut only the annotation samples out
 rdann_path = get_wfdb_tool_path('rdann');
-command = sprintf('%s -e -r %s -a %s', rdann_path, rec_name, ann_ext);
+command = sprintf('%s -e -r %s -a %s', rdann_path, rec_filename, ann_ext);
 
 % Add annotation types flag if necessary
 if (~isempty(ann_types))
     command = sprintf('%s -p %s', command, ann_types);
 end
 
-[res, out] = jsystem(command);
+[res, out] = jsystem(command, [], rec_path);
 if(res ~= 0)
     error('rdann error: %s', out);
 end

@@ -67,10 +67,11 @@ if (isempty(ecg_col))
 end
 
 %% === Create commandline arguments
+[rec_path, rec_filename, ~] = fileparts(rec_name);
 
 % commanline for gqrs
 gqrs_path = get_wfdb_tool_path('gqrs');
-cmdline = sprintf('%s -r %s -s %d -f s%d -o %s', gqrs_path, rec_name, ecg_col-1, from_sample-1, out_ext);
+cmdline = sprintf('%s -r %s -s %d -f s%d -o %s', gqrs_path, rec_filename, ecg_col-1, from_sample-1, out_ext);
 if (~isempty(to_sample))
     cmdline = sprintf('%s -t s%d', cmdline, to_sample-1);
 end
@@ -87,7 +88,7 @@ if (gqpost)
 end
 
 %% === Run gqrs
-[retval, output] = jsystem(cmdline);
+[retval, output] = jsystem(cmdline, [], rec_path);
 if(retval ~= 0)
     error('gqrs error: %s', output);
 end
