@@ -220,7 +220,7 @@ if (should_plot)
 
         fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.freq.name);
         figure('NumberTitle','off', 'Name', fig_name);
-        plot_hrv_freq_spectrum(gca, plot_datas{ii}.freq);
+        plot_hrv_freq_spectrum(gca, plot_datas{ii}.freq, 'detailed_legend', true, 'peaks', true);
 
         fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.nl.name);
         figure('NumberTitle','off', 'Name', fig_name);
