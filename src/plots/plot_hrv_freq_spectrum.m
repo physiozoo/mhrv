@@ -11,12 +11,15 @@ p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
 p.addParameter('tag', default_axes_tag(mfilename), @ischar);
 p.addParameter('ylim', 'auto');
-
+p.addParameter('peaks', false);
+p.addParameter('detailed_legend', true);
 
 p.parse(ax, plot_data, varargin{:});
 clear = p.Results.clear;
 tag = p.Results.tag;
 yrange = p.Results.ylim;
+plot_peaks = p.Results.peaks;
+detailed_legend = p.Results.detailed_legend;
 
 f_axis          = plot_data.f_axis;
 pxx_lomb        = plot_data.pxx_lomb;
@@ -31,6 +34,8 @@ t_win           = plot_data.t_win;
 welch_overlap   = plot_data.welch_overlap;
 ar_order        = plot_data.ar_order;
 num_windows     = plot_data.num_windows;
+lf_peak         = plot_data.lf_peak;
+hf_peak         = plot_data.hf_peak;
 
 %% Plot
 if clear
@@ -39,21 +44,48 @@ end
 
 legend_entries = {};
 
+% Spectra
 if ~isempty(pxx_lomb)
     semilogy(f_axis, pxx_lomb, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
-    legend_entries{end+1} = sprintf('Lomb (t_{win}=%.1fm, n_{win}=%d)', t_win/60, num_windows);
+    if detailed_legend
+        legend_entries{end+1} = sprintf('Lomb (t_{win}=%.1fm, n_{win}=%d)', t_win/60, num_windows);
+    else
+        legend_entries{end+1} = 'Lomb';
+    end
 end
 if ~isempty(pxx_ar)
     semilogy(f_axis, pxx_ar, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
-    legend_entries{end+1} = sprintf('AR (order=%d)', ar_order);
+    if detailed_legend
+        legend_entries{end+1} = sprintf('AR (order=%d)', ar_order);
+    else
+        legend_entries{end+1} = 'AR';
+    end
 end
 if ~isempty(pxx_welch)
     semilogy(f_axis, pxx_welch, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
-    legend_entries{end+1} = sprintf('Welch (t_{win}=%.1fm, %d%% ovl.)', t_win/60, welch_overlap);
+    if detailed_legend
+        legend_entries{end+1} = sprintf('Welch (t_{win}=%.1fm, %d%% ovl.)', t_win/60, welch_overlap);
+    else
+        legend_entries{end+1} = 'Welch';
+    end
 end
 if ~isempty(pxx_fft)
     semilogy(f_axis, pxx_fft, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
-    legend_entries{end+1} = sprintf('FFT (twin=%.1fm, nwin=%d)', t_win/60, num_windows);
+    if detailed_legend
+        legend_entries{end+1} = sprintf('FFT (twin=%.1fm, nwin=%d)', t_win/60, num_windows);
+    else
+        legend_entries{end+1} = 'FFT';
+    end
+end
+
+% Peaks
+if plot_peaks && ~isnan(lf_peak)
+    plot(ax, lf_peak, pxx_lomb(f_axis==lf_peak).*1.25, 'bv', 'MarkerSize', 8, 'MarkerFaceColor', 'blue');
+    legend_entries{end+1} = sprintf('%.3f Hz', lf_peak);
+end
+if plot_peaks && ~isnan(hf_peak)
+    plot(ax, hf_peak, pxx_lomb(f_axis==hf_peak).*1.25, 'rv', 'MarkerSize', 8, 'MarkerFaceColor', 'red');
+    legend_entries{end+1} = sprintf('%.3f Hz', hf_peak);
 end
 
 % Axes limits
@@ -74,8 +106,9 @@ text(vlf_band(1), yrange(2) * 0.5, ' VLF', 'Parent', ax);
 text( lf_band(1), yrange(2) * 0.5,  ' LF', 'Parent', ax);
 text( hf_band(1), yrange(2) * 0.5,  ' HF', 'Parent', ax);
 
+% Labels
 legend(ax, legend_entries);
-xlabel(ax, 'Frequency [hz]');
+xlabel(ax, 'Frequency [Hz]');
 ylabel(ax, 'Log Power Density [s^2/Hz]');
 
 %% Tag
