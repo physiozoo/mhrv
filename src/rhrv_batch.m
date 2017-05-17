@@ -83,7 +83,7 @@ parfor rec_type_idx = 1:n_rec_types
         fprintf('-> Analyzing record %s\n', rec_name);
         [curr_hrv, ~, curr_plot_data] = rhrv(rec_name, 'params', rhrv_params, 'plot', false);
         if save_plot_data
-            rec_type_plot_datas{file_idx} = curr_plot_data;
+            rec_type_plot_datas{file_idx} = curr_plot_data{1}; % 1 is the window number (we're using only one)
         end
 
         % Make sure we have a minimal amount of data in this file.
