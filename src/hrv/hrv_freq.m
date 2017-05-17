@@ -302,18 +302,18 @@ for ii = length(power_methods):-1:1
     total_lf_hf_power = hrv_fd{:,col_lf_power} + hrv_fd{:,col_hf_power};
     col_lf_norm = ['LF_NORM' suffix];
     hrv_fd{:,col_lf_norm} = 100 * hrv_fd{:,col_lf_power} / total_lf_hf_power;
-    hrv_fd.Properties.VariableUnits{col_lf_norm} = '1';
+    hrv_fd.Properties.VariableUnits{col_lf_norm} = 'n.u.';
     hrv_fd.Properties.VariableDescriptions{col_lf_norm} = sprintf('LF to total power ratio (%s)', power_methods{ii});
 
     col_hf_norm = ['HF_NORM' suffix];
     hrv_fd{:,col_hf_norm} = 100 * hrv_fd{:,col_hf_power} / total_lf_hf_power;
-    hrv_fd.Properties.VariableUnits{col_hf_norm} = '1';
+    hrv_fd.Properties.VariableUnits{col_hf_norm} = 'n.u.';
     hrv_fd.Properties.VariableDescriptions{col_hf_norm} = sprintf('HF to total power ratio (%s)', power_methods{ii});
 
     % Calculate LF/HF ratio
     col_lf_to_hf = ['LF_TO_HF' suffix];
     hrv_fd{:,col_lf_to_hf}  = hrv_fd{:,col_lf_power}  / hrv_fd{:,col_hf_power};
-    hrv_fd.Properties.VariableUnits{col_lf_to_hf} = '1';
+    hrv_fd.Properties.VariableUnits{col_lf_to_hf} = 'n.u.';
     hrv_fd.Properties.VariableDescriptions{col_lf_to_hf} = sprintf('LF to HF power ratio (%s)', power_methods{ii});
 
     % Calculate power in the extra bands
@@ -329,7 +329,7 @@ for ii = length(power_methods):-1:1
 
         column_name = sprintf('EX%d_NORM%s', jj, suffix);
         hrv_fd{:,column_name}  = 100 * extra_band_power / total_lf_hf_power;
-        hrv_fd.Properties.VariableUnits{column_name} = '1';
+        hrv_fd.Properties.VariableUnits{column_name} = 'n.u.';
         hrv_fd.Properties.VariableDescriptions{column_name} =...
             sprintf('Custom band %d to total power ratio (%s)', ii, power_methods{ii});
     end

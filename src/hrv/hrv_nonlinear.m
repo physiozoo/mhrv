@@ -73,11 +73,11 @@ hrv_nl.Properties.VariableDescriptions{'SD2'} = 'NN interval standard deviation 
 
 % Save the scaling exponents
 hrv_nl.alpha1 = alpha1;
-hrv_nl.Properties.VariableUnits{'alpha1'} = '1';
+hrv_nl.Properties.VariableUnits{'alpha1'} = 'n.u.';
 hrv_nl.Properties.VariableDescriptions{'alpha1'} = 'DFA low-scale slope';
 
 hrv_nl.alpha2 = alpha2;
-hrv_nl.Properties.VariableUnits{'alpha2'} = '1';
+hrv_nl.Properties.VariableUnits{'alpha2'} = 'n.u.';
 hrv_nl.Properties.VariableDescriptions{'alpha2'} = 'DFA high-scale slope';
 
 %% Beta: Spectral power-law exponent
@@ -107,7 +107,7 @@ f_axis_log = log10(f_axis(beta_band_idx));
 pxx_fit_beta = polyfit(f_axis_log, pxx_log, 1);
 
 hrv_nl.beta = pxx_fit_beta(1);
-hrv_nl.Properties.VariableUnits{'beta'} = '1';
+hrv_nl.Properties.VariableUnits{'beta'} = 'n.u.';
 hrv_nl.Properties.VariableDescriptions{'beta'} = 'VLF slope';
 %% Multiscale sample entropy
 
@@ -116,14 +116,14 @@ hrv_nl.Properties.VariableDescriptions{'beta'} = 'VLF slope';
 
 % Save the first MSE value (this is the sample entropy).
 hrv_nl.SampEn = mse_values(1);
-hrv_nl.Properties.VariableUnits{'SampEn'} = '1';
+hrv_nl.Properties.VariableUnits{'SampEn'} = 'n.u.';
 hrv_nl.Properties.VariableDescriptions{'SampEn'} = 'Sample entropy';
 
 if mse_metrics
     for ii = 1:length(mse_values)
         curr_metric_name = ['MSE' num2str(scale_axis(ii))];
         hrv_nl{:, curr_metric_name} = mse_values(ii);
-        hrv_nl.Properties.VariableUnits{curr_metric_name} = '1';
+        hrv_nl.Properties.VariableUnits{curr_metric_name} = 'n.u.';
         hrv_nl.Properties.VariableDescriptions{curr_metric_name} = sprintf('MSE value at scale %d', scale_axis(ii));
     end
 end

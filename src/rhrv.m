@@ -149,7 +149,7 @@ for curr_win_idx = window_index_offset : window_max_index
 
     % Update metrics table
     intervals_count = table(length(rri_window),length(nni_window),'VariableNames',{'RR','NN'});
-    intervals_count.Properties.VariableUnits = {'1','1'};
+    intervals_count.Properties.VariableUnits = {'n.u.','n.u.'};
     intervals_count.Properties.VariableDescriptions = {'Number of RR intervals','Number of NN intervals'};
     
     % Add a new row to the output table for the current window
