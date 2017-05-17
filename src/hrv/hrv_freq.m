@@ -265,8 +265,9 @@ hrv_fd.Properties.Description = 'Frequency Domain HRV Metrics';
 % Get entire frequency range
 total_band = [f_min, f_axis(end)];
 
-% Loop over power methods and calculate metrics based on each one
-for ii = 1:length(power_methods)
+% Loop over power methods and calculate metrics based on each one. Loop in reverse order so that
+% the first power method is the last and it's variables retain their values (pxx, column names).
+for ii = length(power_methods):-1:1
     % Current PSD for metrics calculations
     pxx = eval(['pxx_' power_methods{ii}]);
 
@@ -297,19 +298,15 @@ for ii = 1:length(power_methods)
     hrv_fd.Properties.VariableUnits{col_hf_power} = 'ms^2';
     hrv_fd.Properties.VariableDescriptions{col_hf_power} = sprintf('Power in HF band (%s)', power_methods{ii});
 
-    % Calculate normalized power in each band
-    col_vlf_norm = ['VLF_NORM' suffix];
-    hrv_fd{:,col_vlf_norm} = hrv_fd{:,col_vlf_power} / hrv_fd{:,col_total_power};
-    hrv_fd.Properties.VariableUnits{col_vlf_norm} = '1';
-    hrv_fd.Properties.VariableDescriptions{col_vlf_norm} = sprintf('VLF to total power ratio (%s)', power_methods{ii});
-
+    % Calculate normalized power in each band (normalize by LF+HF)
+    total_lf_hf_power = hrv_fd{:,col_lf_power} + hrv_fd{:,col_hf_power};
     col_lf_norm = ['LF_NORM' suffix];
-    hrv_fd{:,col_lf_norm} = hrv_fd{:,col_lf_power} / hrv_fd{:,col_total_power};
+    hrv_fd{:,col_lf_norm} = 100 * hrv_fd{:,col_lf_power} / total_lf_hf_power;
     hrv_fd.Properties.VariableUnits{col_lf_norm} = '1';
     hrv_fd.Properties.VariableDescriptions{col_lf_norm} = sprintf('LF to total power ratio (%s)', power_methods{ii});
 
     col_hf_norm = ['HF_NORM' suffix];
-    hrv_fd{:,col_hf_norm} = hrv_fd{:,col_hf_power} / hrv_fd{:,col_total_power};
+    hrv_fd{:,col_hf_norm} = 100 * hrv_fd{:,col_hf_power} / total_lf_hf_power;
     hrv_fd.Properties.VariableUnits{col_hf_norm} = '1';
     hrv_fd.Properties.VariableDescriptions{col_hf_norm} = sprintf('HF to total power ratio (%s)', power_methods{ii});
 
@@ -331,7 +328,7 @@ for ii = 1:length(power_methods)
             sprintf('Power in custom band [%.5f,%.5f] (%s)', extra_band(1), extra_band(2), power_methods{ii});
 
         column_name = sprintf('EX%d_NORM%s', jj, suffix);
-        hrv_fd{:,column_name}  = extra_band_power / hrv_fd{:,col_total_power};
+        hrv_fd{:,column_name}  = 100 * extra_band_power / total_lf_hf_power;
         hrv_fd.Properties.VariableUnits{column_name} = '1';
         hrv_fd.Properties.VariableDescriptions{column_name} =...
             sprintf('Custom band %d to total power ratio (%s)', ii, power_methods{ii});
@@ -356,9 +353,6 @@ for ii = 1:length(power_methods)
     hrv_fd.Properties.VariableDescriptions{col_hf_peak} = sprintf('HF peak frequency (%s)', power_methods{ii});
 end
 
-% The returned PSD should be the first power_method
-pxx = eval(['pxx_' power_methods{1}]);
-
 %% Plot
 plot_data.name = 'Intervals Spectrum';
 plot_data.f_axis = f_axis;
@@ -374,9 +368,11 @@ plot_data.t_win = t_win;
 plot_data.welch_overlap = welch_overlap;
 plot_data.ar_order = ar_order;
 plot_data.num_windows = num_windows;
+plot_data.lf_peak = hrv_fd{:,col_lf_peak};
+plot_data.hf_peak = hrv_fd{:,col_hf_peak};
 
 if (should_plot)
     figure('Name', plot_data.name);
-    plot_hrv_freq_spectrum(gca, plot_data);
+    plot_hrv_freq_spectrum(gca, plot_data, 'peaks', true);
 end
 end
