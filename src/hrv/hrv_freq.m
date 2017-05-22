@@ -51,8 +51,8 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %           - LF_TO_HF: Ratio between LF and HF power.
 %           - LF_PEAK: Frequency of highest peak in the LF band.
 %           - HF_PEAK: Frequency of highest peak in the HF band.
-%           If more than one value was given in 'power_methods', each of the above metrics will be
-%           calculated for each method, and their names will be suffixed with the method name.
+%           Note that each of the above metrics will be calculated for each value given in
+%           'power_methods', and their names will be suffixed with the method name (e.g. LF_PEAK_LOMB).
 %       - pxx: Power spectrum. It's type is determined by the first value in 'power_methods'.
 %       - f_axis: Frequencies, in Hz, at which pxx was calculated.
 
@@ -271,11 +271,7 @@ for ii = length(power_methods):-1:1
     % Current PSD for metrics calculations
     pxx = eval(['pxx_' power_methods{ii}]);
 
-    if length(power_methods) == 1
-        suffix =  '';
-    else
-        suffix = ['_' upper(power_methods{ii})];
-    end
+    suffix = ['_' upper(power_methods{ii})];
 
     % Absolute power in each band
     col_total_power = ['TOTAL_POWER' suffix];
