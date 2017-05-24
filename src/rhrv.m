@@ -141,11 +141,15 @@ for curr_win_idx = window_index_offset : window_max_index
 
     % Freq domain metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating frequency-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [ hrv_fd, ~, ~,  pd_freq ] = hrv_freq(nni_window);
+    [hrv_fd, ~, ~,  pd_freq ] = hrv_freq(nni_window);
 
     % Non linear metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);
     [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
+
+    % Heart rate fragmentation metrics
+    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating fragmentation metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+    hrv_frag = hrv_fragmentation(nni_window);
 
     % Update metrics table
     intervals_count = table(length(rri_window),length(nni_window),'VariableNames',{'RR','NN'});
@@ -153,7 +157,7 @@ for curr_win_idx = window_index_offset : window_max_index
     intervals_count.Properties.VariableDescriptions = {'Number of RR intervals','Number of NN intervals'};
     
     % Add a new row to the output table for the current window
-    curr_win_table = [intervals_count, hrv_td, hrv_fd, hrv_nl];
+    curr_win_table = [intervals_count, hrv_td, hrv_fd, hrv_nl, hrv_frag];
     curr_win_table.Properties.RowNames{1} = sprintf('%d', curr_win_idx+1);
     hrv_metrics = [hrv_metrics; curr_win_table];
 
