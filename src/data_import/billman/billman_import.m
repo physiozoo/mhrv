@@ -38,7 +38,7 @@ end
 files = dir([input_dir '*.acq']);
 
 % Convert each file to a wfdb record, handle any error that may occur
-for ii = 1:length(files)
+parfor ii = 1:length(files)
     try
         billman2wfdb([input_dir files(ii).name], output_dir);
     catch ex
