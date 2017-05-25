@@ -83,7 +83,7 @@ end
 fprintf('[%.3f] >> rhrv: Processing ECG signal from record %s (ch. %d)...\n', cputime-t0, rec_name, ecg_channel);
 
 % Length of signal in seconds
-t_max = ecg_N / ecg_Fs;
+t_max = floor(ecg_N / ecg_Fs);
 
 % Duration of signal
 duration_h  = mod(floor(t_max / 3600), 60);
