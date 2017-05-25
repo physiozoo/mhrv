@@ -195,15 +195,64 @@ metadata.channels = {'ECG', 'Heart Rate'};
 % Add units to metadata
 metadata.units = {info.szUnitsText{ecg_channel}, info.szUnitsText{hr_channel}};
 
+%% Trim & remove transients data
+
+data_description = {'Basal', 'Double Blockade'};
+data_all = {data_bsl, data_dbk};
+
+n_sigs = size(data_all,2);
+n_chans = size(metadata.channels,2);
+
+trim_duration = 305; % seconds
+min_transient_window = 30; % seconds
+
+% Loop over signals
+for sig_idx = 1:n_sigs
+    sig_length = size(data_all{sig_idx},1);  % samples
+    sig_duration = (1/fs) * (sig_length-1);  % seconds
+
+    % Set transient window duration
+    transient_window = max(min_transient_window, (sig_duration - trim_duration));
+
+    % Remove initial transients by looking at HR
+    curr_hr = data_all{sig_idx}(:,2);
+
+    % Index where transient window ends
+    transient_window_max_idx = ceil(fs*transient_window);
+
+    % Threshold value that defines the "steady state": median after transient window
+    thresh = median(curr_hr(transient_window_max_idx:end));
+
+    % Find last idx thats close enough (5%) to the threshold
+    thresh_idx = find( abs(curr_hr(1:transient_window_max_idx) - thresh) <= 0.05 * thresh, 1, 'last' );
+
+    if isempty(thresh_idx)
+        transient_idx = transient_window_max_idx;
+    else
+        transient_idx = min(thresh_idx, transient_window_max_idx);
+    end
+
+    % Remove up to transient index
+    data_all{sig_idx} = data_all{sig_idx}(transient_idx:end,:);
+
+    % Trim the signal to trim_duration seconds
+    sig_length = size(data_all{sig_idx},1);  % samples
+    sig_duration = (1/fs) * (sig_length-1);  % seconds
+    if sig_duration > trim_duration
+        start_idx = floor(fs * (sig_duration - trim_duration));
+
+        % Remove start of data so it's final duration is trim_duration
+        data_all{sig_idx} = data_all{sig_idx}(start_idx:end,:);
+    end
+end
+
+%% Save trimmed data
+data_bsl = data_all{1};
+data_dbk = data_all{2};
+
 %% Plot if no ouput args
 if (nargout == 0)
     figure;
-
-    data_description = {'Basal', 'Double Blockade'};
-    data_all = {data_bsl, data_dbk};
-
-    n_sigs = size(data_all,2);
-    n_chans = size(metadata.channels,2);
 
     % Loop over signals
     for sig_idx = 1:n_sigs
@@ -219,6 +268,14 @@ if (nargout == 0)
             xlabel('Seconds'); ylabel(metadata.units{chan_idx});
             legend(metadata.channels{chan_idx});
             title(data_description{sig_idx});
+
+            if chan_idx == 2 % HR
+                hold on;
+                %transient_time = 30;%sec
+                %thresh = mean(curr_channel_data(t_axis > transient_time/fs));
+                thresh = median(curr_channel_data);
+                plot(t_axis, ones(size(t_axis)).*thresh, 'DisplayName', 'mean');
+            end
         end
     end
 end
