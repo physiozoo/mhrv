@@ -1,0 +1,50 @@
+# parameter values of the rhrv toolbox for human ECG data
+---
+# Peak detection
+rqrs:
+    gqconf: gqrs.default.conf
+    window_size_sec: 0.056      # 80% of .07, the average human QRS duration
+
+# RR Interval filtering
+filtrr:
+    filter_poincare: true
+    filter_lowpass: true
+    win_samples: 10             # samples
+    win_percent: 20             # percentage [0-100]
+
+# Poincare Parameters
+poincare:
+    rr_min: 0.32                # Seconds (187.5 BPM)
+    rr_max: 1.5                 # Seconds (40 BPM)
+    rr_max_change: 25           # Percent, max change between adjacent RR intervals
+
+# Time-domain HRV parameters
+hrv_time:
+    pnn_thresh_ms: 50           # milliseconds
+
+# Frequency-domain HRV parameters
+hrv_freq:
+    methods: [lomb, ar, welch]  # possible methods: lomb, ar, welch, fft
+    vlf_band:   [0.003, 0.04]
+    lf_band:    [0.04,  0.15]
+    hf_band:    [0.15,  0.4]
+    window_minutes: 5
+    ar_order: 24
+
+# Nonlinear HRV metrics
+hrv_nl:
+    beta_band: [0.003, 0.04]    # Hz
+
+# DFA Parameters
+dfa:
+    n_min: 4
+    n_max: 128
+    n_incr: 4
+    alpha1_range: [4, 15]
+    alpha2_range: [16, 128]
+
+# MSE Parameters
+mse:
+    mse_max_scale: 15
+    sampen_r: 0.2               # percent of std. dev.
+    sampen_m: 2
