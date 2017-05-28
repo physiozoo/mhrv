@@ -10,12 +10,31 @@ function [ param_value ] = rhrv_default( param_name, default_value )
 %   Output: The user-configured parameter value, if exists, otherwise returns the value of
 %   'default_value'.
 %
+
 global rhrv_default_values;
-if(isempty(rhrv_default_values) || ~rhrv_default_values.isKey(param_name))
-    param_value = default_value;
+param_value = default_value;
+
+if isempty(rhrv_default_values)    
     return;
 end
 
-param_value = rhrv_default_values(param_name);
+% Get the 'path' to the field in the parameter struct
+field_path = strsplit(param_name, '.');
+curr_val = rhrv_default_values;
+
+% Traverse into the parameters structure until the parameter is found
+for ii = 1:length(field_path)
+    % Make sure current field exists
+    if isfield(curr_val, field_path{ii})
+        curr_val = curr_val.(field_path{ii});
+    else
+        break;
+    end
+    
+    % Last iteration and field existed: return it's value as the parameter
+    if ii == length(field_path)
+        param_value = curr_val;
+    end
+end
 
 end
