@@ -43,8 +43,8 @@ for ii = 1:length(field_path)
     if ii == length(field_path)
         param_value = curr_val;
 
-        % Convert cell arrays to regular vectors (except for cell strings).
-        if iscell(param_value) && ~iscellstr(param_value)
+        % Convert simple cell arrays (e.g. {[1],[2]}) to regular vectors.
+        if iscell(param_value) && size(param_value,1) && ~iscellstr(param_value) && all(cellfun(@isscalar, param_value))
             param_value = cell2mat(param_value);
         end
     end
