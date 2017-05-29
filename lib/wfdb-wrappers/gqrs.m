@@ -7,8 +7,10 @@ function [ qrs, outliers ] = gqrs( rec_name, varargin )
 %                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
 %       - varargin: Pass in name-value pairs to configure advanced options:
 %           - 'ecg_col': Number of ecg signal in the record (default [], i.e. auto-detect signal).
-%           - 'gqconf': Path to a gqrs config file to use. This allows adapting the algorithm for
-%                       different signal and/or animal types (default is '', i.e. no config file).
+%           - 'gqconf': Filename or Path to a gqrs config file to use. This allows adapting the
+%                       algorithm for different signal and/or animal types (default is '', i.e. no
+%                       config file). Note that if only a filename is provided, 'gqrs' will attempt
+%                       to find the gqconf file on the MATLAB path.
 %           - 'gqpost': Whether to run the 'gqpost' tool to find erroneous detections (default
 %                       false).
 %           - 'from': Number of first sample to start detecting from (default 1)
@@ -56,8 +58,16 @@ should_plot = p.Results.plot;
 %% === Input validation
 
 % Make sure config file exists (if specified)
-if (~isempty(gqconf) && ~exist(gqconf, 'file'))
-    error('Config file not found: %s', gqconf);
+if ~isempty(gqconf)
+    % Try to find the config file on the MATLAB path. If it doesn't exist, treat it as a relative path.
+    w = which(gqconf);
+    if ~isempty(w)
+        gqconf = w;
+    elseif exist(gqconf, 'file')
+        gqconf = GetFullPath(gqconf);
+    else
+        error('Config file not found: %s', gqconf);
+    end
 end
 
 %% === Find ECG signal index if it wasn't specified
