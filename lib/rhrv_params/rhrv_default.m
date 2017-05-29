@@ -11,9 +11,16 @@ function [ param_value ] = rhrv_default( param_name, default_value )
 %   'default_value'.
 %
 
-global rhrv_default_values;
+% Set default if not provided
+if nargin < 2
+    default_value = [];
+end
+
+% Set provided default value
 param_value = default_value;
 
+% If no defaults were loaded, we don't have anything to do
+global rhrv_default_values;
 if isempty(rhrv_default_values)    
     return;
 end
@@ -28,12 +35,18 @@ for ii = 1:length(field_path)
     if isfield(curr_val, field_path{ii})
         curr_val = curr_val.(field_path{ii});
     else
+        % Field doesn't exist so break out of loop and return the provided default.
         break;
     end
     
     % Last iteration and field existed: return it's value as the parameter
     if ii == length(field_path)
         param_value = curr_val;
+
+        % Convert cell arrays to regular vectors (except for cell strings).
+        if iscell(param_value) && ~iscellstr(param_value)
+            param_value = cell2mat(param_value);
+        end
     end
 end
 
