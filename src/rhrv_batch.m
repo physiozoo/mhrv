@@ -11,6 +11,8 @@ function [ hrv_tables, stats_tables, plot_datas ] = rhrv_batch( rec_dir, varargi
 %           - rec_types: A cell array containing the names of the type of record to analyze.
 %           - rec_filenames: A cell array with identical length as 'rec_names', containing
 %             patterns to match against the files in 'rec_dir' for each 'rec_type'.
+%           - rec_transforms: A cell array of transform functions to apply to each file in each
+%             record (one transform for each rec_type).
 %           - rhrv_params: Parameters cell array to pass into rhrv when processing each record.
 %           - writexls: true/false whether to write the output to an Excel file.
 %           - output_dir: Directory to write output file to.
@@ -39,6 +41,7 @@ p = inputParser;
 p.addRequired('rec_dir', @(x) exist(x,'dir'));
 p.addParameter('rec_types', DEFAULT_REC_TYPES, @iscellstr);
 p.addParameter('rec_filenames', DEFAULT_REC_FILENAMES, @iscellstr);
+p.addParameter('rec_transforms', {}, @iscell);
 p.addParameter('rhrv_params', DEFAULT_RHRV_PARAMS, @(x) ischar(x)||iscell(x));
 p.addParameter('min_nn', DEFAULT_MIN_NN, @isscalar);
 p.addParameter('output_dir', DEFAULT_OUTPUT_FOLDER, @isstr);
@@ -49,6 +52,7 @@ p.addParameter('writexls', false, @islogical);
 p.parse(rec_dir, varargin{:});
 rec_types = p.Results.rec_types;
 rec_filenames = p.Results.rec_filenames;
+rec_transforms = p.Results.rec_transforms;
 rhrv_params = p.Results.rhrv_params;
 min_nn = p.Results.min_nn;
 output_dir = p.Results.output_dir;
@@ -59,13 +63,24 @@ save_plot_data = nargout > 2;
 if ~strcmp(rec_dir(end),filesep)
     rec_dir = [rec_dir filesep];
 end
+
 n_rec_types = length(rec_types);
 if length(rec_filenames) ~= n_rec_types
     error('Different number of record types and filenames provided.');
 end
+
+if isempty(rec_transforms)
+    rec_transforms = cell(1, n_rec_types);
+elseif length(rec_transforms) ~= n_rec_types
+    error('Different number of record types and transforms provided.');
+elseif ~all(cellfun(@(x)isempty(x) || isa(x,'function_handle'), rec_transforms))
+    error('Record type transforms cell array must only contain function handles.');
+end
+
 if ~exist(output_dir, 'dir')
     mkdir(output_dir);
 end
+
 if isempty(output_filename)
     [~, output_dirname, ~] = fileparts(output_dir);
     output_filename = ['rhrv_batch_' output_dirname];
@@ -84,6 +99,8 @@ fprintf('-> Starting batch processing...\n');
 t0 = tic;
 parfor rec_type_idx = 1:n_rec_types
     rec_type_filenames = rec_filenames{rec_type_idx};
+    rec_type_transform = rec_transforms{rec_type_idx};
+
     % Get files matching the currect record type's pattern
     files = dir([rec_dir sprintf('%s.dat', rec_type_filenames)])';
     nfiles = length(files);
@@ -104,7 +121,8 @@ parfor rec_type_idx = 1:n_rec_types
         
         % Analyze the record
         fprintf('-> Analyzing record %s\n', rec_name);
-        [curr_hrv, ~, curr_plot_data] = rhrv(rec_name, 'params', rhrv_params, 'plot', false);
+        [curr_hrv, ~, curr_plot_data] = rhrv(rec_name,...
+            'params', rhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
 
         % Make sure we have a minimal amount of data in this file.
         if curr_hrv.NN < min_nn

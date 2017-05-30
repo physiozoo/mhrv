@@ -16,6 +16,9 @@ function [ hrv_metrics, hrv_stats, plot_datas ] = rhrv( rec_name, varargin )
 %                     parameters file will be loaded. Alternatively, can also be a cell array
 %                     containing the exact arguments to pass to rhrv_load_params. This allows
 %                     overriding parameters from a script.
+%           - transform_fn: A function handle to apply to the NN intervals before calculating
+%                           metrics. The function handle should accept one argument only, the NN
+%                           interval lengths.
 %           - plot: true/false whether to generate plots. Defaults to true if no output arguments
 %                   were specified.
 %   Outputs:
@@ -47,15 +50,17 @@ p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && nu
 p.addParameter('window_index_limit', DEFAULT_WINDOW_INDEX_LIMIT, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_offset', DEFAULT_WINDOW_INDEX_OFFSET, @(x) isnumeric(x) && numel(x) < 2 && x >= 0);
 p.addParameter('params', DEFAULT_PARAMS, @(x) ischar(x)||iscell(x));
+p.addParameter('transform_fn', [], @(x) isempty(x)||isa(x,'function_handle'));
 p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
 p.parse(rec_name, varargin{:});
 ecg_channel = p.Results.ecg_channel;
-params = p.Results.params;
 window_minutes = p.Results.window_minutes;
 window_index_limit = p.Results.window_index_limit;
 window_index_offset = p.Results.window_index_offset;
+params = p.Results.params;
+transform_fn = p.Results.transform_fn;
 should_plot = p.Results.plot;
 
 % Load user-specified default parameters
@@ -134,6 +139,12 @@ for curr_win_idx = window_index_offset : window_max_index
 
     fprintf('[%.3f] >> rhrv: [%d/%d] %d NN intervals, %d RR intervals were filtered out\n',...
             cputime-t0, curr_win_idx+1, num_win, length(nni_window), length(trr_window)-length(tnn_window));
+
+    % Apply transform function if available
+    if ~isempty(transform_fn)
+        fprintf('[%.3f] >> rhrv: [%d/%d] Applyting transform function %s...\n', cputime-t0, curr_win_idx+1, num_win, func2str(transform_fn));
+        nni_window = transform_fn(nni_window);
+    end
 
     % Time Domain metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating time-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
