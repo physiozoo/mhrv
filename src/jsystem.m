@@ -80,6 +80,7 @@ is = process.getInputStream();
 scanner = java.util.Scanner(is).useDelimiter('\\A'); % '\A' is the start of input token
 if scanner.hasNext() % blocks until start of stream
     out = scanner.next(); % blocks until end of stream
+    out = char(out); % Convert from java string to matlab string
 else
     out = '';
 end
