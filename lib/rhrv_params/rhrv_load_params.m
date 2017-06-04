@@ -1,5 +1,7 @@
 function [] = rhrv_load_params( varargin )
-%RHRV_LOAD_PARAMS Loads an rhrv parameters file, setting it's values as default.
+%RHRV_LOAD_PARAMS Loads an rhrv parameters file, setting it's values as default. All current
+%parameter defaults will be cleared.
+%
 %   Usage:
 %       rhrv_load_params <params_filename>
 %       rhrv_load_params(params_filename, 'param1', value1, 'param2', value2, ...)
@@ -8,7 +10,10 @@ function [] = rhrv_load_params( varargin )
 %   the default value for the various toolbox functions.
 %
 %   The second usage form also allows overriding specific parameters with custom values given
-%   to the function.
+%   to the function. In this form, the filename is optional; the function will also accept just
+%   key-value pairs.
+%
+%   Note: This function always clears all current default parameters in both usage modes.
 %
 
 %% Validate input
@@ -63,15 +68,14 @@ if ~isempty(params_filename)
     params = ReadYaml(params_filename);
 end
 
-% If extra parameters were provided, add them to the parameters (overrides existing)
-for ii = 1:2:length(extra_params)
-    fieldnames = strsplit(extra_params{ii}, '.');
-    params = setfield(params, fieldnames{:}, extra_params{ii+1});
-end
-
 % Set the global parameters variable (so the loaded parameters affect the defaults for all toolbox
 % functions).
 global rhrv_default_values;
 rhrv_default_values = params;
+
+% If extra parameters were provided, add them to the parameters (overrides existing)
+if ~isempty(extra_params)
+    rhrv_override_params(extra_params{:});
+end
 
 end
