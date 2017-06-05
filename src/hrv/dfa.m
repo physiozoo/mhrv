@@ -6,12 +6,12 @@ function [ n, fn, alpha1, alpha2, plot_data ] = dfa( t, sig, varargin )
 %       - sig: signal data (or y values of signal)
 %       - varargin: Pass in name-value pairs to configure advanced options:
 %           - n_min: Minimal DFA block-size (default 4)
-%           - n_max: Maximal DFA block-size (default 128)
-%           - n_incr: Increment value for n (default 4)
+%           - n_max: Maximal DFA block-size (default 64)
+%           - n_incr: Increment value for n (default 2)
 %           - alpha1_range: Range of block size values to use for calculating the alpha1 scaling
 %             exponent. Default: [4, 15].
 %           - alpha2_range: Range of block size values to use for calculating the alpha2 scaling
-%             exponent. Default: [16, 128].
+%             exponent. Default: [16, 64].
 %   Output:
 %       - n: block sizes (x-axis of DFA)
 %       - fn: DFA value for each block size n
@@ -20,10 +20,10 @@ function [ n, fn, alpha1, alpha2, plot_data ] = dfa( t, sig, varargin )
 
 %% Input
 DEFAULT_NMIN = rhrv_default('dfa.n_min', 4);
-DEFAULT_NMAX = rhrv_default('dfa.n_max', 128);
-DEFAULT_N_INCR = rhrv_default('dfa.n_incr', 4);
+DEFAULT_NMAX = rhrv_default('dfa.n_max', 64);
+DEFAULT_N_INCR = rhrv_default('dfa.n_incr', 2);
 DEFAULT_ALPHA1_RANGE = rhrv_default('dfa.alpha1_range', [4, 15]);
-DEFAULT_ALPHA2_RANGE = rhrv_default('dfa.alpha2_range', [16, 128]);
+DEFAULT_ALPHA2_RANGE = rhrv_default('dfa.alpha2_range', [16, 64]);
 
 % Define input
 p = inputParser;

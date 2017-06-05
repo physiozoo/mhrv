@@ -38,10 +38,10 @@ hrv_nl:
 # DFA Parameters
 dfa:
     n_min: 4
-    n_max: 128
-    n_incr: 4
+    n_max: 64
+    n_incr: 2
     alpha1_range: [4, 15]
-    alpha2_range: [16, 128]
+    alpha2_range: [16, 64]
 
 # MSE Parameters
 mse:
