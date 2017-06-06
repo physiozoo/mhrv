@@ -3,7 +3,7 @@
 # Peak detection
 rqrs:
     gqconf: gqrs.billman.conf
-    window_size_sec: 0.04       # 80% of .05, the average canine QRS duration
+    window_size_sec: 0.08
 
 # RR Interval filtering
 filtrr:
