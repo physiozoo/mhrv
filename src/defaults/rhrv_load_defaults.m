@@ -3,24 +3,29 @@ function [] = rhrv_load_defaults( varargin )
 %functions. All current parameter defaults will be cleared.
 %
 %   Usage:
-%       rhrv_load_params <params_filename>
-%       rhrv_load_params(params_filename, 'param1', value1, 'param2', value2, ...)
+%       rhrv_load_defaults
+%       rhrv_load_defaults <defaults_filename>
+%       rhrv_load_defaults(defaults_filename, 'param1', value1, 'param2', value2, ...)
 %
-%   This function loads the parameters from an rhrv parameters file and sets them as
+%   This function loads the parameter values from the default rhrv parameters file and sets them as
 %   the default value for the various toolbox functions.
 %
-%   The second usage form also allows overriding or adding specific parameters with custom values given
+%   The second usage form loads the parameter values from an arbitrary rhrv parameters file (.yml).
+%   The given file can be a name of a file on the matlab path, or, if it's not found there, it will be
+%   interpreted as a path (absolute or relative to pwd).
+%
+%   The third usage form also allows overriding or adding specific parameters with custom values given
 %   to the function. In this form, the filename is optional; the function will also accept just
 %   key-value pairs.
 %
-%   Note: This function always clears all current default parameters in both usage modes.
+%   Note: This function always clears all current default parameters in all usage modes.
 %
 
 %% Validate input
 
 % Make sure we have parameters
 if isempty(varargin)
-    error('Must provide filename and/or key-value pairs');
+    varargin = {'defaults'};
 end
 
 % Check number of parameters to determine usage type
