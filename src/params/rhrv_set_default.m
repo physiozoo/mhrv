@@ -1,7 +1,7 @@
-function [] = rhrv_override_params( varargin )
-%RHRV_OVERRIDE_PARAMS Overrides current default parameter values with new values.
+function [] = rhrv_set_default( varargin )
+%RHRV_SET_DEFAULT Sets (overrides) current default parameter value(s) with new values.
 %   Usage:
-%       rhrv_override_params('param1', value1, 'param2', value2, ...)
+%       rhrv_set_default('param1', value1, 'param2', value2, ...)
 %
 %   This function allows overriding specific parameters with custom values given
 %   to the function. The input should consist of key-value pairs, where the keys use the '.'

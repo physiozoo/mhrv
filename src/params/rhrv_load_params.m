@@ -75,7 +75,7 @@ rhrv_default_values = params;
 
 % If extra parameters were provided, add them to the parameters (overrides existing)
 if ~isempty(extra_params)
-    rhrv_override_params(extra_params{:});
+    rhrv_set_default(extra_params{:});
 end
 
 end
