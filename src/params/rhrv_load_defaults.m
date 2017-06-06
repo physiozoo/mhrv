@@ -1,6 +1,6 @@
-function [] = rhrv_load_params( varargin )
-%RHRV_LOAD_PARAMS Loads an rhrv parameters file, setting it's values as default. All current
-%parameter defaults will be cleared.
+function [] = rhrv_load_defaults( varargin )
+%RHRV_LOAD_DEFAULTS Loads an rhrv defaults file, setting it's values as default for all toolbox
+%functions. All current parameter defaults will be cleared.
 %
 %   Usage:
 %       rhrv_load_params <params_filename>
@@ -9,7 +9,7 @@ function [] = rhrv_load_params( varargin )
 %   This function loads the parameters from an rhrv parameters file and sets them as
 %   the default value for the various toolbox functions.
 %
-%   The second usage form also allows overriding specific parameters with custom values given
+%   The second usage form also allows overriding or adding specific parameters with custom values given
 %   to the function. In this form, the filename is optional; the function will also accept just
 %   key-value pairs.
 %

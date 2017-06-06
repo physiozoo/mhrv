@@ -66,9 +66,9 @@ should_plot = p.Results.plot;
 % Load user-specified default parameters
 if ~isempty(params)
     if iscell(params)
-        rhrv_load_params(params{:});
+        rhrv_load_defaults(params{:});
     else
-        rhrv_load_params(params);
+        rhrv_load_defaults(params);
     end
 end
 

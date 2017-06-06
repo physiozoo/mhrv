@@ -63,7 +63,7 @@ addpath(genpath(src_dir_));
 rhrv_cfg_ = rhrv_config;
 
 if (~isempty(rhrv_cfg_.params_file))
-    rhrv_load_params(rhrv_cfg_.params_file);
+    rhrv_load_defaults(rhrv_cfg_.params_file);
 end
 
 %% WFDB paths
