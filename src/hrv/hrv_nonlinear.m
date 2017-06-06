@@ -16,12 +16,12 @@ function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %           - beta: Log-log slope of frequency in VLF band.
 %           - SampEn: The sample entropy.
 %% === Input
-DEFAULT_BETA_BAND = rhrv_default('hrv_nl.beta_band', [0.003, 0.04]); % hz
-DEFAULT_BETA_METHOD = rhrv_default('hrv_nl.beta_method', 'ar');
-DEFAULT_MSE_MAX_SCALE = rhrv_default('mse.mse_max_scale', 15);
-DEFAULT_MSE_METRICS = rhrv_default('mse.mse_metrics', false);
-DEFAULT_SAMPEN_R = rhrv_default('mse.sampen_r', 0.2); % percent of std. dev.
-DEFAULT_SAMPEN_M = rhrv_default('mse.sampen_m', 2);
+DEFAULT_BETA_BAND = rhrv_get_default('hrv_nl.beta_band', [0.003, 0.04]); % hz
+DEFAULT_BETA_METHOD = rhrv_get_default('hrv_nl.beta_method', 'ar');
+DEFAULT_MSE_MAX_SCALE = rhrv_get_default('mse.mse_max_scale', 15);
+DEFAULT_MSE_METRICS = rhrv_get_default('mse.mse_metrics', false);
+DEFAULT_SAMPEN_R = rhrv_get_default('mse.sampen_r', 0.2); % percent of std. dev.
+DEFAULT_SAMPEN_M = rhrv_get_default('mse.sampen_m', 2);
 
 % Define input
 p = inputParser;

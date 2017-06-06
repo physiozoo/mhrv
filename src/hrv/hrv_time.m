@@ -18,7 +18,7 @@ function [ hrv_td, plot_data ] = hrv_time( nni, varargin )
 
 %% === Input
 % Defaults
-DEFAULT_PNN_THRESH_MS = rhrv_default('hrv_time.pnn_thresh_ms', 50); % millisec
+DEFAULT_PNN_THRESH_MS = rhrv_get_default('hrv_time.pnn_thresh_ms', 50); % millisec
 
 % Define input
 p = inputParser;
