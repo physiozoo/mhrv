@@ -108,7 +108,8 @@ pxx_fit_beta = polyfit(f_axis_log, pxx_log, 1);
 
 hrv_nl.beta = pxx_fit_beta(1);
 hrv_nl.Properties.VariableUnits{'beta'} = 'n.u.';
-hrv_nl.Properties.VariableDescriptions{'beta'} = 'VLF slope';
+hrv_nl.Properties.VariableDescriptions{'beta'} = 'Log-log slope of frequency spectrum in the VLF band after linear regression';
+
 %% Multiscale sample entropy
 
 % Calculate the MSE graph
