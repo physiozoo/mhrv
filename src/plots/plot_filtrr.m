@@ -10,6 +10,7 @@ p.addRequired('ax', @(x) isgraphics(x, 'axes'));
 p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
 p.addParameter('tag', default_axes_tag(mfilename), @ischar);
+p.addParameter('ylim', 'auto');
 p.addParameter('msz', 8, @isscalar);
 p.addParameter('lw_RR', 2, @isscalar);
 p.addParameter('lw_NN', 1, @isscalar);
@@ -17,6 +18,7 @@ p.addParameter('lw_NN', 1, @isscalar);
 p.parse(ax, plot_data, varargin{:});
 clear = p.Results.clear;
 tag = p.Results.tag;
+yrange = p.Results.ylim;
 msz = p.Results.msz;
 lw_RR = p.Results.lw_RR;
 lw_NN = p.Results.lw_NN;
@@ -30,6 +32,7 @@ hold(ax, 'on');
 grid(ax, 'on');
 xlabel(ax, 'time [s]');
 ylabel(ax, 'RR Intervals [s]');
+ylim(ax, yrange);
 
 % Plot original intervals
 plot(ax, plot_data.trr, plot_data.rri ,'b-', 'LineWidth', lw_RR);
