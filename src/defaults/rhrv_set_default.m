@@ -34,10 +34,32 @@ global rhrv_default_values;
 
 % Override existing values
 for ii = 1:2:length(extra_params)
-    fieldnames = strsplit(extra_params{ii}, '.');
-    rhrv_default_values = setfield(rhrv_default_values, fieldnames{:}, extra_params{ii+1});
+    field_path = strsplit(extra_params{ii}, '.');
+    new_value = extra_params{ii+1};
+
+    % If the new value is a struct with metadata, set it directly
+    if isfield(new_value, 'value')
+        rhrv_default_values = setfield(rhrv_default_values, field_path{:}, new_value);
+        continue;
+    end
+
+    % Otherwise, set the value field at the given path, or create a new parameter with metadata
+    try
+        % Try to get the field value at the given path
+        field_data = getfield(rhrv_default_values, field_path{:});
+        % If the field data contains metadata, just change the value subfield
+        if isfield(field_data, 'value')
+            value_path = [field_path, 'value'];
+            rhrv_default_values = setfield(rhrv_default_values, value_path{:}, new_value);
+        else
+            rhrv_default_values = setfield(rhrv_default_values, field_path{:},...
+                struct('value', new_value, 'description', '', 'name', '', 'units', ''));
+        end
+    catch
+        % Field doesn't exist, so add it with the given value, and set empty metadata
+        rhrv_default_values = setfield(rhrv_default_values, field_path{:},...
+            struct('value', new_value, 'description', '', 'name', '', 'units', ''));
+    end
 end
-
-
 
 end
