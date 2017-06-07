@@ -29,13 +29,6 @@ function [ hrv_metrics, hrv_stats, plot_datas ] = rhrv( rec_name, varargin )
 %       - plot_datas: Cell array containing the plot_data structs for each window.
 %
 
-%% Make sure toolbox is set up
-
-global rhrv_initialized;
-if isempty(rhrv_initialized)
-    error('Please run rhrv_init before using the toolbox.');
-end
-
 %% Handle input
 
 % Defaults
@@ -67,7 +60,18 @@ params = p.Results.params;
 transform_fn = p.Results.transform_fn;
 should_plot = p.Results.plot;
 
-% Load user-specified default parameters
+
+%% Make sure toolbox is set up
+
+% Find the rhrv_init script path (we don't assume it's in the matlab path until it's run)
+[curr_folder, ~, ~] = fileparts(mfilename('fullpath'));
+[parent_folder, ~, ~] = fileparts(curr_folder);
+init_path = [parent_folder filesep 'rhrv_init.m'];
+
+% Run rhrv_init. This won't actually do anything if it has already run before.
+run(init_path);
+
+%% Load user-specified default parameters
 if ~isempty(params)
     if iscell(params)
         rhrv_load_defaults(params{:});
