@@ -224,7 +224,7 @@ if (should_plot)
         plot_filtrr(gca, plot_datas{ii}.filtrr.filtrr);
 
         % If using poincare filter, plot from that, otherwize plot it from the NL metrics
-        if rhrv_get_default('filtrr.filter_poincare')
+        if rhrv_get_default('filtrr.filter_poincare', 'value')
             poincare_pd = plot_datas{ii}.filtrr.poincare;
         else
             poincare_pd = plot_datas{ii}.nl.poincare;

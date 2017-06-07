@@ -26,10 +26,10 @@ function [ nni, tnn, plot_data ] = filtrr( rri, trr, varargin )
 %% Input
 
 % Defaults
-DEFAULT_FILTER_POINCARE = rhrv_get_default('filtrr.filter_poincare', true);
-DEFAULT_FILTER_LOWPASS = rhrv_get_default('filtrr.filter_lowpass', true);
-DEFAULT_WIN_SAMPLES = rhrv_get_default('filtrr.win_samples', 10); % samples
-DEFAULT_WIN_PERCENT = rhrv_get_default('filtrr.win_percent', 20); % percentage [0-100]
+DEFAULT_FILTER_POINCARE = rhrv_get_default('filtrr.filter_poincare', 'value');
+DEFAULT_FILTER_LOWPASS = rhrv_get_default('filtrr.filter_lowpass', 'value');
+DEFAULT_WIN_SAMPLES = rhrv_get_default('filtrr.win_samples', 'value');
+DEFAULT_WIN_PERCENT = rhrv_get_default('filtrr.win_percent', 'value');
 
 % Define input
 p = inputParser;

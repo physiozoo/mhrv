@@ -29,11 +29,11 @@ function [ qrs, outliers, tm, sig, Fs ] = rqrs( rec_name, varargin )
 
 % Defaults
 DEFAULT_ECG_CHANNEL = [];
-DEFAULT_GQPOST = rhrv_get_default('rqrs.use_gqpost', true);
-DEFAULT_GQCONF = rhrv_get_default('rqrs.gqconf', '');
+DEFAULT_GQPOST = rhrv_get_default('rqrs.use_gqpost', 'value');
+DEFAULT_GQCONF = rhrv_get_default('rqrs.gqconf', 'value');
 DEFAULT_TO_SAMPLE = [];
 DEFAULT_FROM_SAMPLE = 1;
-DEFAULT_WINDOW_SIZE_SECONDS = rhrv_get_default('rqrs.window_size_sec', 0.056); % 80% of .07, the average human QRS duration
+DEFAULT_WINDOW_SIZE_SECONDS = rhrv_get_default('rqrs.window_size_sec', 'value');
 
 % Define input
 p = inputParser;
