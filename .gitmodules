@@ -1,3 +1,0 @@
-[submodule "lib/matlab-jsystem"]
-	path = lib/matlab-jsystem
-	url = https://github.com/avivrosenberg/matlab-jsystem.git
