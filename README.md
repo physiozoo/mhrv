@@ -62,8 +62,8 @@ Once you have the binaries, place them in some folder on your `$PATH` or somewer
 root folder (`bin/wfdb` would be a good choice as it's `.gitignore`d) and they will be found and
 used automatically. Or, if you would like to manually specify a path outside the repo which contains
 the WFDB binaries (e.g. `/usr/local/bin` for a homebrew install), you can edit
-[`cfg/rhrv_config.m`](https://github.com/avivrosenberg/rhrv/blob/master/cfg/rhrv_config.m) and set
-the `wfdb_path` variable to the desired path.
+[`cfg/defaults.yml`](https://github.com/avivrosenberg/rhrv/blob/master/cfg/defaults.yml) and set
+the `rhrv.paths.wfdb_path` variable to the desired path.
 
 For linux users it's recommended to install from source as the binaries
 provided on the PhysioNet website are very outdated.
