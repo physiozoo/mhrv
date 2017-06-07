@@ -32,8 +32,8 @@ if (~isempty(rhrv_initialized) && ~should_force)
 end
 
 %% Reset workspaces
-% Remove rhrv-realted variables
-clearvars -global rhrv_basepath rhrv_initialized rhrv_default_values;
+
+% Remove rhrv-realted persistent variables
 clear get_wfdb_tool_path;
 
 if should_close
@@ -92,3 +92,5 @@ end
 
 %% Mark initialization
 rhrv_initialized = true;
+
+end
