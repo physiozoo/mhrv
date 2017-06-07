@@ -1,54 +1,56 @@
-function [ value, name, description, units ] = rhrv_get_default( param_name, default_value )
+function [ param_default ] = rhrv_get_default( param_id, meta )
 %RHRV_GET_DEFAULT Returns the default value configured for a parameter.
 %   This function attemps to get the value of a parameter as configured by a user config file.
-%   If it can't find a user-specified default for the parameter, it returns a given value.
+%   If it can't find a user-specified default for the parameter, it throws an error.
 %
 %   Inputs:
-%       - param_name: name of the parameter.
-%       - default_value: Value to use if this parameter wasn't configured by user.
+%       - param_id: Unique id of the parameter This is made up of the keys in the
+%         defaults file leading to the parameter (not including the 'value' key), joined by a '.'
+%         character (example: 'hrv_freq.methods').
+%       - meta: Optional. A fieldname to return from the parameter structure (instead of the
+%         structure itself). Can be value/description/name/units.
 %
-%   Outputs:
+%   Outputs a structure containing the following fields:
 %       - value: The user-configured parameter value, if exists, otherwise returns the 'default_value'.
 %       - name: The user-friendly/display name of the parameter.
 %       - description: A description about the parameter.
 %       - units: The units the parameter is specified in.
-%
+%   If a value for 'meta' was specified, only the corresponding field will be returned.
 
-% Set default if not provided
-if nargin < 2
-    default_value = [];
-end
-
-% Set provided default value
-value = default_value;
-name = '';
-description = '';
-units = '';
-
-% If no defaults were loaded, we don't have anything to do
+% If no defaults were loaded, it's an error
 global rhrv_default_values;
 if isempty(rhrv_default_values)    
-    return;
+    error('No defaults were loaded! Run rhrv_init or rhrv_load_defaults.');
 end
 
 % Split the "path" to the field in the parameter struct
-field_path = strsplit(param_name, '.');
+field_path = strsplit(param_id, '.');
+if strcmp(field_path{end}, 'value')
+    field_path = field_path(1:end-1);
+end
 
+% Get the data in the field corresponding to the given param_id
 try
     field_data = getfield(rhrv_default_values, field_path{:});
 catch
-    % Field doesn't exist so return the provided default.
-    return;
+    error('Parameter %s doesn''t exist', param_id);
 end
 
-% Check if this parameter is a struct with metadata (value, description, ect).
-if isfield(field_data, 'value')
-    value = field_data.value;
-    if isfield(field_data, 'name');         name = field_data.name; end
-    if isfield(field_data, 'description');  description = field_data.description; end
-    if isfield(field_data, 'units');        units = field_data.units; end
+% Check the data in the field
+if ~isstruct(field_data)
+    % If the field is not a structure, we'll wrap it in a metadata object
+    param_default = rhrv_parameter(field_data);
+elseif isfield(field_data, 'value')
+    % If the field is a parameter struct return it
+    param_default = field_data;
 else
-    value = field_data;
+    % Otherwise, the param_id points to some intermediate structure
+    error('The specified param_id (%s) doesn''t correspond to a parameter value', param_id);
+end
+
+% Return only one of the metadata field if requested.
+if nargin > 1
+    param_default = param_default.(meta);
 end
 
 end
