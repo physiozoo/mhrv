@@ -72,11 +72,20 @@ else
 end
 
 % Make sure WFDB tools are installed. If not, download them now.
+should_download = false;
 try
     wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', wfdb_search_path_);
-catch e
+catch
     warning('WFDB binaries not detected, attempting to download...');
-    download_wfdb(bin_dir_);
+    should_download = true;
+end
+
+if should_download
+    try
+        download_wfdb(bin_dir_);
+    catch e
+        error('Failed to download: %s', e.message);
+    end
     wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', wfdb_search_path_);
 end
 
