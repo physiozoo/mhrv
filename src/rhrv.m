@@ -29,8 +29,12 @@ function [ hrv_metrics, hrv_stats, plot_datas ] = rhrv( rec_name, varargin )
 %       - plot_datas: Cell array containing the plot_data structs for each window.
 %
 
-%% Make sure environment is set up
-rhrv_init --close;
+%% Make sure toolbox is set up
+
+global rhrv_initialized;
+if isempty(rhrv_initialized)
+    error('Please run rhrv_init before using the toolbox.');
+end
 
 %% Handle input
 
