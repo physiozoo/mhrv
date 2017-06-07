@@ -1,10 +1,10 @@
 function [] = rhrv_load_defaults( varargin )
 %RHRV_LOAD_DEFAULTS Loads an rhrv defaults file, setting it's values as default for all toolbox
-%functions. All current parameter defaults will be cleared.
+%functions. Optionally, all current parameter defaults will be cleared.
 %
 %   Usage:
-%       rhrv_load_defaults
-%       rhrv_load_defaults <defaults_filename>
+%       rhrv_load_defaults [--clear]
+%       rhrv_load_defaults [--clear] <defaults_filename>
 %       rhrv_load_defaults(defaults_filename, 'param1', value1, 'param2', value2, ...)
 %
 %   This function loads the parameter values from the default rhrv parameters file and sets them as
@@ -18,12 +18,20 @@ function [] = rhrv_load_defaults( varargin )
 %   to the function. In this form, the filename is optional; the function will also accept just
 %   key-value pairs.
 %
-%   Note: This function always clears all current default parameters in all usage modes.
+%   Note: This function clears all current default parameters if the '--clear' option is given.
+%   Otherwise, it merges the loaded values with the previously existing parameter defaults.
 %
 
 %% Validate input
+should_clear = false;
 
-% Make sure we have parameters
+% Handle the --clear option
+if ~isempty(varargin) && strcmp(varargin{1}, '--clear')
+    should_clear = true;
+    varargin = varargin(2:end);
+end
+
+% Make sure we have at least the default filename
 if isempty(varargin)
     varargin = {'defaults'};
 end
@@ -65,21 +73,31 @@ if ~isempty(params_filename)
 end
 
 %% Set parameters
-params = struct;
+loaded_params = struct;
 
 % If parameters filename was provided, load it
 if ~isempty(params_filename)
-    params = ReadYaml(params_filename);
+    loaded_params = ReadYaml(params_filename);
+
+    % Convert simple cell arrays (e.g. {[1],[2]}) to regular vectors. The Yaml parser we're using
+    % creates such cell arrays when parsing regular arrays ([1, 2]).
+    loaded_params = fix_simple_cell_arrays(loaded_params);
 end
 
-% Convert simple cell arrays (e.g. {[1],[2]}) to regular vectors. The Yaml parser we're using
-% creates such cell arrays when parsing regular arrays ([1, 2]).
-params = fix_simple_cell_arrays(params);
-
-% Set the global parameters variable (so the loaded parameters affect the defaults for all toolbox
-% functions).
 global rhrv_default_values;
-rhrv_default_values = params;
+if should_clear
+    % Repalce current parameters with the ones we just loaded
+    rhrv_default_values = loaded_params;
+else
+    % Convert loaded params into key-value pairs
+    loaded_params_map = rhrv_get_all_defaults(loaded_params);
+    param_ids = loaded_params_map.keys;
+    param_values = loaded_params_map.values;
+    params_kvps = [param_ids; param_values]; % 2xN cell array of key-value pairs
+    
+    % Merge loaded with current parameters, overriding the existing ones
+    rhrv_set_default(params_kvps{:});
+end
 
 % If extra parameters were provided, add them to the parameters (overrides existing)
 if ~isempty(extra_params)

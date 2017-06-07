@@ -1,16 +1,24 @@
-function [ defaults_map ] = rhrv_get_all_defaults( )
+function [ defaults_map ] = rhrv_get_all_defaults(params_struct)
 %RHRV_GET_ALL_DEFAULTS Returns all parameter default values of the rhrv toolbox in a map.
+%
+%   Inputs:
+%       params_struct: Optional. The parameter structure to work on. If not provided, this function
+%       will search traverse the globally defined toolbox parameters.
 %
 % The returned map contains keys that correspond the the unique id's of parameters, e.g 'dfa.n_max'.
 % The map's values are structures containing the value of the parameter and metadata fields.
 %
 
-
-% Load defaults structure into workspace
 global rhrv_default_values;
+if nargin == 0
+    % Use global default parameters structure
+    params_struct = rhrv_default_values;
+elseif ~isstruct(params_struct)
+    error('Provided parameter must be a struct');
+end
 
 % Traverse the structure and add all parameters as keys to a map
-defaults_map = recurse_defaults_struct('', rhrv_default_values, containers.Map);
+defaults_map = recurse_defaults_struct('', params_struct, containers.Map);
 end
 
 %% Helper function to recursively traverse the defaults structure
