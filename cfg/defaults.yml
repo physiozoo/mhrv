@@ -1,5 +1,6 @@
 # Default parameter values of the rhrv toolbox
 ---
+
 # Peak detection
 rqrs:
     gqconf:
@@ -139,3 +140,8 @@ mse:
         description: Sample entropy template length
         name: SampEn m
         units: n.u.
+
+# General toolbox options
+rhrv:
+    paths:
+        wfdb_path: ''

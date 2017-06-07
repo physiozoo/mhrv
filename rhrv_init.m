@@ -59,19 +59,16 @@ addpath(genpath(lib_dir_));
 addpath(genpath(cfg_dir_));
 addpath(genpath(src_dir_));
 
-%% Load user configuration
-rhrv_cfg_ = rhrv_config;
-
-if (~isempty(rhrv_cfg_.params_file))
-    rhrv_load_defaults(rhrv_cfg_.params_file);
-end
+%% Load default toolbox parameters
+rhrv_load_defaults --clear;
+wfdb_path_ = rhrv_get_default('rhrv.paths.wfdb_path', 'value');
 
 %% WFDB paths
 % Check if user specified a custom wfdb path. If not, use rhrv root folder.
-if (isempty(rhrv_cfg_.paths.wfdb_path))
+if (isempty(wfdb_path_))
     wfdb_search_path_ = basepath_;
 else
-    wfdb_search_path_ = rhrv_cfg_.paths.wfdb_path;
+    wfdb_search_path_ = wfdb_path_;
 end
 
 % Make sure WFDB tools are installed. If not, download them now.
@@ -92,11 +89,6 @@ if ver_cmp_ < 0
 elseif ver_cmp_ > 0
     disp('Notice: Detected WFDB version (%s) is newer than the tested version (%s)', wfdb_version_, supported_version_);
 end
-
-%% Set default sizes for figres
-set(0,'DefaultAxesFontSize', rhrv_cfg_.plots.font_size);
-set(0,'DefaultLineLineWidth', rhrv_cfg_.plots.line_width);
-set(0,'DefaultLineMarkerSize', rhrv_cfg_.plots.marker_size);
 
 %% Mark initialization
 rhrv_initialized = true;
