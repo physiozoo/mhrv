@@ -32,7 +32,10 @@ if  ~all([ischar(description) ischar(name) ischar(units)])
 end
 
 %% Create output
-
 % A structure containing the parameter value and metadata
-parameter_object = struct('value', value, 'description', description, 'name', name, 'units', units);
+parameter_object = struct;
+parameter_object.value = value;
+parameter_object.description = description;
+parameter_object.name = name;
+parameter_object.units = units;
 end
