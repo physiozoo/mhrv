@@ -52,13 +52,12 @@ for ii = 1:2:length(extra_params)
             value_path = [field_path, 'value'];
             rhrv_default_values = setfield(rhrv_default_values, value_path{:}, new_value);
         else
-            rhrv_default_values = setfield(rhrv_default_values, field_path{:},...
-                struct('value', new_value, 'description', '', 'name', '', 'units', ''));
+            % Replace the field data with a metadata object containing the new value
+            rhrv_default_values = setfield(rhrv_default_values, field_path{:}, rhrv_parameter(new_value));
         end
     catch
         % Field doesn't exist, so add it with the given value, and set empty metadata
-        rhrv_default_values = setfield(rhrv_default_values, field_path{:},...
-            struct('value', new_value, 'description', '', 'name', '', 'units', ''));
+        rhrv_default_values = setfield(rhrv_default_values, field_path{:}, rhrv_parameter(new_value));
     end
 end
 
