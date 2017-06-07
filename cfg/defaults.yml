@@ -3,11 +3,15 @@
 
 # Peak detection
 rqrs:
+    use_gqpost:
+        value: true
+        description: Wheter to use gqpost for peak detection post-processing
+        name: Use gqpost
+        units: boolean
     gqconf:
         value: gqrs.default.conf
         description: Path to gqrs config file
         name: gqconf path
-        units: ''
     window_size_sec:
         value: 0.056
         description: Size of rqrs forward-search window
@@ -19,9 +23,11 @@ filtrr:
     filter_poincare:
         value: true
         description: Whether to use the poincare-based RR filter
+        units: boolean
     filter_lowpass:
         value: true
         description: Whether to use the lowpass RR filter
+        units: boolean
     win_samples:
         value: 10
         description: Length in samples of the lowpass filter
@@ -64,6 +70,11 @@ hrv_freq:
     methods:
         value: [lomb, ar, welch]  # possible methods: 
         description: Methods of spectral calculation (can be lomb/ar/welch/fft)
+        name: Spectrum types
+    power_methods:
+        value: [lomb]
+        description: Spectrums to calculate power from
+        name: Spectrums for power calculation
     vlf_band:
         value: [0.003, 0.04]
         description: VLF frequency band range
@@ -79,11 +90,21 @@ hrv_freq:
         description: HF frequency band range
         name: HF Band
         units: Hz
+    extra_bands:
+        value: []
+        description: Additional frequency bands for power calculation (each element should be a two-element array)
+        name: Extra bands
+        units: Hz
     window_minutes:
         value: 5
         description: Duration of winodow for spectral averaging
         name: Spectral window duration
         units: Minutes
+    welch_overlap:
+        value: 50
+        description: Percent overlap between windows when using welch method
+        name: Welch overlap
+        units: '%'
     ar_order:
         value: 24
         description: Order of AR model to fit
@@ -97,6 +118,10 @@ hrv_nl:
         description: Frequency range for log-log slope calculation (beta)
         name: Beta band
         units: Hz
+    beta_method:
+        value: ar
+        description: Spectrum type to use for beta calculation (can be lomb/ar/welch/fft)
+        name: Beta method
 
 # DFA Parameters
 dfa:
@@ -140,6 +165,11 @@ mse:
         description: Sample entropy template length
         name: SampEn m
         units: n.u.
+    mse_metrics:
+        value: false
+        description: Whether to output each MSE value as a metric
+        name: Output MSE metrics
+        units: boolean
 
 # General toolbox options
 rhrv:
