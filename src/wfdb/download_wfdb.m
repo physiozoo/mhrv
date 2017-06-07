@@ -61,7 +61,8 @@ end
 fprintf('[%.3f] >> download_wfdb: Downloading %s...\n', cputime-t0, url);
 
 [~, url_filename, url_ext] = fileparts(url);
-local_file = websave([dest_base_dir, filesep(), url_filename, url_ext], url);
+local_file = [dest_base_dir, filesep(), url_filename, url_ext];
+urlwrite(url, local_file);
 
 %% Extract archive
 fprintf('[%.3f] >> download_wfdb: Extracting %s...\n', cputime-t0, local_file);
