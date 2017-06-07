@@ -51,9 +51,4 @@ else
     value = field_data;
 end
 
-% Convert simple cell arrays (e.g. {[1],[2]}) to regular vectors. The Yaml parser we're using
-% creates cell arrays when parsing.
-if iscell(value) && size(value,1) && ~iscellstr(value) && all(cellfun(@isscalar, value))
-    value = cell2mat(value);
-end
 end

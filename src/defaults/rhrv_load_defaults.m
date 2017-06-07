@@ -65,13 +65,16 @@ if ~isempty(params_filename)
 end
 
 %% Set parameters
-
 params = struct;
 
 % If parameters filename was provided, load it
 if ~isempty(params_filename)
     params = ReadYaml(params_filename);
 end
+
+% Convert simple cell arrays (e.g. {[1],[2]}) to regular vectors. The Yaml parser we're using
+% creates such cell arrays when parsing regular arrays ([1, 2]).
+params = fix_simple_cell_arrays(params);
 
 % Set the global parameters variable (so the loaded parameters affect the defaults for all toolbox
 % functions).
@@ -83,4 +86,33 @@ if ~isempty(extra_params)
     rhrv_set_default(extra_params{:});
 end
 
+end
+
+%% Helpers
+
+% A function that recorsively traverses a parameters structure and converts simple cell arrays
+% to regular arrays.
+function curr_element = fix_simple_cell_arrays(curr_element)
+
+    % If the current element is not a struct, check if we need to fix it
+    if ~isstruct(curr_element)
+        if iscell(curr_element) && size(curr_element,1) && ~iscellstr(curr_element) && all(cellfun(@isscalar, curr_element))
+            % Fix it
+            curr_element = cell2mat(curr_element);
+        end
+        return;
+    end
+
+    % If the current element is a parameter structure, update it's value with a fixed value.
+    if isfield(curr_element, 'value')
+        curr_element.value = fix_simple_cell_arrays(curr_element.value);
+        return;
+    end
+
+    % Otherwise traverse all fields
+    fields = fieldnames(curr_element);
+    for ii = 1:length(fields)
+        field = fields{ii};
+        curr_element.(field) = fix_simple_cell_arrays(curr_element.(field));
+    end
 end
