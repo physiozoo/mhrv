@@ -223,16 +223,12 @@ if (should_plot)
         figure('NumberTitle','off', 'Name', fig_name);
         plot_ecgrr(gca, plot_datas{ii}.ecgrr);
 
-        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.filtrr.filtrr.name);
+        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.filtrr.name);
         figure('NumberTitle','off', 'Name', fig_name);
-        plot_filtrr(gca, plot_datas{ii}.filtrr.filtrr);
+        plot_filtrr(gca, plot_datas{ii}.filtrr);
 
-        % If using poincare filter, plot from that, otherwize plot it from the NL metrics
-        if rhrv_get_default('filtrr.filter_poincare', 'value')
-            poincare_pd = plot_datas{ii}.filtrr.poincare;
-        else
-            poincare_pd = plot_datas{ii}.nl.poincare;
-        end
+        % Poincare plot
+        poincare_pd = plot_datas{ii}.nl.poincare;
         fig_name = sprintf('[%s %s] %s', filename, window, poincare_pd.name);
         figure('NumberTitle','off', 'Name', fig_name);
         plot_poincare_ellipse(gca, poincare_pd);

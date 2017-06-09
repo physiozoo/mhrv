@@ -57,7 +57,7 @@ tnn = [0; cumsum(nni(1:end-1))];
 
 %% Poincare plot
 
-[sd1, sd2, ~, poincare_plot_data] = poincare(nni, 'plot', false);
+[sd1, sd2, poincare_plot_data] = poincare(nni, 'plot', false);
 hrv_nl.SD1 = sd1 * 1000;
 hrv_nl.Properties.VariableUnits{'SD1'} = 'ms';
 hrv_nl.Properties.VariableDescriptions{'SD1'} = 'NN interval standard deviation along the perpendicular';

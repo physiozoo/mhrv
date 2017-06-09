@@ -42,18 +42,25 @@ legend_labels = {'RR intervals'};
 plot(ax, plot_data.tnn, plot_data.nni, 'g-', 'LineWidth', lw_NN);
 legend_labels{end+1} = 'Filtered intervals';
 
-if (~isempty(plot_data.poincare_outliers))
-    plot(ax, plot_data.trr(plot_data.poincare_outliers), plot_data.rri(plot_data.poincare_outliers),...
-         'rx', 'MarkerSize', msz);
+if (~isempty(plot_data.range_outliers))
+    plot(ax, plot_data.trr(plot_data.range_outliers), plot_data.rri(plot_data.range_outliers),...
+         'm^', 'MarkerSize', msz+1);
 
-    legend_labels{end+1} = 'Poincare outliers';
+    legend_labels{end+1} = 'Range outliers';
 end
 
 if (~isempty(plot_data.lp_outliers))
     plot(ax, plot_data.trr(plot_data.lp_outliers), plot_data.rri(plot_data.lp_outliers),...
-         'ko', 'MarkerSize', msz);
+         'ko', 'MarkerSize', msz-1);
 
     legend_labels{end+1} = 'Lowpass outliers';
+end
+
+if (~isempty(plot_data.quotient_outliers))
+    plot(ax, plot_data.trr(plot_data.quotient_outliers), plot_data.rri(plot_data.quotient_outliers),...
+         'rx', 'MarkerSize', msz);
+
+    legend_labels{end+1} = 'Quotient outliers';
 end
 
 % Plot window average and thresholds
