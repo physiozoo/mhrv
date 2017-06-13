@@ -71,6 +71,7 @@ DEFAULT_WINDOW_MINUTES = rhrv_get_default('hrv_freq.window_minutes', 'value');
 DEFAULT_AR_ORDER = rhrv_get_default('hrv_freq.ar_order', 'value');
 DEFAULT_WELCH_OVERLAP = rhrv_get_default('hrv_freq.welch_overlap', 'value');
 DEFAULT_DETREND_ORDER = 1;
+DEFAULT_NUM_PEAKS = 5;
 
 % Define input
 p = inputParser;
@@ -86,6 +87,7 @@ p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x));
 p.addParameter('detrend_order', DEFAULT_DETREND_ORDER, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('ar_order', DEFAULT_AR_ORDER, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('welch_overlap', DEFAULT_WELCH_OVERLAP, @(x) isnumeric(x)&&isscalar(x)&&x>=0&&x<100);
+p.addParameter('num_peaks', DEFAULT_NUM_PEAKS, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -101,6 +103,7 @@ window_minutes = p.Results.window_minutes;
 detrend_order = p.Results.detrend_order;
 ar_order = p.Results.ar_order;
 welch_overlap = p.Results.welch_overlap;
+num_peaks = p.Results.num_peaks;
 should_plot = p.Results.plot;
 
 % Validate methods
@@ -333,10 +336,24 @@ for ii = length(power_methods):-1:1
     % Find peaks in the spectrum
     lf_band_idx = f_axis >= lf_band(1) & f_axis <= lf_band(2);
     hf_band_idx = f_axis >= hf_band(1) & f_axis <= hf_band(2);
-    [~, f_peaks_lf] = findpeaks(pxx(lf_band_idx), f_axis(lf_band_idx), 'SortStr','descend');
-    [~, f_peaks_hf] = findpeaks(pxx(hf_band_idx), f_axis(hf_band_idx), 'SortStr','descend');
-    if isempty(f_peaks_lf); f_peaks_lf(1) = NaN; end
-    if isempty(f_peaks_hf); f_peaks_hf(1) = NaN; end
+    [~, f_peaks_lf, ~, p_peaks_lf] = findpeaks(pxx(lf_band_idx), f_axis(lf_band_idx));
+    [~, f_peaks_hf, ~, p_peaks_hf] = findpeaks(pxx(hf_band_idx), f_axis(hf_band_idx));
+    if isempty(f_peaks_lf)
+        f_peaks_lf(1) = NaN;
+    else % Sort by peak prominence & pad to length num_peaks
+        [~,sort_idx] = sort(p_peaks_lf, 'descend');
+        f_peaks_lf = f_peaks_lf(sort_idx)';
+        f_peaks_lf = padarray(f_peaks_lf, [0,max([0,num_peaks-length(f_peaks_lf)])],NaN,'post');
+        f_peaks_lf = f_peaks_lf(1:num_peaks);
+    end
+    if isempty(f_peaks_hf)
+        f_peaks_hf(1) = NaN;
+    else % Sort by peak prominence & & pad to length num_peaks
+        [~,sort_idx] = sort(p_peaks_hf, 'descend');
+        f_peaks_hf = f_peaks_hf(sort_idx)';
+        f_peaks_hf = padarray(f_peaks_hf, [0,max([0, num_peaks-length(f_peaks_hf)])],NaN,'post');
+        f_peaks_hf = f_peaks_hf(1:num_peaks);
+    end
 
     col_lf_peak = ['LF_PEAK' suffix];
     hrv_fd{:,col_lf_peak} = f_peaks_lf(1);
@@ -364,8 +381,8 @@ plot_data.t_win = t_win;
 plot_data.welch_overlap = welch_overlap;
 plot_data.ar_order = ar_order;
 plot_data.num_windows = num_windows;
-plot_data.lf_peak = hrv_fd{:,col_lf_peak};
-plot_data.hf_peak = hrv_fd{:,col_hf_peak};
+plot_data.lf_peaks = f_peaks_lf;
+plot_data.hf_peaks = f_peaks_hf;
 
 if (should_plot)
     figure('Name', plot_data.name);

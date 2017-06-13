@@ -34,8 +34,8 @@ t_win           = plot_data.t_win;
 welch_overlap   = plot_data.welch_overlap;
 ar_order        = plot_data.ar_order;
 num_windows     = plot_data.num_windows;
-lf_peak         = plot_data.lf_peak;
-hf_peak         = plot_data.hf_peak;
+lf_peak         = plot_data.lf_peaks(1);
+hf_peak         = plot_data.hf_peaks(1);
 
 %% Plot
 if clear
