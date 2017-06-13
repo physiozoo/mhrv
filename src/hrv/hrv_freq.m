@@ -275,22 +275,22 @@ for ii = length(power_methods):-1:1
 
     % Absolute power in each band
     col_total_power = ['TOTAL_POWER' suffix];
-    hrv_fd{:,col_total_power} = bandpower(pxx, f_axis, total_band,'psd') * 1e6;
+    hrv_fd{:,col_total_power} = freqband_power(pxx, f_axis, total_band) * 1e6;
     hrv_fd.Properties.VariableUnits{col_total_power} = 'ms^2';
     hrv_fd.Properties.VariableDescriptions{col_total_power} = sprintf('Total power (%s)', power_methods{ii});
 
     col_vlf_power = ['VLF_POWER' suffix];
-    hrv_fd{:,col_vlf_power} = bandpower(pxx, f_axis, vlf_band,'psd') * 1e6;
+    hrv_fd{:,col_vlf_power} = freqband_power(pxx, f_axis, vlf_band) * 1e6;
     hrv_fd.Properties.VariableUnits{col_vlf_power} = 'ms^2';
     hrv_fd.Properties.VariableDescriptions{col_vlf_power} = sprintf('Power in VLF band (%s)', power_methods{ii});
 
     col_lf_power = ['LF_POWER' suffix];
-    hrv_fd{:,col_lf_power}  = bandpower(pxx, f_axis, lf_band, 'psd') * 1e6;
+    hrv_fd{:,col_lf_power}  = freqband_power(pxx, f_axis, lf_band) * 1e6;
     hrv_fd.Properties.VariableUnits{col_lf_power} = 'ms^2';
     hrv_fd.Properties.VariableDescriptions{col_lf_power} = sprintf('Power in LF band (%s)', power_methods{ii});
 
     col_hf_power = ['HF_POWER' suffix];
-    hrv_fd{:,col_hf_power}  = bandpower(pxx, f_axis, [hf_band(1) f_axis(end)], 'psd') * 1e6;
+    hrv_fd{:,col_hf_power}  = freqband_power(pxx, f_axis, [hf_band(1) f_axis(end)]) * 1e6;
     hrv_fd.Properties.VariableUnits{col_hf_power} = 'ms^2';
     hrv_fd.Properties.VariableDescriptions{col_hf_power} = sprintf('Power in HF band (%s)', power_methods{ii});
 
@@ -315,7 +315,7 @@ for ii = length(power_methods):-1:1
     % Calculate power in the extra bands
     for jj = 1:length(extra_bands)
         extra_band = extra_bands{jj};
-        extra_band_power = bandpower(pxx, f_axis, extra_band, 'psd') * 1e6;
+        extra_band_power = freqband_power(pxx, f_axis, extra_band) * 1e6;
 
         column_name = sprintf('EX%d_POWER%s', jj, suffix);
         hrv_fd{:,column_name} = extra_band_power;
