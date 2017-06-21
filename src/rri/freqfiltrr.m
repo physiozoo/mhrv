@@ -1,0 +1,95 @@
+function [ out ] = freqfiltrr( rri, fc, varargin )
+%FREQFILTRR Performs frequency-band filtering of RR intervals.
+% This function can perform apply a low-pass or high-pass filter to an RR interval time series.
+% %   Inputs:
+%       - rri: RR-intervals values in seconds.
+%       - fc:  Filter cutoff frequency, in Hz.
+%       - varargin: Pass in name-value pairs to configure advanced options:
+%           - resamp_freq: Frequency to resample the RR-intervals at before filtering. Must be at
+%             least twich the maximal frequency in the signal. Default: 5 Hz.
+%           - forder: Order (length in samples) of the filter to use. Default: 100.
+%           - ftype: A string, either 'low' or 'high', specifying the type of filter to apply.
+%           - plot: true/false whether to generate a plot. Defaults to true if no output arguments
+%                   were specified.
+%   Outputs:
+%       - out: RR intervals after filtering.
+
+%% Input
+
+% Defaults
+DEFAULT_RESAMPLING_FREQ = 5; % Hz
+DEFAULT_FILTER_ORDER = 100;
+DEFAULT_FILTER_TYPE = 'low'; % low/high
+
+% Define input
+p = inputParser;
+p.KeepUnmatched = true;
+p.addRequired('rri', @(x) isnumeric(x) && ~isscalar(x));
+p.addRequired('fc', @(x) isnumeric(x) && ~isempty(x) && length(x) <= 2);
+p.addParameter('resamp_freq', DEFAULT_RESAMPLING_FREQ, @isscalar);
+p.addParameter('forder', DEFAULT_FILTER_ORDER, @isscalar);
+p.addParameter('ftype', DEFAULT_FILTER_TYPE, @(x) any(cellfun(@(y) strcmp(y,x), {'low', 'high'})));
+p.addParameter('plot', nargout == 0, @islogical);
+
+% Get input
+p.parse(rri, fc, varargin{:});
+resamp_freq = p.Results.resamp_freq;
+forder = p.Results.forder;
+ftype = p.Results.ftype;
+should_plot = p.Results.plot;
+
+%% Resample
+
+% Create time axis
+rri = rri(:);
+trr = [0; cumsum(rri(1:end-1))];
+
+trr_resamp = (trr(1):(1/resamp_freq):trr(end))';
+rri_resamp = interp1(trr, rri, trr_resamp, 'spline');
+
+%% Create filter
+
+% Normalized cutoff frequency
+nyq_freq = resamp_freq/2;
+wc = fc ./ nyq_freq;
+
+% Filter coefficients
+b = fir1(forder, wc, ftype);
+
+% Filter delay (delay in samples is half the filter order)
+delay_sec = ((length(b)-1)/2) / resamp_freq;
+
+%% Apply filter
+
+rri_filt = filter(b, 1, rri_resamp);
+
+if strcmp(ftype, 'high')
+    % Add back DC in case of HPF, because we want physiological RR values
+    rri_filt = rri_filt + mean(rri);
+end
+
+% Remove filter delay
+trr_filt = trr_resamp - delay_sec;
+
+post_delay_idx = trr_filt > delay_sec;
+rri_filt = rri_filt(post_delay_idx);
+trr_filt = trr_filt(post_delay_idx);
+
+%% Downsample at original times
+
+trr_downsample = trr(trr >= trr_filt(1) & trr <= trr_filt(end));
+rri_downsample = interp1(trr_filt, rri_filt, trr_downsample, 'spline');
+
+% Assign output
+out = rri_downsample;
+
+%% Plot
+if should_plot
+    figure;
+    plot(trr, rri, trr_downsample, rri_downsample);
+    grid on;
+    xlabel('time [sec]'); ylabel('RR intervals');
+    legend('Original', 'Filtered');
+end
+end
+
