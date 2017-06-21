@@ -37,8 +37,13 @@ to_sample = p.Results.to;
 
 %% === Run rdsamp
 
+% Create a random suffix for the output file extension (this prevents collisions when running on
+% the same file in parallel)
+suffix = num2str(randi(999999));
+out_ext = ['rdsamp' suffix];
+
 [rec_path, rec_filename, ~] = fileparts(rec_name);
-temp_filename = sprintf('%s.rdsamp', rec_filename);
+temp_filename = sprintf('%s.%s', rec_filename, out_ext);
 temp_file = [rec_path filesep temp_filename];
 
 % Command to run rdann with natural units

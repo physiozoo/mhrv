@@ -28,7 +28,6 @@ function [ qrs, outliers ] = gqrs( rec_name, varargin )
 % Defaults
 DEFAULT_TO_SAMPLE = [];
 DEFAULT_FROM_SAMPLE = 1;
-DEFAULT_OUT_EXT = 'qrs';
 DEFAULT_ECG_COL = [];
 DEFAULT_CONFIG = '';
 DEFAULT_GQPOST = false;
@@ -39,7 +38,6 @@ p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
-p.addParameter('out_ext', DEFAULT_OUT_EXT, @isstr);
 p.addParameter('ecg_col', DEFAULT_ECG_COL, @isnumeric);
 p.addParameter('gqconf', DEFAULT_CONFIG, @isstr);
 p.addParameter('gqpost', DEFAULT_GQPOST, @islogical);
@@ -49,11 +47,16 @@ p.addParameter('plot', nargout == 0, @islogical);
 p.parse(rec_name, varargin{:});
 from_sample = p.Results.from;
 to_sample = p.Results.to;
-out_ext = p.Results.out_ext;
 ecg_col = p.Results.ecg_col;
 gqconf = p.Results.gqconf;
 gqpost = p.Results.gqpost;
 should_plot = p.Results.plot;
+
+% Create a random suffix for the output file extensions (this prevents collisions when running on
+% the same file in parallel)
+suffix = num2str(randi(999999));
+out_ext = ['qrs' suffix];
+out_ext_gqp = ['gqp' suffix];
 
 %% === Input validation
 
@@ -94,6 +97,7 @@ if (gqpost)
     gqpost_path = get_wfdb_tool_path('gqpost');
     gqpost_cmdline = strrep(cmdline, gqrs_path, gqpost_path); % replace 'gqrs' executable name with 'gqpost'
     gqpost_cmdline = regexprep(gqpost_cmdline, ' -[so] \S+', ''); % remove '-s X'/'-o X' flags but keep others
+    gqpost_cmdline = sprintf('%s -a %s -o %s', gqpost_cmdline, out_ext, out_ext_gqp); % add output ext
     cmdline = [cmdline, ' && ', gqpost_cmdline];
 end
 
@@ -107,7 +111,7 @@ end
 try
     qrs = rdann(rec_name, out_ext);
     if (gqpost)
-        outliers = rdann(rec_name, 'gqp', 'ann_types', '"|"');
+        outliers = rdann(rec_name, out_ext_gqp, 'ann_types', '"|"');
     else
         outliers = [];
     end
@@ -124,7 +128,7 @@ end
 
 % Delete the annotation file
 delete([rec_name, '.', out_ext]);
-if (gqpost); delete([rec_name, '.', 'gqp']); end
+if (gqpost); delete([rec_name, '.', out_ext_gqp]); end
 
 %% Plot
 if (should_plot)
