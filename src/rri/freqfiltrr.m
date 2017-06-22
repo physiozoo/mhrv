@@ -41,6 +41,9 @@ should_plot = p.Results.plot;
 
 %% Resample
 
+% Make sure there are no zero-length intervals, becasue we can't resample that
+rri(rri == 0) = [];
+
 % Create time axis
 rri = rri(:);
 trr = [0; cumsum(rri(1:end-1))];
