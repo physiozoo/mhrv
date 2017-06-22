@@ -1,4 +1,4 @@
-function [ out ] = freqfiltrr( rri, fc, varargin )
+function [ rri_out, trr_out ] = freqfiltrr( rri, fc, varargin )
 %FREQFILTRR Performs frequency-band filtering of RR intervals.
 % This function can perform apply a low-pass or high-pass filter to an RR interval time series.
 % %   Inputs:
@@ -12,7 +12,8 @@ function [ out ] = freqfiltrr( rri, fc, varargin )
 %           - plot: true/false whether to generate a plot. Defaults to true if no output arguments
 %                   were specified.
 %   Outputs:
-%       - out: RR intervals after filtering.
+%       - rri_out: RR intervals after filtering.
+%       - trr_out: Times of filtered RR intervals, in seconds.
 
 %% Input
 
@@ -81,7 +82,8 @@ trr_downsample = trr(trr >= trr_filt(1) & trr <= trr_filt(end));
 rri_downsample = interp1(trr_filt, rri_filt, trr_downsample, 'spline');
 
 % Assign output
-out = rri_downsample;
+rri_out = rri_downsample;
+trr_out = trr_downsample;
 
 %% Plot
 if should_plot
