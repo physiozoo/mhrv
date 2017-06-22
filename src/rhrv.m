@@ -133,11 +133,19 @@ for curr_win_idx = window_index_offset : window_max_index
     window_end_sample   = window_start_sample + window_samples - 1;
 
     % Read & process RR intervals from ECG signal
-    fprintf('[%.3f] >> rhrv: [%d/%d] Detecting QRS end RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
+    fprintf('[%.3f] >> rhrv: [%d/%d] Detecting QRS and RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
     [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
 
+    % Apply transform function if available
+    if ~isempty(transform_fn)
+        fprintf('[%.3f] >> rhrv: [%d/%d] Applying transform function %s...\n', cputime-t0, curr_win_idx+1, num_win, func2str(transform_fn));
+        [rri_filt, trr_filt] = transform_fn(rri_window);
+        rri_window = rri_filt;
+        trr_window = trr_filt + trr_window(1);
+    end
+
     % Filter RR intervals to produce NN intervals
-    fprintf('[%.3f] >> rhrv: [%d/%d] Filtering RR intervals...\n', cputime-t0, curr_win_idx+1, num_win);
+    fprintf('[%.3f] >> rhrv: [%d/%d] Removing ectopic intervals...\n', cputime-t0, curr_win_idx+1, num_win);
     [nni_window, tnn_window, pd_filtrr] = filtrr(rri_window, trr_window);
 
     if (isempty(nni_window))
@@ -145,14 +153,8 @@ for curr_win_idx = window_index_offset : window_max_index
         continue;
     end
 
-    fprintf('[%.3f] >> rhrv: [%d/%d] %d NN intervals, %d RR intervals were filtered out\n',...
-            cputime-t0, curr_win_idx+1, num_win, length(nni_window), length(trr_window)-length(tnn_window));
-
-    % Apply transform function if available
-    if ~isempty(transform_fn)
-        fprintf('[%.3f] >> rhrv: [%d/%d] Applyting transform function %s...\n', cputime-t0, curr_win_idx+1, num_win, func2str(transform_fn));
-        nni_window = transform_fn(nni_window);
-    end
+    fprintf('[%.3f] >> rhrv: [%d/%d] Removed %d ectopic RR intervals\n',...
+            cputime-t0, curr_win_idx+1, num_win, length(trr_window)-length(tnn_window));
 
     % Time Domain metrics
     fprintf('[%.3f] >> rhrv: [%d/%d] Calculating time-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
