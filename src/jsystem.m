@@ -1,4 +1,4 @@
-function [ res, out ] = jsystem( cmd, shell, dir )
+function [ res, out, err ] = jsystem( cmd, shell, dir )
 %JSYSTEM Execute a shell command
 %   Executes a shell command as a subprocess using java's ProcessBuilder
 %   class. This is much faster than using the builtin matlab 'system'
@@ -17,7 +17,8 @@ function [ res, out ] = jsystem( cmd, shell, dir )
 %
 %   Output arguments:
 %   res - The result code returned by the process.
-%   out - The output of the process (both stdout and stderr).
+%   out - The output of the process (stdout).
+%   err - The stderr output of the process.
 %
 %   Global settings:
 %   jsystem_path - Set this global variable to a cell array of paths that
@@ -53,7 +54,7 @@ pb.directory(java.io.File(dir));
 
 % Configure stderror redirection to stdout (so we can read both of them
 % from a single stream)
-pb.redirectErrorStream(true);
+pb.redirectErrorStream(false);
 
 % If the user doesn't wan't to use a shell, split the command from it's
 % arguments. Otherwise, prefix the shell invocation.
@@ -76,16 +77,24 @@ pb.command(shellcmd);
 process = pb.start();
 
 %% Read output from the process
-is = process.getInputStream();
-scanner = java.util.Scanner(is).useDelimiter('\\A'); % '\A' is the start of input token
-if scanner.hasNext() % blocks until start of stream
-    out = scanner.next(); % blocks until end of stream
-    out = char(out); % Convert from java string to matlab string
-else
-    out = '';
-end
+
+out = read_inputstream(process.getInputStream());
+err = read_inputstream(process.getErrorStream());
 
 % Get the result code from the process
 res = process.waitFor();
+
+%% Helper function: Reads a java input stream until it's end
+function stream_content = read_inputstream(is)
+    scanner = java.util.Scanner(is).useDelimiter('\\A'); % '\A' is the start of input token
+    if scanner.hasNext() % blocks until start of stream
+        stream_content = scanner.next(); % blocks until end of stream
+    else
+        stream_content = '';
+    end
+
+    % Convert from java string to matlab string and trim trailing whitespace
+    stream_content = strtrim(char(stream_content));
+end
 
 end
