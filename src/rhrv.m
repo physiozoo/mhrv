@@ -247,7 +247,7 @@ if (should_plot)
         subax1 = subplot(3, 1, 1);
         plot_dfa_fn(subax1, plot_datas{ii}.nl.dfa);
         subax2 = subplot(3, 1, 2);
-        plot_hrv_nl_beta(subax2, plot_datas{ii}.nl.beta);
+        plot_hrv_freq_beta(subax2, plot_datas{ii}.freq);
         subax3 = subplot(3, 1, 3);
         plot_mse(subax3, plot_datas{ii}.nl.mse);
     end

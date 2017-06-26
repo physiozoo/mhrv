@@ -82,6 +82,11 @@ hrv_freq:
         value: [lomb]
         description: Spectrums to calculate power from
         name: Spectrums for power calculation
+    beta_band:
+        value: []
+        description: Frequency band range for beta calculation (empty = use VLF band)
+        name: VLF Band
+        units: Hz
     vlf_band:
         value: [0.003, 0.04]
         description: VLF frequency band range
@@ -117,18 +122,6 @@ hrv_freq:
         description: Order of AR model to fit
         name: AR order
         units: n.u.
-
-# Nonlinear HRV metrics
-hrv_nl:
-    beta_band:
-        value: [0.003, 0.04]
-        description: Frequency range for log-log slope calculation (beta)
-        name: Beta band
-        units: Hz
-    beta_method:
-        value: ar
-        description: Spectrum type to use for beta calculation (can be lomb/ar/welch/fft)
-        name: Beta method
 
 # DFA Parameters
 dfa:

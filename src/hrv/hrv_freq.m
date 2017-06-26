@@ -51,6 +51,7 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %           - LF_TO_HF: Ratio between LF and HF power.
 %           - LF_PEAK: Frequency of highest peak in the LF band.
 %           - HF_PEAK: Frequency of highest peak in the HF band.
+%           - BETA: Slope of log-log frequency plot in the VLF band.
 %           Note that each of the above metrics will be calculated for each value given in
 %           'power_methods', and their names will be suffixed with the method name (e.g. LF_PEAK_LOMB).
 %       - pxx: Power spectrum. It's type is determined by the first value in 'power_methods'.
@@ -63,6 +64,7 @@ SUPPORTED_METHODS = {'lomb', 'ar', 'welch', 'fft'};
 DEFAULT_METHODS = rhrv_get_default('hrv_freq.methods', 'value');
 DEFAULT_POWER_METHODS = rhrv_get_default('hrv_freq.power_methods', 'value');
 DEFAULT_BAND_FACTOR = 1;
+DEFAULT_BETA_BAND = rhrv_get_default('hrv_freq.beta_band', 'value');
 DEFAULT_VLF_BAND = rhrv_get_default('hrv_freq.vlf_band', 'value');
 DEFAULT_LF_BAND  = rhrv_get_default('hrv_freq.lf_band', 'value');
 DEFAULT_HF_BAND  = rhrv_get_default('hrv_freq.hf_band', 'value');
@@ -79,6 +81,7 @@ p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('methods', DEFAULT_METHODS, @(x) iscellstr(x) && ~isempty(x));
 p.addParameter('power_methods', DEFAULT_POWER_METHODS, @iscellstr);
 p.addParameter('band_factor', DEFAULT_BAND_FACTOR, @(x) isnumeric(x)&&isscalar(x)&&x>0);
+p.addParameter('beta_band', DEFAULT_BETA_BAND, @(x) isempty(x)||(isnumeric(x)&&length(x)==2&&x(2)>x(1)));
 p.addParameter('vlf_band', DEFAULT_VLF_BAND, @(x) isnumeric(x)&&length(x)==2&&x(2)>x(1));
 p.addParameter('lf_band', DEFAULT_LF_BAND, @(x) isnumeric(x)&&length(x)==2&&x(2)>x(1));
 p.addParameter('hf_band', DEFAULT_HF_BAND, @(x) isnumeric(x)&&length(x)==2&&x(2)>x(1));
@@ -95,6 +98,7 @@ p.parse(nni, varargin{:});
 methods = p.Results.methods;
 power_methods = p.Results.power_methods;
 band_factor = p.Results.band_factor;
+beta_band = p.Results.beta_band .* band_factor;
 vlf_band = p.Results.vlf_band .* band_factor;
 lf_band = p.Results.lf_band   .* band_factor;
 hf_band = p.Results.hf_band   .* band_factor;
@@ -107,7 +111,7 @@ num_peaks = p.Results.num_peaks;
 should_plot = p.Results.plot;
 
 % Validate methods
-methods_validity = cellfun(@(method) any(strcmp(SUPPORTED_METHODS, method)), methods);
+methods_validity = cellfun(@(method) any(strcmpi(SUPPORTED_METHODS, method)), methods);
 if (~all(methods_validity))
     invalid_methods = methods(~methods_validity);
     error('Invalid methods given: %s.', strjoin(invalid_methods, ', '));
@@ -118,10 +122,15 @@ if (isempty(power_methods))
     % Use the first provided method if power_method not provided
     power_methods = methods(1);
 else
-    power_methods_validity = cellfun(@(power_method) any(strcmp(methods, power_method)), power_methods);
+    power_methods_validity = cellfun(@(power_method) any(strcmpi(methods, power_method)), power_methods);
     if (~all(power_methods_validity))
         error('Invalid power_method given: %s.', strjoin(power_methods(~power_methods_validity), ', '));
     end
+end
+
+% Default beta_band to vlf_band if unspecified
+if isempty(beta_band)
+    beta_band = vlf_band;
 end
 
 %% Preprocess
@@ -138,18 +147,26 @@ nni = nni - nni_trend;
 
 %% Initializations
 
-% Set window_minutes to maximal value if requested
+% Default window_minutes to maximal value if requested
 if (isempty(window_minutes))
     window_minutes = max(1, floor((tnn(end)-tnn(1)) / 60));
 end
 
-t_win = 60 * window_minutes; % Window length in seconds
 t_max = tnn(end);
-f_min = vlf_band(1);
+f_min = min(beta_band(1), vlf_band(1));
 f_max = hf_band(2);
-num_windows = floor(t_max / t_win);
+
+% Minimal window length (in seconds) needed to resolve f_min
+t_win_min = 1/f_min;
+
+% Increase window size if it's too small
+t_win = 60 * window_minutes; % Window length in seconds
+if t_win < t_win_min
+    t_win = t_win_min;
+end
 
 % In case there's not enough data for one window, use entire signal length
+num_windows = floor(t_max / t_win);
 if (num_windows < 1)
     num_windows = 1;
     t_win = floor(tnn(end)-tnn(1));
@@ -166,6 +183,7 @@ num_windows_uni = floor(length(tnn_uni) / n_win_uni);
 % Build a frequency axis. The best frequency resolution we can get is 1/t_win.
 f_res  = 1 / t_win; % equivalent to fs_uni / n_win_uni 
 f_axis = (0 : f_res : f_max)';
+beta_idx = f_axis >= beta_band(1) & f_axis <= beta_band(2);
 
 % Check Nyquist criterion: We need atleast 2*f_max*t_win samples in each window to resolve f_max.
 if (n_win_uni <= 2*f_max*t_win)
@@ -207,17 +225,17 @@ if (calc_lomb)
 
         nni_win = nni(curr_win_idx);
         tnn_win = tnn(curr_win_idx);
-        
+
         n_win = length(nni_win);
         window_func = hamming(n_win);
         nni_win = nni_win .* window_func;
-        
+
         % Check Nyquist criterion
         min_samples_nyquist = ceil(2*f_max*t_win);
         if (n_win < min_samples_nyquist)
             warning('Nyquist criterion not met in window %d (%d of %d samples)', curr_win, n_win, min_samples_nyquist);
         end
-        
+
         [pxx_lomb_win, ~] = plomb(nni_win, tnn_win, f_axis);
         pxx_lomb = pxx_lomb + pxx_lomb_win;
     end
@@ -248,11 +266,11 @@ end
 
 %% FFT method
 if (calc_fft)
-    window_func = hamming(n_win_uni);    
+    window_func = hamming(n_win_uni);
     for curr_win = 1:num_windows_uni
         curr_win_idx = ((curr_win - 1) * n_win_uni + 1) : (curr_win * n_win_uni);
         nni_win = nni_uni(curr_win_idx);
-        
+
         % FFT periodogram
         [pxx_fft_win, ~] = periodogram(nni_win, window_func, f_axis, fs_uni);
         pxx_fft = pxx_fft + pxx_fft_win;
@@ -266,14 +284,13 @@ hrv_fd = table;
 hrv_fd.Properties.Description = 'Frequency Domain HRV Metrics';
 
 % Get entire frequency range
-total_band = [f_min, f_axis(end)];
+total_band = [f_axis(1), f_axis(end)];
 
 % Loop over power methods and calculate metrics based on each one. Loop in reverse order so that
 % the first power method is the last and it's variables retain their values (pxx, column names).
 for ii = length(power_methods):-1:1
     % Current PSD for metrics calculations
-    pxx = eval(['pxx_' power_methods{ii}]);
-
+    pxx = eval(['pxx_' lower(power_methods{ii})]);
     suffix = ['_' upper(power_methods{ii})];
 
     % Absolute power in each band
@@ -364,7 +381,23 @@ for ii = length(power_methods):-1:1
     hrv_fd{:,col_hf_peak} = f_peaks_hf(1);
     hrv_fd.Properties.VariableUnits{col_hf_peak} = 'Hz';
     hrv_fd.Properties.VariableDescriptions{col_hf_peak} = sprintf('HF peak frequency (%s)', power_methods{ii});
+
+    % Calculate beta (VLF slope)
+    % Take the log of the spectrum in the VLF frequency band
+    pxx_beta_log = log10(pxx(beta_idx));
+    f_axis_beta_log = log10(f_axis(beta_idx));
+
+    % Fit a line and get the slope
+    pxx_fit_beta = polyfit(f_axis_beta_log, pxx_beta_log, 1);
+
+    col_beta = ['BETA' suffix];
+    hrv_fd{:,col_beta} = pxx_fit_beta(1);
+    hrv_fd.Properties.VariableUnits{col_beta} = 'n.u.';
+    hrv_fd.Properties.VariableDescriptions{col_beta} = 'Log-log slope of frequency spectrum in the VLF band after linear regression';
 end
+
+% Sort by metric, not by power method
+hrv_fd = hrv_fd(:, sort(hrv_fd.Properties.VariableNames));
 
 %% Plot
 plot_data.name = 'Intervals Spectrum';
@@ -383,9 +416,13 @@ plot_data.ar_order = ar_order;
 plot_data.num_windows = num_windows;
 plot_data.lf_peaks = f_peaks_lf;
 plot_data.hf_peaks = f_peaks_hf;
+plot_data.beta_idx = beta_idx;
 
 if (should_plot)
     figure('Name', plot_data.name);
     plot_hrv_freq_spectrum(gca, plot_data, 'peaks', true);
+    
+    figure('Name', 'Beta');
+    plot_hrv_freq_beta(gca, plot_data);
 end
 end
