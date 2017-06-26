@@ -1,4 +1,4 @@
-N = 50;
+N = 500;
 benchmark_seq = 0;
 
 %% Bench 1: System vs. Jsystem
