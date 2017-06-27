@@ -26,10 +26,31 @@ for i = 1:length(varargin)
 end
 
 %% Check if already initialized
-global rhrv_initialized;
-if (~isempty(rhrv_initialized) && ~should_force)
-    return;
+
+% Base toolbox dir is the directory containing this script
+basepath_ = fileparts(mfilename('fullpath'));
+
+% The rhrv_basepath global variable holds the base toolbox directory. If it's empty, then this is
+% the first time this script is run.
+global rhrv_basepath;
+
+% If the toolbox was not previously initialized, OR it was previously initialized in a different
+% directory, always run. Otherwize, only run if should_force is true.
+if ~isempty(rhrv_basepath)
+    if ~strcmp(rhrv_basepath, basepath_)
+        fprintf('Initializing rhrv toolbox in new basepath %s...\n', basepath_);
+    elseif should_force
+        fprintf('Initializing rhrv toolbox in %s (--force)...\n', basepath_);
+    else
+        % Already initialized in the current basepath and should_force is false
+        return;
+    end
+else
+    fprintf('Initializing rhrv toolbox in %s...\n', basepath_);
 end
+
+% Save the root toolbox dir as a global variable
+rhrv_basepath = basepath_;
 
 %% Reset workspaces
 
@@ -43,15 +64,10 @@ end
 %% Set up matlab path
 
 % Find source and dependencies directories
-basepath_ = fileparts(mfilename('fullpath'));
 lib_dir_ = [basepath_ filesep 'lib'];
 src_dir_ = [basepath_ filesep 'src'];
 cfg_dir_ = [basepath_ filesep 'cfg'];
 bin_dir_ = [basepath_ filesep 'bin'];
-
-% Save the root toolbox dir as a global variable
-global rhrv_basepath;
-rhrv_basepath = basepath_;
 
 % Add them to matlab's path including subfolders
 addpath(basepath_);
@@ -98,8 +114,5 @@ if ver_cmp_ < 0
 elseif ver_cmp_ > 0
     disp('Notice: Detected WFDB version (%s) is newer than the tested version (%s)', wfdb_version_, supported_version_);
 end
-
-%% Mark initialization
-rhrv_initialized = true;
 
 end
