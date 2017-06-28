@@ -58,7 +58,7 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %       - f_axis: Frequencies, in Hz, at which pxx was calculated.
 
 %% Input
-SUPPORTED_METHODS = {'lomb', 'ar', 'welch', 'fft'};
+SUPPORTED_METHODS = {'Lomb', 'AR', 'Welch', 'FFT'};
 
 % Defaults
 DEFAULT_METHODS = rhrv_get_default('hrv_freq.methods', 'value');

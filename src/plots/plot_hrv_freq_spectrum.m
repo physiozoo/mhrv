@@ -5,21 +5,29 @@ function [] = plot_hrv_freq_spectrum( ax, plot_data, varargin )
 %
 
 %% Input
+SUPPORTED_METHODS = {'Lomb', 'AR', 'Welch', 'FFT'};
+
 p = inputParser;
 p.addRequired('ax', @(x) isgraphics(x, 'axes'));
 p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
 p.addParameter('tag', default_axes_tag(mfilename), @ischar);
+p.addParameter('xscale', 'linear', @(x)strcmpi(x,'log')||strcmpi(x,'linear'));
+p.addParameter('yscale', 'log', @(x)strcmpi(x,'log')||strcmpi(x,'linear'));
 p.addParameter('ylim', 'auto');
 p.addParameter('peaks', false);
 p.addParameter('detailed_legend', true);
+p.addParameter('methods', SUPPORTED_METHODS, @(x) cellfun(@(m) any(cellfun(@(ms) strcmp(m,ms), SUPPORTED_METHODS)), x));
 
 p.parse(ax, plot_data, varargin{:});
 clear = p.Results.clear;
 tag = p.Results.tag;
+xscale = p.Results.xscale;
+yscale = p.Results.yscale;
 yrange = p.Results.ylim;
 plot_peaks = p.Results.peaks;
 detailed_legend = p.Results.detailed_legend;
+methods = p.Results.methods;
 
 f_axis          = plot_data.f_axis;
 pxx_lomb        = plot_data.pxx_lomb;
@@ -42,51 +50,57 @@ if clear
     cla(ax);
 end
 
+hold(ax, 'on');
+legend_handles = [];
 legend_entries = {};
+colors = lines(length(methods));
 
-% Spectra
-if ~isempty(pxx_lomb)
-    semilogy(f_axis, pxx_lomb, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
-    if detailed_legend
-        legend_entries{end+1} = sprintf('Lomb (t_{win}=%.1fm, n_{win}=%d)', t_win/60, num_windows);
-    else
-        legend_entries{end+1} = 'Lomb';
+% Plot PSDs
+for ii = 1:length(methods)
+    pxx = plot_data.(['pxx_' lower(methods{ii})]);
+
+    % Skip this power method if it wasn't calculated or if it wasn't requested for plotting
+    if isempty(pxx) || ~any(cellfun(@(m) strcmp(methods{ii}, m), methods))
+        continue;
     end
-end
-if ~isempty(pxx_ar)
-    semilogy(f_axis, pxx_ar, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
+
+    % Plot PSD
+    hp = plot(ax, f_axis, pxx, 'Color', colors(ii,:));
+
+    % Save handle
+    legend_handles(ii) = hp;
+    
+    % Create legend label
     if detailed_legend
-        legend_entries{end+1} = sprintf('AR (order=%d)', ar_order);
+        switch lower(methods{ii})
+            case {'fft', 'lomb'}
+                legend_entries{ii} = sprintf('%s (t_{win}=%.1fm, n=%d)', methods{ii}, t_win/60, num_windows);
+            case 'welch'
+                legend_entries{ii} = sprintf('%s (%d%%)', methods{ii}, welch_overlap);
+            case 'ar'
+                legend_entries{ii} = sprintf('%s (%d)', methods{ii}, ar_order);
+        end
     else
-        legend_entries{end+1} = 'AR';
-    end
-end
-if ~isempty(pxx_welch)
-    semilogy(f_axis, pxx_welch, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
-    if detailed_legend
-        legend_entries{end+1} = sprintf('Welch (t_{win}=%.1fm, %d%% ovl.)', t_win/60, welch_overlap);
-    else
-        legend_entries{end+1} = 'Welch';
-    end
-end
-if ~isempty(pxx_fft)
-    semilogy(f_axis, pxx_fft, 'Parent', ax); grid(ax, 'on'); hold(ax, 'on');
-    if detailed_legend
-        legend_entries{end+1} = sprintf('FFT (twin=%.1fm, nwin=%d)', t_win/60, num_windows);
-    else
-        legend_entries{end+1} = 'FFT';
+        legend_entries{ii} = methods{ii};
     end
 end
 
 % Peaks
 if plot_peaks && ~isnan(lf_peak)
-    plot(ax, lf_peak, pxx_lomb(f_axis==lf_peak).*1.25, 'bv', 'MarkerSize', 8, 'MarkerFaceColor', 'blue');
+    hp = plot(ax, lf_peak, pxx_lomb(f_axis==lf_peak).*1.25, 'bv', 'MarkerSize', 8, 'MarkerFaceColor', 'blue');
+    legend_handles(end+1) = hp;
     legend_entries{end+1} = sprintf('%.3f Hz', lf_peak);
 end
 if plot_peaks && ~isnan(hf_peak)
-    plot(ax, hf_peak, pxx_lomb(f_axis==hf_peak).*1.25, 'rv', 'MarkerSize', 8, 'MarkerFaceColor', 'red');
+    hp = plot(ax, hf_peak, pxx_lomb(f_axis==hf_peak).*1.25, 'rv', 'MarkerSize', 8, 'MarkerFaceColor', 'red');
+    legend_handles(end+1) = hp;
     legend_entries{end+1} = sprintf('%.3f Hz', hf_peak);
 end
+
+% Set axes scales (linear/log)
+set(ax, 'XScale', xscale, 'YScale', yscale);
+grid(ax, 'on');
+axis(ax, 'tight');
 
 % Axes limits
 xrange = [0,f_max*1.01];
@@ -102,12 +116,12 @@ line(hf_band(1)  * ones(1,2), yrange, 'Parent', ax, 'LineStyle', ls, 'Color', lc
 line(hf_band(2)  * ones(1,2), yrange, 'Parent', ax, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw);
 
 % Names of frequency ranges
-text(vlf_band(1), yrange(2) * 0.5, ' VLF', 'Parent', ax);
-text( lf_band(1), yrange(2) * 0.5,  ' LF', 'Parent', ax);
-text( hf_band(1), yrange(2) * 0.5,  ' HF', 'Parent', ax);
+text(vlf_band(1), yrange(2) * 0.9, ' VLF', 'Parent', ax);
+text( lf_band(1), yrange(2) * 0.9,  ' LF', 'Parent', ax);
+text( hf_band(1), yrange(2) * 0.9,  ' HF', 'Parent', ax);
 
 % Labels
-legend(ax, legend_entries);
+legend(ax, legend_handles, legend_entries);
 xlabel(ax, 'Frequency [Hz]');
 ylabel(ax, 'Log Power Density [s^2/Hz]');
 

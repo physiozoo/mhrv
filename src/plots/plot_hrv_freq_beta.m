@@ -5,19 +5,19 @@ function [] = plot_hrv_freq_beta(ax, plot_data, varargin)
 %
 
 %% Input
-SUPPORTED_METHODS = {'lomb', 'ar', 'welch', 'fft'};
+SUPPORTED_METHODS = {'Lomb', 'AR', 'Welch', 'FFT'};
 
 p = inputParser;
 p.addRequired('ax', @(x) isgraphics(x, 'axes'));
 p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
-p.addParameter('power_methods', SUPPORTED_METHODS, @(x) cellfun(@(m) any(cellfun(@(ms) strcmp(m,ms), SUPPORTED_METHODS)), x));
+p.addParameter('methods', SUPPORTED_METHODS, @(x) cellfun(@(m) any(cellfun(@(ms) strcmp(m,ms), SUPPORTED_METHODS)), x));
 p.addParameter('tag', default_axes_tag(mfilename), @ischar);
 
 p.parse(ax, plot_data, varargin{:});
 clear = p.Results.clear;
 tag = p.Results.tag;
-power_methods = p.Results.power_methods;
+methods = p.Results.methods;
 
 %% Plot
 if clear
@@ -27,19 +27,20 @@ end
 hold(ax, 'on');
 legend_handles = [];
 legend_entries = {};
+colors = lines(length(methods));
 
 f_axis_beta = plot_data.f_axis(plot_data.beta_idx);
-for ii = 1:length(power_methods)
-    pxx = plot_data.(['pxx_' power_methods{ii}]);
+for ii = 1:length(methods)
+    pxx = plot_data.(['pxx_' lower(methods{ii})]);
 
     % Skip this power method if it wasn't calculated or if it wasn't requested for plotting
-    if isempty(pxx) || ~any(cellfun(@(m) strcmp(power_methods{ii}, m), power_methods))
+    if isempty(pxx) || ~any(cellfun(@(m) strcmp(methods{ii}, m), methods))
         continue;
     end
 
     % Plot the spectrum in the beta band
     pxx_beta = pxx(plot_data.beta_idx);
-    hp = plot(ax, f_axis_beta, pxx_beta);
+    plot(ax, f_axis_beta, pxx_beta, 'Color', colors(ii,:));
 
     % Fit a line and get the slope
     pxx_beta_log = log10(pxx_beta);
@@ -48,10 +49,10 @@ for ii = 1:length(power_methods)
 
     % Plot the fitted line
     beta_line = pxx_fit_beta(1) * f_axis_beta_log + pxx_fit_beta(2);
-    hl = plot(ax, 10.^f_axis_beta_log, 10.^beta_line, 'Color',  hp.Color, 'LineStyle', ':', 'LineWidth', 3.8);
+    hl = plot(ax, 10.^f_axis_beta_log, 10.^beta_line, 'Color',  colors(ii,:), 'LineStyle', ':', 'LineWidth', 3.8);
 
     legend_handles(ii) = hl;
-    legend_entries{ii} = sprintf('\\beta_{%s}=%.2f', upper(power_methods{ii}), pxx_fit_beta(1));
+    legend_entries{ii} = sprintf('\\beta_{%s}=%.2f', upper(methods{ii}), pxx_fit_beta(1));
 end
 
 % Set log-log plot
