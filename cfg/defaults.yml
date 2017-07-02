@@ -85,7 +85,7 @@ hrv_freq:
     beta_band:
         value: []
         description: Frequency band range for beta calculation (empty = use VLF band)
-        name: VLF Band
+        name: Beta Band
         units: Hz
     vlf_band:
         value: [0.003, 0.04]
