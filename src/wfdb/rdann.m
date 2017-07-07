@@ -20,7 +20,7 @@ DEFAULT_ANN_TYPES = '';
 
 % Define input
 p = inputParser;
-p.addRequired('rec_name', @isrecord);
+p.addRequired('rec_name', @(x) isrecord(x, ann_ext));
 p.addRequired('ann_ext', @isstr);
 p.addParameter('ann_types', DEFAULT_ANN_TYPES, @ischar);
 
