@@ -13,7 +13,7 @@ p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
 p.addParameter('tag', default_axes_tag(mfilename), @ischar);
 p.addParameter('xscale', 'linear', @(x)strcmpi(x,'log')||strcmpi(x,'linear'));
-p.addParameter('yscale', 'log', @(x)strcmpi(x,'log')||strcmpi(x,'linear'));
+p.addParameter('yscale', 'linear', @(x)strcmpi(x,'log')||strcmpi(x,'linear'));
 p.addParameter('ylim', 'auto');
 p.addParameter('peaks', false);
 p.addParameter('detailed_legend', true);
@@ -122,8 +122,17 @@ text( hf_band(1), yrange(2) * 0.9,  ' HF', 'Parent', ax);
 
 % Labels
 legend(ax, legend_handles, legend_entries);
-xlabel(ax, 'Frequency [Hz]');
-ylabel(ax, 'Log Power Density [s^2/Hz]');
+if strcmpi(xscale, 'linear')
+    xlabel(ax, 'Frequency [Hz]');
+else
+    xlabel(ax, 'Log Frequency [Hz]');
+end
+if strcmpi(yscale, 'linear')
+    ylabel(ax, 'Power Spectral Density [s^2/Hz]');
+else
+    ylabel(ax, 'Log Power Spectral Density [s^2/Hz]');
+end
+
 
 %% Tag
 ax.Tag = tag;
