@@ -21,7 +21,7 @@ DEFAULT_COMMENT_REGEX = '^\s*#.*';
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
-p.addRequired('rec_name', @isrecord);
+p.addRequired('rec_name', @(x) isrecord(x, 'hea'));
 p.addParameter('sig_regex', DEFAULT_SIG_REGEX, @isstr);
 p.addParameter('comment_regex', DEFAULT_COMMENT_REGEX, @isstr);
 
