@@ -130,7 +130,7 @@ if isnan(F1)
 end
 
 % Save quality measures in a struct
-sqi = struct('recName', rec_name, 'F1', F1, 'SE', SE, 'PPV', PPV, 'TP', TP, 'FP', FP, 'FN', FN);
+sqi = struct('F1', F1, 'SE', SE, 'PPV', PPV, 'TP', TP, 'FP', FP, 'FN', FN);
 
 %% Plot
 if should_plot

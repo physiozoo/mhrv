@@ -19,11 +19,13 @@ function [ sqis, stats ] = qrs_compare_set( set_dir, ann_ext, varargin )
 p = inputParser;
 p.addRequired('set_dir', @(x) exist(x, 'dir'));
 p.addRequired('ann_ext', @(x) ischar(x) && ~isempty(x));
+p.addParameter('params', 'defaults', @ischar);
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.KeepUnmatched = true;
 p.parse(set_dir, ann_ext, varargin{:});
+params = p.Results.params;
 should_plot = p.Results.plot;
 
 %% Process files
@@ -35,11 +37,16 @@ t1 = tic;
 files = dir([set_dir filesep '*.' ann_ext]);
 fprintf('** Found %d ''%s'' files in %s, processing...\n', length(files), ann_ext, set_dir);
 
+spmd
+    rhrv_init;
+    rhrv_load_defaults(params);
+end
+
 % Process files
 N = length(files);
 N_error = 0;
 sqis = table;
-for i = 1:N
+parfor i = 1:N
     file = files(i);
     t2 = tic;
     
@@ -62,21 +69,18 @@ for i = 1:N
     params.ann_ext = ann_ext;
     sqi = qrs_compare(recName, params);
 
-    % Add file name to results
-    sqi.recName = basename;
+    % Convert to table with file name as table row name
+    sqi = struct2table(sqi);
+    sqi.Properties.RowNames = {basename};
 
     % Add to output table
-    sqis = [sqis; struct2table(sqi)];
+    sqis = [sqis; sqi];
 
     % Print elapsed time
     elapsed_sec = toc(t2);
     fprintf('>> %s [elapsed = %6.3fs]\n', basename, elapsed_sec);
 end
 fprintf('** Done processing, total time: %.3fs\n', toc(t1));
-
-% Remove the recName column and set row names instead
-sqis.Properties.RowNames = cellstr(sqis.recName);
-sqis.recName = [];
 
 %% Calculate mean & gross values for metrics
 N_no_error = N - N_error;
