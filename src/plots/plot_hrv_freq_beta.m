@@ -55,6 +55,11 @@ for ii = 1:length(methods)
     legend_entries{ii} = sprintf('\\beta_{%s}=%.2f', upper(methods{ii}), pxx_fit_beta(1));
 end
 
+% Remove legend entries for unused methods
+skipped_idx = find(legend_handles == 0);
+legend_handles(skipped_idx) = [];
+legend_entries(skipped_idx) = [];
+
 % Set log-log plot
 set(ax, 'XScale', 'log', 'YScale', 'log');
 grid(ax, 'on');

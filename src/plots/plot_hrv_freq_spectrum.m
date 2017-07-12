@@ -85,6 +85,11 @@ for ii = 1:length(methods)
     end
 end
 
+% Remove legend entries for unused methods
+skipped_idx = find(legend_handles == 0);
+legend_handles(skipped_idx) = [];
+legend_entries(skipped_idx) = [];
+
 % Peaks
 if plot_peaks && ~isnan(lf_peak)
     hp = plot(ax, lf_peak, pxx_lomb(f_axis==lf_peak).*1.25, 'bv', 'MarkerSize', 8, 'MarkerFaceColor', 'blue');
