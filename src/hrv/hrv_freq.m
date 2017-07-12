@@ -239,7 +239,8 @@ if (calc_lomb)
         % Check Nyquist criterion
         min_samples_nyquist = ceil(2*f_max*t_win);
         if (n_win < min_samples_nyquist)
-            warning('Nyquist criterion not met in window %d (%d of %d samples)', curr_win, n_win, min_samples_nyquist);
+            warning('Nyquist criterion not met for lomb periodogram in window %d (only %d of %d samples)',...
+                    curr_win, n_win, min_samples_nyquist);
         end
 
         [pxx_lomb_win, ~] = plomb(nni_win, tnn_win, f_axis);
