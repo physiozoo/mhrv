@@ -122,6 +122,11 @@ hrv_freq:
         description: Order of AR model to fit
         name: AR order
         units: n.u.
+    osf:
+        value: 4
+        description: Factor of oversampling in frequency domain resolution
+        name: Frequency oversampling factor
+        units: n.u.
 
 # DFA Parameters
 dfa:

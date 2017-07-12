@@ -74,6 +74,7 @@ DEFAULT_AR_ORDER = rhrv_get_default('hrv_freq.ar_order', 'value');
 DEFAULT_WELCH_OVERLAP = rhrv_get_default('hrv_freq.welch_overlap', 'value');
 DEFAULT_DETREND_ORDER = 1;
 DEFAULT_NUM_PEAKS = 5;
+DEFAULT_FREQ_OSF = rhrv_get_default('hrv_freq.osf', 'value');
 
 % Define input
 p = inputParser;
@@ -91,6 +92,7 @@ p.addParameter('detrend_order', DEFAULT_DETREND_ORDER, @(x) isnumeric(x)&&isscal
 p.addParameter('ar_order', DEFAULT_AR_ORDER, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('welch_overlap', DEFAULT_WELCH_OVERLAP, @(x) isnumeric(x)&&isscalar(x)&&x>=0&&x<100);
 p.addParameter('num_peaks', DEFAULT_NUM_PEAKS, @(x) isnumeric(x)&&isscalar(x));
+p.addParameter('freq_osf', DEFAULT_FREQ_OSF, @(x) isnumeric(x)&&isscalar(x)&&x>1);
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -108,6 +110,7 @@ detrend_order = p.Results.detrend_order;
 ar_order = p.Results.ar_order;
 welch_overlap = p.Results.welch_overlap;
 num_peaks = p.Results.num_peaks;
+freq_osf = p.Results.freq_osf;
 should_plot = p.Results.plot;
 
 % Validate methods
@@ -177,12 +180,15 @@ fs_uni = 10 * f_max; %Hz
 
 % Uniform time axis
 tnn_uni = tnn(1) : 1/fs_uni : tnn(end);
-n_win_uni = floor(t_win / (1/fs_uni));
+n_win_uni = floor(t_win / (1/fs_uni)); % number of samples in each window
 num_windows_uni = floor(length(tnn_uni) / n_win_uni);
 
-% Build a frequency axis. The best frequency resolution we can get is 1/t_win.
-f_res  = 1 / t_win; % equivalent to fs_uni / n_win_uni 
-f_axis = (0 : f_res : f_max)';
+% Build a frequency axis
+ts = t_win / (n_win_uni-1);   % Sampling time interval
+f_res = 1 / (n_win_uni * ts); % Frequency resolution (also known as f_min of delta_f), theoretical limit
+f_res = f_res / freq_osf;     % Apply oversampling factor (causes interpolation in freq. domain)
+
+f_axis = (f_res : f_res : f_max)';
 beta_idx = f_axis >= beta_band(1) & f_axis <= beta_band(2);
 
 % Check Nyquist criterion: We need atleast 2*f_max*t_win samples in each window to resolve f_max.
