@@ -4,7 +4,7 @@
 # Peak detection
 rqrs:
     use_gqpost:
-        value: true
+        value: false
         description: Wheter to use gqpost for peak detection post-processing
         name: Use gqpost
         units: boolean
