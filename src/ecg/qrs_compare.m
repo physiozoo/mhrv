@@ -91,7 +91,10 @@ end
 
 %% Detect QRS locations
 qrs_detector_func = str2func(qrs_detector);
-test_qrs = qrs_detector_func(rec_name, 'ecg_channel', ecg_channel);
+[test_qrs, outliers] = qrs_detector_func(rec_name, 'ecg_channel', ecg_channel);
+
+% Remove outliers
+test_qrs = setdiff(test_qrs, outliers);
 
 %% Compare detections to reference
 %  See: https://en.wikipedia.org/wiki/Confusion_matrix
