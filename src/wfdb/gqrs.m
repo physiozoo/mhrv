@@ -28,17 +28,16 @@ function [ qrs, outliers ] = gqrs( rec_name, varargin )
 % Defaults
 DEFAULT_TO_SAMPLE = [];
 DEFAULT_FROM_SAMPLE = 1;
-DEFAULT_ECG_COL = [];
+DEFAULT_ECG_CHANNEL = [];
 DEFAULT_CONFIG = '';
 DEFAULT_GQPOST = false;
 
 % Define input
 p = inputParser;
-p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
-p.addParameter('ecg_col', DEFAULT_ECG_COL, @isnumeric);
+p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @isnumeric);
 p.addParameter('gqconf', DEFAULT_CONFIG, @isstr);
 p.addParameter('gqpost', DEFAULT_GQPOST, @islogical);
 p.addParameter('plot', nargout == 0, @islogical);
@@ -47,7 +46,7 @@ p.addParameter('plot', nargout == 0, @islogical);
 p.parse(rec_name, varargin{:});
 from_sample = p.Results.from;
 to_sample = p.Results.to;
-ecg_col = p.Results.ecg_col;
+ecg_channel = p.Results.ecg_channel;
 gqconf = p.Results.gqconf;
 gqpost = p.Results.gqpost;
 should_plot = p.Results.plot;
@@ -74,9 +73,9 @@ if ~isempty(gqconf)
 end
 
 %% === Find ECG signal index if it wasn't specified
-if (isempty(ecg_col))
-    ecg_col = get_signal_channel(rec_name);
-    if (isempty(ecg_col)); error('can''t find ECG signal in record'); end;
+if isempty(ecg_channel)
+    ecg_channel = get_signal_channel(rec_name);
+    if (isempty(ecg_channel)); error('can''t find ECG signal in record'); end;
 end
 
 %% === Create commandline arguments
@@ -84,7 +83,7 @@ end
 
 % commanline for gqrs
 gqrs_path = get_wfdb_tool_path('gqrs');
-cmdline = sprintf('%s -r %s -s %d -f s%d -o %s', gqrs_path, rec_filename, ecg_col-1, from_sample-1, out_ext);
+cmdline = sprintf('%s -r %s -s %d -f s%d -o %s', gqrs_path, rec_filename, ecg_channel-1, from_sample-1, out_ext);
 if (~isempty(to_sample))
     cmdline = sprintf('%s -t s%d', cmdline, to_sample-1);
 end
@@ -132,8 +131,8 @@ if (gqpost); delete([rec_name, '.', out_ext_gqp]); end
 
 %% Plot
 if (should_plot)
-    ecg_col = get_signal_channel(rec_name);
-    [tm, sig, ~] = rdsamp(rec_name, ecg_col, 'from', from_sample, 'to', to_sample);
+    ecg_channel = get_signal_channel(rec_name);
+    [tm, sig, ~] = rdsamp(rec_name, ecg_channel, 'from', from_sample, 'to', to_sample);
     figure;
     plot(tm, sig); hold on; grid on;
     plot(tm(qrs), sig(qrs,1), 'rx', 'MarkerSize', 6);
