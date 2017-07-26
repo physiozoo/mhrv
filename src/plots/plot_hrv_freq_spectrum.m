@@ -30,10 +30,6 @@ detailed_legend = p.Results.detailed_legend;
 methods = p.Results.methods;
 
 f_axis          = plot_data.f_axis;
-pxx_lomb        = plot_data.pxx_lomb;
-pxx_ar          = plot_data.pxx_ar;
-pxx_welch       = plot_data.pxx_welch;
-pxx_fft         = plot_data.pxx_fft;
 vlf_band        = plot_data.vlf_band;
 lf_band         = plot_data.lf_band;
 hf_band         = plot_data.hf_band;
@@ -57,14 +53,15 @@ colors = lines(length(methods));
 
 % Plot PSDs
 for ii = 1:length(methods)
-    pxx = plot_data.(['pxx_' lower(methods{ii})]);
+    curr_pxx_type = ['pxx_' lower(methods{ii})];
 
     % Skip this power method if it wasn't calculated or if it wasn't requested for plotting
-    if isempty(pxx) || ~any(cellfun(@(m) strcmp(methods{ii}, m), methods))
+    if isempty(plot_data.(curr_pxx_type)) || ~any(cellfun(@(m) strcmp(methods{ii}, m), methods))
         continue;
     end
 
     % Plot PSD
+    pxx = plot_data.(curr_pxx_type);
     hp = plot(ax, f_axis, pxx, 'Color', colors(ii,:));
 
     % Save handle
@@ -92,12 +89,12 @@ legend_entries(skipped_idx) = [];
 
 % Peaks
 if plot_peaks && ~isnan(lf_peak)
-    hp = plot(ax, lf_peak, pxx_lomb(f_axis==lf_peak).*1.25, 'bv', 'MarkerSize', 8, 'MarkerFaceColor', 'blue');
+    hp = plot(ax, lf_peak, pxx(f_axis==lf_peak).*1.25, 'bv', 'MarkerSize', 8, 'MarkerFaceColor', 'blue');
     legend_handles(end+1) = hp;
     legend_entries{end+1} = sprintf('%.3f Hz', lf_peak);
 end
 if plot_peaks && ~isnan(hf_peak)
-    hp = plot(ax, hf_peak, pxx_lomb(f_axis==hf_peak).*1.25, 'rv', 'MarkerSize', 8, 'MarkerFaceColor', 'red');
+    hp = plot(ax, hf_peak, pxx(f_axis==hf_peak).*1.25, 'rv', 'MarkerSize', 8, 'MarkerFaceColor', 'red');
     legend_handles(end+1) = hp;
     legend_entries{end+1} = sprintf('%.3f Hz', hf_peak);
 end
