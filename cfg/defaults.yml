@@ -79,7 +79,7 @@ hrv_freq:
         description: Methods of spectral calculation (can be lomb/ar/welch/fft)
         name: Spectrum types
     power_methods:
-        value: [lomb]
+        value: [] # Empty means first method in 'methods'
         description: Spectrums to calculate power from
         name: Spectrums for power calculation
     beta_band:
