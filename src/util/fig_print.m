@@ -11,8 +11,9 @@ function [] = fig_print( fig_handle, out_filename, varargin )
 DEFAULT_WIDTH = 15; % cm
 DEFAULT_HEIGHT = 10; % cm
 DEFAULT_FONT_SIZE = 10; % pt
-DEFAULT_FONT = 'Times New Roman';
-DEFAULT_OUTPUT_FORMAT = 'epsc2';
+DEFAULT_FONT = 'Times';
+DEFAULT_OUTPUT_FORMAT = 'pdf'; % epsc, tiff, ...
+DEFAULT_RENDERER = 'painters';
 DEFAULT_AXES_LINE_WIDTH = 1.0; % pt
 DEFAULT_TITLE = [];
 
@@ -24,7 +25,8 @@ p.addParameter('width', DEFAULT_WIDTH, @isscalar);
 p.addParameter('height', DEFAULT_HEIGHT, @isscalar);
 p.addParameter('font_size', DEFAULT_FONT_SIZE, @isscalar);
 p.addParameter('font', DEFAULT_FONT, @ischar);
-p.addParameter('output_format', DEFAULT_OUTPUT_FORMAT, @ischar);
+p.addParameter('output_format', DEFAULT_OUTPUT_FORMAT, @(x)ischar(x)||isempty(x));
+p.addParameter('renderer', DEFAULT_RENDERER, @(x)strcmp(x,'painters')||strcmp(x,'opengl'));
 p.addParameter('axes_line_width', DEFAULT_AXES_LINE_WIDTH, @isscalar);
 p.addParameter('title', DEFAULT_TITLE, @ischar);
 
@@ -35,8 +37,14 @@ height = p.Results.height;
 font_size = p.Results.font_size;
 font = p.Results.font;
 output_format = p.Results.output_format;
+renderer = p.Results.renderer;
 axes_line_width = p.Results.axes_line_width;
 axes_title = p.Results.title;
+
+% Allow empty output format to specify the default should be used
+if isempty(output_format)
+    output_format = DEFAULT_OUTPUT_FORMAT;
+end
 
 %% Update the figure and axes
 
@@ -45,10 +53,12 @@ set(fig_handle, 'Units', 'centimeters');
 position_cm = get(fig_handle, 'Position');
 x0 = position_cm(1); y0 = position_cm(2);
 
-% Set absolute dimentions for figure
+% Set absolute dimentions for figure and paper
 set(fig_handle, ...
     'Position', [ x0, y0, width, height ], ...
 	'PaperPositionMode', 'auto', ...
+    'PaperPosition', [ 0, 0, width, height ], ...
+    'PaperSize', [ width, height ], ...
 	'InvertHardCopy', 'on');
 
 % Find all axis objects and set their properties
@@ -63,7 +73,7 @@ set(all_axes, ...
 
 % Set title if specified. Will be set only to first axes.
 if (~isempty(axes_title))
-    title(all_axes(1), axes_title);
+    title(all_axes(1), axes_title, 'FontName', font, 'FontWeight', 'normal');
 end
 
 % Set font for all text objects
@@ -72,7 +82,7 @@ set(all_text, 'FontName', font);
 
 % Print figure as EPS
 out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
-print(fig_handle, out_filename, ['-d' output_format]);
+print(fig_handle, out_filename, ['-d' output_format], ['-' renderer]);
 
 end
 
