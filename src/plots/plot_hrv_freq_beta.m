@@ -24,11 +24,18 @@ if clear
     cla(ax);
 end
 
-hold(ax, 'on');
-legend_handles = [];
-legend_entries = {};
-colors = lines(length(methods));
+colors = lines(length(SUPPORTED_METHODS));
 
+% Check for pre-existing plots frequency plots on this axes
+legend_handles = findall(ax,'Tag','beta');
+legend_entries = {};
+if ~isempty(legend_handles)
+    lgd = legend(ax);
+    legend_entries = lgd.String;
+    colors = colors((length(legend_handles)+1):end,:);
+end
+
+hold(ax, 'on');
 f_axis_beta = plot_data.f_axis(plot_data.beta_idx);
 for ii = 1:length(methods)
     pxx = plot_data.(['pxx_' lower(methods{ii})]);
@@ -40,7 +47,7 @@ for ii = 1:length(methods)
 
     % Plot the spectrum in the beta band
     pxx_beta = pxx(plot_data.beta_idx);
-    plot(ax, f_axis_beta, pxx_beta, 'Color', colors(ii,:));
+    plot(ax, f_axis_beta, pxx_beta, 'Color', colors(ii,:), 'LineWidth', 1.5, 'Tag','beta');
 
     % Fit a line and get the slope
     pxx_beta_log = log10(pxx_beta);
@@ -51,8 +58,8 @@ for ii = 1:length(methods)
     beta_line = pxx_fit_beta(1) * f_axis_beta_log + pxx_fit_beta(2);
     hl = plot(ax, 10.^f_axis_beta_log, 10.^beta_line, 'Color',  colors(ii,:), 'LineStyle', ':', 'LineWidth', 3.8);
 
-    legend_handles(ii) = hl;
-    legend_entries{ii} = sprintf('\\beta_{%s}=%.2f', upper(methods{ii}), pxx_fit_beta(1));
+    legend_handles(end+1) = hl;
+    legend_entries{end+1} = sprintf('\\beta_{%s}=%.2f', upper(methods{ii}), pxx_fit_beta(1));
 end
 
 % Remove legend entries for unused methods
