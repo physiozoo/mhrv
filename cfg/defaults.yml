@@ -127,6 +127,11 @@ hrv_freq:
         description: Factor of oversampling in frequency domain resolution
         name: Frequency oversampling factor
         units: n.u.
+    resample_factor:
+        value: 2.25
+        description: Factor of f_max (hf_band(2)) to obtain the uniform sampling frequecncy. Must be >= 2.
+        name: Frequency resampling factor
+        units: n.u.
 
 # DFA Parameters
 dfa:

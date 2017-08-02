@@ -72,8 +72,8 @@ DEFAULT_EXTRA_BANDS = rhrv_get_default('hrv_freq.extra_bands', 'value');
 DEFAULT_WINDOW_MINUTES = rhrv_get_default('hrv_freq.window_minutes', 'value');
 DEFAULT_AR_ORDER = rhrv_get_default('hrv_freq.ar_order', 'value');
 DEFAULT_WELCH_OVERLAP = rhrv_get_default('hrv_freq.welch_overlap', 'value');
-DEFAULT_DETREND_ORDER = 1;
 DEFAULT_NUM_PEAKS = 5;
+DEFAULT_RESAMPLE_FACTOR = rhrv_get_default('hrv_freq.resample_factor', 'value');
 DEFAULT_FREQ_OSF = rhrv_get_default('hrv_freq.osf', 'value');
 
 % Define input
@@ -88,10 +88,10 @@ p.addParameter('lf_band', DEFAULT_LF_BAND, @(x) isnumeric(x)&&length(x)==2&&x(2)
 p.addParameter('hf_band', DEFAULT_HF_BAND, @(x) isnumeric(x)&&length(x)==2&&x(2)>x(1));
 p.addParameter('extra_bands', DEFAULT_EXTRA_BANDS, @(x) all(cellfun(@(y)isnumeric(y)&&length(y)==2&&y()>y(1), x)));
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x));
-p.addParameter('detrend_order', DEFAULT_DETREND_ORDER, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('ar_order', DEFAULT_AR_ORDER, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('welch_overlap', DEFAULT_WELCH_OVERLAP, @(x) isnumeric(x)&&isscalar(x)&&x>=0&&x<100);
 p.addParameter('num_peaks', DEFAULT_NUM_PEAKS, @(x) isnumeric(x)&&isscalar(x));
+p.addParameter('resample_factor', DEFAULT_RESAMPLE_FACTOR, @(x) isnumeric(x)&&isscalar(x)&&x>=2);
 p.addParameter('freq_osf', DEFAULT_FREQ_OSF, @(x) isnumeric(x)&&isscalar(x)&&x>1);
 p.addParameter('plot', nargout == 0, @islogical);
 
@@ -106,10 +106,10 @@ lf_band = p.Results.lf_band   .* band_factor;
 hf_band = p.Results.hf_band   .* band_factor;
 extra_bands = p.Results.extra_bands;
 window_minutes = p.Results.window_minutes;
-detrend_order = p.Results.detrend_order;
 ar_order = p.Results.ar_order;
 welch_overlap = p.Results.welch_overlap;
 num_peaks = p.Results.num_peaks;
+resample_factor = p.Results.resample_factor;
 freq_osf = p.Results.freq_osf;
 should_plot = p.Results.plot;
 
@@ -142,11 +142,8 @@ end
 nni = nni(:);
 tnn = [0; cumsum(nni(1:end-1))];
 
-% Detrend and zero mean
+% Zero mean to remove DC component
 nni = nni - mean(nni);
-[poly, ~, poly_mu] = polyfit(tnn, nni, detrend_order);
-nni_trend = polyval(poly, tnn, [], poly_mu);
-nni = nni - nni_trend;
 
 %% Initializations
 
@@ -175,8 +172,8 @@ if (num_windows < 1)
     t_win = floor(tnn(end)-tnn(1));
 end
 
-% Uniform sampling freq: Take 10x more than f_max
-fs_uni = 10 * f_max; %Hz
+% Uniform sampling freq: Take at least 2x more than f_max
+fs_uni = resample_factor * f_max; %Hz
 
 % Uniform time axis
 tnn_uni = tnn(1) : 1/fs_uni : tnn(end);
