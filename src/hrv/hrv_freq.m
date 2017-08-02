@@ -228,6 +228,7 @@ if (calc_lomb)
 
         nni_win = nni(curr_win_idx);
         tnn_win = tnn(curr_win_idx);
+        nni_win = nni_win - mean(nni_win);
 
         n_win = length(nni_win);
         window_func = hamming(n_win);
@@ -252,6 +253,7 @@ if (calc_ar)
     for curr_win = 1:num_windows_uni
         curr_win_idx = ((curr_win - 1) * n_win_uni + 1) : (curr_win * n_win_uni);
         nni_win = nni_uni(curr_win_idx);
+        nni_win = nni_win - mean(nni_win);
 
         % AR periodogram
         [pxx_ar_win, ~] = pyulear(nni_win, ar_order, f_axis, fs_uni);
@@ -274,6 +276,7 @@ if (calc_fft)
     for curr_win = 1:num_windows_uni
         curr_win_idx = ((curr_win - 1) * n_win_uni + 1) : (curr_win * n_win_uni);
         nni_win = nni_uni(curr_win_idx);
+        nni_win = nni_win - mean(nni_win);
 
         % FFT periodogram
         [pxx_fft_win, ~] = periodogram(nni_win, window_func, f_axis, fs_uni);
