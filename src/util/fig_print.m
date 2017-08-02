@@ -46,6 +46,10 @@ if isempty(output_format)
     output_format = DEFAULT_OUTPUT_FORMAT;
 end
 
+%% Clone the figure and make it invisible
+fig_handle = copyobj(fig_handle, 0);
+set(fig_handle, 'Visible', 'off');
+
 %% Update the figure and axes
 
 % Get the figure's current on-screen position in cm
@@ -87,6 +91,9 @@ out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
 
 % Print figure as EPS
 print(fig_handle, out_filename, ['-d' output_format], ['-' renderer]);
+
+%% Clean up
+delete(fig_handle);
 
 end
 
