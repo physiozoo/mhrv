@@ -80,8 +80,12 @@ end
 all_text = findall(fig_handle, 'type', 'text');
 set(all_text, 'FontName', font);
 
-% Print figure as EPS
+% Make sure output folder exists
 out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
+[out_dir, ~, ~] = fileparts(out_filename);
+[~, ~, ~] = mkdir(out_dir);
+
+% Print figure as EPS
 print(fig_handle, out_filename, ['-d' output_format], ['-' renderer]);
 
 end
