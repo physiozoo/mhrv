@@ -77,7 +77,7 @@ set(all_axes, ...
 
 % Set title if specified. Will be set only to first axes.
 if (~isempty(axes_title))
-    title(all_axes(1), axes_title, 'FontName', font, 'FontWeight', 'normal');
+    title(all_axes(end), axes_title, 'FontName', font, 'FontWeight', 'normal');
 end
 
 % Set font for all text objects
