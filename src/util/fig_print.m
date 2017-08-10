@@ -47,8 +47,21 @@ if isempty(output_format)
 end
 
 %% Clone the figure and make it invisible
-fig_handle = copyobj(fig_handle, 0);
-set(fig_handle, 'Visible', 'off');
+
+orig_gcf = gcf;
+try
+    fig_handle = copyobj(fig_handle, 0);
+    set(fig_handle, 'Visible', 'off');
+    delete_fig = true;
+catch e
+    warning('Failed to copy figure for printing to file: %s\nOriginal figure will be modified.', e.message);
+    delete_fig = false;
+
+    % Clean up if a new figure was created (partial copy)
+    if gcf ~= orig_gcf
+        delete(gcf)
+    end
+end
 
 %% Update the figure and axes
 
@@ -93,7 +106,8 @@ out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
 print(fig_handle, out_filename, ['-d' output_format], ['-' renderer]);
 
 %% Clean up
-delete(fig_handle);
-
+if delete_fig
+    delete(fig_handle);
+end
 end
 
