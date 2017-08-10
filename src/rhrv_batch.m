@@ -31,7 +31,8 @@ function [ hrv_tables, stats_tables, plot_datas ] = rhrv_batch( rec_dir, varargi
 % Defaults
 DEFAULT_REC_TYPES = {'ALL'};
 DEFAULT_REC_FILENAMES = {'*'};
-DEFAULT_RHRV_PARAMS = 'human';
+DEFAULT_RHRV_PARAMS = 'defaults';
+DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_MIN_NN = 0;
 DEFAULT_OUTPUT_FOLDER = '.';
 DEFAULT_OUTPUT_FILENAME = [];
@@ -43,6 +44,7 @@ p.addParameter('rec_types', DEFAULT_REC_TYPES, @iscellstr);
 p.addParameter('rec_filenames', DEFAULT_REC_FILENAMES, @iscellstr);
 p.addParameter('rec_transforms', {}, @iscell);
 p.addParameter('rhrv_params', DEFAULT_RHRV_PARAMS, @(x) ischar(x)||iscell(x));
+p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('min_nn', DEFAULT_MIN_NN, @isscalar);
 p.addParameter('output_dir', DEFAULT_OUTPUT_FOLDER, @isstr);
 p.addParameter('output_filename', DEFAULT_OUTPUT_FILENAME, @isstr);
@@ -54,6 +56,7 @@ rec_types = p.Results.rec_types;
 rec_filenames = p.Results.rec_filenames;
 rec_transforms = p.Results.rec_transforms;
 rhrv_params = p.Results.rhrv_params;
+window_minutes = p.Results.window_minutes;
 min_nn = p.Results.min_nn;
 output_dir = p.Results.output_dir;
 output_filename = p.Results.output_filename;
@@ -89,7 +92,7 @@ output_filename = [output_dir filesep output_filename '.xlsx'];
 
 %% Analyze data
 
-% Allocate cell array the will contain all the tables (one for ear record type).
+% Allocate cell array the will contain all the tables (one for each record type).
 hrv_tables = cell(1,n_rec_types);
 stats_tables = cell(1,n_rec_types);
 plot_datas = cell(1,n_rec_types);
@@ -97,7 +100,7 @@ plot_datas = cell(1,n_rec_types);
 % Loop over record types and caculate a metrics table
 fprintf('-> Starting batch processing...\n');
 t0 = tic;
-parfor rec_type_idx = 1:n_rec_types
+for rec_type_idx = 1:n_rec_types
     rec_type_filenames = rec_filenames{rec_type_idx};
     rec_type_transform = rec_transforms{rec_type_idx};
 
@@ -109,37 +112,54 @@ parfor rec_type_idx = 1:n_rec_types
         warning('no record files found in %s for pattern %s', rec_dir, rec_type_filenames);
         continue;
     end
-    
+
     % Loop over each file in the record type and calculate it's metrics
-    rec_type_table = table;
+    rec_type_tables = cell(nfiles, 1);
     rec_type_plot_datas = cell(nfiles, 1);
-    for file_idx = 1:nfiles
+    parfor file_idx = 1:nfiles
         % Extract the rec_name from the filename
         file = files(file_idx);
         [path, name, ~] = fileparts([rec_dir file.name]);
         rec_name = [path filesep name];
-        
+
         % Analyze the record
         fprintf('-> Analyzing record %s\n', rec_name);
-        [curr_hrv, ~, curr_plot_data] = rhrv(rec_name,...
-            'params', rhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
+        try
+            [curr_hrv, ~, curr_plot_datas] = rhrv(rec_name, 'window_minutes', window_minutes,...
+                'params', rhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
+        catch e
+            warning('Error analyzing record %s: %s\nSkipping...', rec_name, e.message);
+            continue;
+        end
 
         % Make sure we have a minimal amount of data in this file.
         if curr_hrv.NN < min_nn
             warning('Less than %d NN intervals detected, skipping...', min_nn);
             continue;
         end
-        
-        % Set name of row to be the record name (without full path)
-        curr_hrv.Properties.RowNames{1} = name;
-        
+
+        % Handle naming of rows to prevent duplicate names from different files
+        % The number of rows depends on the lenghth of the data and the value of 'window_minutes'
+        row_names = curr_hrv.Properties.RowNames;
+        if length(row_names) == 1
+            % If there's only one row, set name of row to be the record name (without full path)
+            row_names{1} = name;
+        else
+            row_names = cellfun(@(row_name)sprintf('%s_%s', name, row_name), row_names, 'UniformOutput', false);
+        end
+        curr_hrv.Properties.RowNames = row_names;
+
         % Append current file's metrics to the metrics & plot data for the rec type
-        rec_type_table = [rec_type_table; curr_hrv];
+        rec_type_tables{file_idx} = curr_hrv;
         if save_plot_data
-            rec_type_plot_datas{file_idx} = curr_plot_data{1}; % 1 is the window number (we're using only one)
+            rec_type_plot_datas{file_idx} = curr_plot_datas;
         end
     end
-    
+
+    % Concatenate all tables to one
+    rec_type_table = vertcat(rec_type_tables{:});
+    rec_type_plot_datas = vertcat(rec_type_plot_datas{:});
+
     % Save rec_type tables
     hrv_tables{rec_type_idx} = rec_type_table;
     stats_tables{rec_type_idx} = table_stats(rec_type_table);
@@ -245,7 +265,7 @@ end
 function col_letter = excel_column(matlab_col)
     dividend = matlab_col;
     col_letter = '';
-    
+
     while (dividend > 0)
         modulo = mod(dividend-1, 26);
         col_letter = sprintf('%c%s', 65+modulo, col_letter);
