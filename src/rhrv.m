@@ -121,7 +121,7 @@ end
 window_max_index = min(num_win, window_index_offset + window_index_limit) - 1;
 
 % Output initialization
-hrv_metrics = table;
+hrv_metrics_tables = cell(num_win, 1);
 plot_datas = cell(num_win, 1);
 
 % Loop over all windows
@@ -132,54 +132,61 @@ for curr_win_idx = window_index_offset : window_max_index
     window_start_sample = curr_win_idx * window_samples + 1;
     window_end_sample   = window_start_sample + window_samples - 1;
 
-    % Read & process RR intervals from ECG signal
-    fprintf('[%.3f] >> rhrv: [%d/%d] Detecting QRS and RR intervals... ', cputime-t0, curr_win_idx+1, num_win);
-    [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
-    fprintf('%d intervals detected.\n', length(trr_window));
+    try
+        % Read & process RR intervals from ECG signal
+        fprintf('[%.3f] >> rhrv: [%d/%d] Detecting QRS and RR intervals... ', cputime-t0, curr_win_idx+1, num_win);
+        [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
+        fprintf('%d intervals detected.\n', length(trr_window));
 
-    % Apply transform function if available
-    if ~isempty(transform_fn)
-        fprintf('[%.3f] >> rhrv: [%d/%d] Applying transform function %s...\n', cputime-t0, curr_win_idx+1, num_win, func2str(transform_fn));
-        rri_window = transform_fn(rri_window);
-        % Rebuild time axis because length of rri may have changed
-        trr_window = [0; cumsum(rri_window(1:end-1))] + trr_window(1);
-    end
+        % Apply transform function if available
+        if ~isempty(transform_fn)
+            fprintf('[%.3f] >> rhrv: [%d/%d] Applying transform function %s...\n', cputime-t0, curr_win_idx+1, num_win, func2str(transform_fn));
+            rri_window = transform_fn(rri_window);
+            % Rebuild time axis because length of rri may have changed
+            trr_window = [0; cumsum(rri_window(1:end-1))] + trr_window(1);
+        end
 
-    % Filter RR intervals to produce NN intervals
-    fprintf('[%.3f] >> rhrv: [%d/%d] Removing ectopic intervals... ', cputime-t0, curr_win_idx+1, num_win);
-    [nni_window, tnn_window, pd_filtrr] = filtrr(rri_window, trr_window);
-    fprintf('%d intervals removed.\n', length(trr_window)-length(tnn_window));
+        % Filter RR intervals to produce NN intervals
+        fprintf('[%.3f] >> rhrv: [%d/%d] Removing ectopic intervals... ', cputime-t0, curr_win_idx+1, num_win);
+        [nni_window, tnn_window, pd_filtrr] = filtrr(rri_window, trr_window);
+        fprintf('%d intervals removed.\n', length(trr_window)-length(tnn_window));
 
-    if (isempty(nni_window))
-        warning('\n[%.3f] >> rhrv: [%d/%d] No intervals detected in window, skipping\n', cputime-t0, curr_win_idx+1, num_win);
+        if (isempty(nni_window))
+            warning('\n[%.3f] >> rhrv: [%d/%d] No intervals detected in window, skipping\n', cputime-t0, curr_win_idx+1, num_win);
+            continue;
+        end
+
+        % Time Domain metrics
+        fprintf('[%.3f] >> rhrv: [%d/%d] Calculating time-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+        [hrv_td, pd_time ]= hrv_time(nni_window);
+
+        % Freq domain metrics
+        fprintf('[%.3f] >> rhrv: [%d/%d] Calculating frequency-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+        [hrv_fd, ~, ~,  pd_freq ] = hrv_freq(nni_window);
+
+        % Non linear metrics
+        fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+        [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
+
+        % Heart rate fragmentation metrics
+        fprintf('[%.3f] >> rhrv: [%d/%d] Calculating fragmentation metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+        hrv_frag = hrv_fragmentation(nni_window);
+    catch e
+        fprintf(2,'\n');
+        fprintf(2,'[%.3f] >> rhrv: ERROR Analyzing window %d of %d in record %s:\n', cputime-t0, curr_win_idx+1, num_win, rec_name);
+        fprintf(2,'%s\nskipping window...\n', e.message);
         continue;
     end
-
-    % Time Domain metrics
-    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating time-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [hrv_td, pd_time ]= hrv_time(nni_window);
-
-    % Freq domain metrics
-    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating frequency-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [hrv_fd, ~, ~,  pd_freq ] = hrv_freq(nni_window);
-
-    % Non linear metrics
-    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
-
-    % Heart rate fragmentation metrics
-    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating fragmentation metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    hrv_frag = hrv_fragmentation(nni_window);
 
     % Update metrics table
     intervals_count = table(length(rri_window),length(nni_window),'VariableNames',{'RR','NN'});
     intervals_count.Properties.VariableUnits = {'n.u.','n.u.'};
     intervals_count.Properties.VariableDescriptions = {'Number of RR intervals','Number of NN intervals'};
-    
-    % Add a new row to the output table for the current window
+
+    % Create and save the output table for the current window
     curr_win_table = [intervals_count, hrv_td, hrv_fd, hrv_nl, hrv_frag];
     curr_win_table.Properties.RowNames{1} = sprintf('%d', curr_win_idx+1);
-    hrv_metrics = [hrv_metrics; curr_win_table];
+    hrv_metrics_tables{curr_win_idx+1} = curr_win_table;
 
     % Save plot data
     plot_datas{curr_win_idx+1}.ecgrr = pd_ecgrr;
@@ -189,7 +196,8 @@ for curr_win_idx = window_index_offset : window_max_index
     plot_datas{curr_win_idx+1}.nl = pd_nl;
 end
 
-% Set table description
+% Create full table
+hrv_metrics = vertcat(hrv_metrics_tables{:});
 hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
 
 %% Create stats table
@@ -219,7 +227,7 @@ if (should_plot)
         end
 
         window = sprintf('%d/%d', ii, length(plot_datas));
-        
+
         fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.ecgrr.name);
         figure('NumberTitle','off', 'Name', fig_name);
         plot_ecgrr(gca, plot_datas{ii}.ecgrr);
