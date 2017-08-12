@@ -149,11 +149,14 @@ for rec_type_idx = 1:n_rec_types
         end
         curr_hrv.Properties.RowNames = row_names;
 
+        % Delete plot_data if it's not to be saved
+        if ~save_plot_data
+            curr_plot_datas = {};
+        end
+
         % Append current file's metrics to the metrics & plot data for the rec type
         rec_type_tables{file_idx} = curr_hrv;
-        if save_plot_data
-            rec_type_plot_datas{file_idx} = curr_plot_datas;
-        end
+        rec_type_plot_datas{file_idx} = curr_plot_datas;
     end
 
     % Concatenate all tables to one
@@ -177,13 +180,15 @@ stats_tables = containers.Map(rec_types, stats_tables);
 plot_datas = containers.Map(rec_types, plot_datas);
 for rec_type_idx = 1:n_rec_types
     rec_type = rec_types{rec_type_idx};
+
+    % Get all filenames and corresponding plot datas for the current record type
     rec_type_filenames = hrv_tables(rec_type).Properties.RowNames;
-
-    % Remove empty plot_data cells (might be empty due to min_nn)
     rec_type_plot_datas = plot_datas(rec_type);
-    rec_type_plot_datas = rec_type_plot_datas(~cellfun('isempty',rec_type_plot_datas));
 
-    plot_datas(rec_type) = containers.Map(rec_type_filenames, rec_type_plot_datas);
+    % Map from each filename to the plot data for it
+    if ~isempty(rec_type_plot_datas)
+        plot_datas(rec_type) = containers.Map(rec_type_filenames, rec_type_plot_datas);
+    end
 end
 
 %% Display tables
