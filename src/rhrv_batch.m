@@ -1,6 +1,6 @@
-function [ hrv_tables, stats_tables, plot_datas ] = rhrv_batch( rec_dir, varargin )
+function [ batch_data ] = rhrv_batch( rec_dir, varargin )
 %RHRV_BATCH Performs batch processing of multiple records with rhrv
-%   This function analyzes multiple physionet in  with rhrv and outputs table containting the
+%   This function analyzes multiple physionet records with rhrv and outputs tables containting the
 %   results. The records to analyze can be subdivided into record types, in which case output
 %   tables will be generated for each record type.
 %   Optionally, an Excel file can be generated containing the results of the analysis.
@@ -13,17 +13,29 @@ function [ hrv_tables, stats_tables, plot_datas ] = rhrv_batch( rec_dir, varargi
 %             patterns to match against the files in 'rec_dir' for each 'rec_type'.
 %           - rec_transforms: A cell array of transform functions to apply to each file in each
 %             record (one transform for each rec_type).
+%           - min_nn: Set a minumum number of NN intervals so that windows with less will be
+%             discarded. Default is 0 (don't discard anything).
 %           - rhrv_params: Parameters cell array to pass into rhrv when processing each record.
+%           - skip_plot_data: Whether to skip saving the plot data for each record. This can reduce
+%             memory consumption significantly for large batches. Default: false.
 %           - writexls: true/false whether to write the output to an Excel file.
 %           - output_dir: Directory to write output file to.
 %           - output_filename: Desired name of the output file.
 %
-%   Outputs:
-%       - hrv_tables: A map from each value in 'rec_types' to the table of HRV values for that type.
-%       - stats_tables: A with keys as above, whose values are summary tables for each type.
-%       - plot_datas: A map with keys as above, whose values are also maps, mapping from an
-%         individual record filename to the matching plot data object (which can be used for
-%         generating plots).
+%   Output:
+%        A structure, batch_data, containing the following fields"
+%           - rec_types: A cell of strings of the names of the record types that were analyzed.
+%           - rec_transforms: A cell array of the RR transformation functis used on each record
+%             type.
+%           - rhrv_window_minutes: Number of minutes in each analysis windows that each record was
+%             split into.
+%           - rhrv_params: A cell array containing the value of the `params` argument passed to rhrv
+%             for the analysis (see rhrv documentation).
+%           - hrv_tables: A map from each value in 'rec_types' to the table of HRV values for that type.
+%           - stats_tables: A map with keys as above, whose values are summary tables for each type.
+%           - plot_datas: A map with keys as above, whose values are also maps, mapping from an
+%             individual record filename to the matching plot data object (which can be used for
+%             generating plots).
 %
 
 %% Handle input
@@ -46,6 +58,7 @@ p.addParameter('rec_transforms', {}, @iscell);
 p.addParameter('rhrv_params', DEFAULT_RHRV_PARAMS, @(x) ischar(x)||iscell(x));
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('min_nn', DEFAULT_MIN_NN, @isscalar);
+p.addParameter('skip_plot_data', false, @islogical);
 p.addParameter('output_dir', DEFAULT_OUTPUT_FOLDER, @isstr);
 p.addParameter('output_filename', DEFAULT_OUTPUT_FILENAME, @isstr);
 p.addParameter('writexls', false, @islogical);
@@ -61,7 +74,7 @@ min_nn = p.Results.min_nn;
 output_dir = p.Results.output_dir;
 output_filename = p.Results.output_filename;
 writexls = p.Results.writexls;
-save_plot_data = nargout > 2;
+skip_plot_data = p.Results.skip_plot_data;
 
 if ~strcmp(rec_dir(end),filesep)
     rec_dir = [rec_dir filesep];
@@ -150,7 +163,7 @@ for rec_type_idx = 1:n_rec_types
         curr_hrv.Properties.RowNames = row_names;
 
         % Delete plot_data if it's not to be saved
-        if ~save_plot_data
+        if skip_plot_data
             curr_plot_datas = {};
         end
 
@@ -200,6 +213,17 @@ for rec_type_idx = 1:n_rec_types
     fprintf(['\n-> ' rec_type ' metrics:\n']);
     disp([hrv_tables(rec_type); stats_tables(rec_type)]);
 end
+
+%% Generate output structure
+
+batch_data = struct;
+batch_data.rec_types = rec_types;
+batch_data.rec_transforms = rec_transforms;
+batch_data.rhrv_window_minutes = window_minutes;
+batch_data.rhrv_params = rhrv_params;
+batch_data.hrv_tables = hrv_tables;
+batch_data.stats_tables = stats_tables;
+batch_data.plot_datas = plot_datas;
 
 %% Generate output file
 if ~writexls
