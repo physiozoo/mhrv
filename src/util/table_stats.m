@@ -13,9 +13,9 @@ data = input_table{:, :};
 var_names = input_table.Properties.VariableNames;
 
 % Calculate stats of each column (metric)
-mean_values = mean(data, 1);
-se_values = std(data, 0, 1) ./ sqrt(size(input_table, 1));
-median_values = median(data, 1);
+mean_values = nanmean(data, 1);
+se_values = nanstd(data, 0, 1) ./ sqrt(size(input_table, 1));
+median_values = nanmedian(data, 1);
 
 % Build stats table
 stats_table = [
