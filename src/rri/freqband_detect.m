@@ -55,7 +55,7 @@ for ii = 1:length(pxx_dataset)
         curr_peaks_pxx = pxx;
         curr_peaks = f_axis;
     end
-    
+
     peaks{ii} = [curr_peaks, curr_peaks_pxx];
 end
 warning(warnstate);
@@ -75,7 +75,7 @@ if ~isempty(k_range)
     % Disable warnings about convergence while testing different k's
     warnstate = warning;
     warning('off','stats:gmdistribution:FailedToConvergeReps');
-    
+
     for kk = k_range
         GMModel = fitgmdist(cluster_dataset, kk, 'Start', 'plus', 'Replicates', replicates);
         aic(kk) = GMModel.AIC;
@@ -85,7 +85,7 @@ if ~isempty(k_range)
     plot(k_range, aic, k_range, bic);
     set(gca,'XTick',k_range);
     grid on; legend('AIC', 'BIC');
-    
+
     warning(warnstate);
 end
 
@@ -108,7 +108,7 @@ clear sorted_labels;
 
 %% Visualize data
 colors = lines(n_bands);
-scatter_size = [];
+scatter_size = 100;
 scatter_marker = '.';
 
 fig = figure; ax = gca;
@@ -125,22 +125,33 @@ for jj = 1:n_bands
     cidx = labels == jj;
     csize = nnz(cidx);
     cmu = C_mu(jj,1);
-    csigma = sqrt(C_sigma2(1,1,jj));
     calpha = C_alpha(jj);
-    
-    % Plot the points in the current cluster
-    legend_handles{jj} = scatter(ax, peaks(cidx,1), peaks(cidx,2), scatter_size, colors(jj,:), scatter_marker);
-    
+
+    % Find eigenvactors/values for the covariance matrix.
+    % The eigenvector with the maximal eigenvalue is the main component of the covariance
+    % matrix. We'll find the variance along that component, and then take only the first element
+    % because we want to project this variance onto the f-axis.
+    [V,D] = eig(C_sigma2(:,:,jj));
+    [~,imax] = max(sum(D,1));
+    csigma2_principal_component = C_sigma2(:,:,jj) * V(:,imax);
+    csigma = sqrt(abs(csigma2_principal_component(1)));
+
     % Plot PDF of current cluster
-    % yyaxis(ax, 'left');
     ypdf = normpdf(xpdf,cmu,csigma);
-    ypdf = (ypdf ./ 1) .* calpha;
+    ypdf = ypdf .* calpha;
     plot(ax, xpdf,ypdf, 'Color', colors(jj,:), 'LineWidth', 3, 'LineStyle', '-', 'Marker', 'none', 'MarkerEdgeColor','black');
 
+    % Normalize the height of the points in the cluster by the estimated PDF (just so they're more
+    % visible in the plot)
+    peaks_f = peaks(cidx,1);
+    peaks_pxx = peaks(cidx,2) ./ max(peaks(cidx,2)) .* max(ypdf);
+
+    % Plot the points in the current cluster
+    legend_handles{jj} = scatter(ax, peaks_f, peaks_pxx, scatter_size, colors(jj,:), scatter_marker);
     legend_entries{jj} = sprintf('%.3fHz, n=%d, std=%.3f', cmu, csize, csigma);
 end
 legend(ax, [legend_handles{:}], legend_entries, 'location', 'northeast');
-xlabel(ax, 'Frequency [Hz]'); ylabel(ax, 'PSD');
+xlabel(ax, 'Frequency [Hz]'); ylabel(ax, 'PSD Peak Distribution');
 
 %% Print
 
