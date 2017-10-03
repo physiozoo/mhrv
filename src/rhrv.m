@@ -6,6 +6,11 @@ function [ hrv_metrics, hrv_stats, plot_datas ] = rhrv( rec_name, varargin )
 %       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
 %                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
 %       - varargin: Pass in name-value pairs to configure advanced options:
+%           - ecg_channel: The channel number to use (in case the record has more than one). If not
+%                          provided, rhrv will attempt to use the first channel that has ECG data.
+%           - ann_ext: Specify an annotation file extention to use instead of loading the record
+%            itself (.dat file). If provided, RR intervals will be loaded from the annotation file
+%            instead of from the ECG.  Default: empty (don't use annotation).
 %           - window_minutes: Split ECG signal into windows of the specified length (in minutes)
 %                             and perform the analysis on each window separately.
 %           - window_index_offset: Number of windows to skip from the beginning.
@@ -33,6 +38,7 @@ function [ hrv_metrics, hrv_stats, plot_datas ] = rhrv( rec_name, varargin )
 
 % Defaults
 DEFAULT_ECG_CHANNEL = [];
+DEFAULT_ANN_EXT = '';
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_WINDOW_INDEX_LIMIT = Inf;
 DEFAULT_WINDOW_INDEX_OFFSET = 0;
@@ -41,7 +47,8 @@ DEFAULT_PARAMS = '';
 % Define input
 p = inputParser;
 
-p.addRequired('rec_name', @isrecord);
+p.addRequired('rec_name');
+p.addParameter('ann_ext', DEFAULT_ANN_EXT, @(x) ischar(x));
 p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_limit', DEFAULT_WINDOW_INDEX_LIMIT, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
@@ -52,6 +59,7 @@ p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
 p.parse(rec_name, varargin{:});
+ann_ext = p.Results.ann_ext;
 ecg_channel = p.Results.ecg_channel;
 window_minutes = p.Results.window_minutes;
 window_index_limit = p.Results.window_index_limit;
@@ -80,7 +88,21 @@ if ~isempty(params)
     end
 end
 
-%% Process ECG Signal
+%% Process ECG Signal or Annotations
+
+%% Make sure rec_name is valid - has either data or annotation
+if isempty(ann_ext)
+    if ~isrecord(rec_name)
+        error('Invalid record name %s', rec_name);
+    end
+    rr_intervals_source = 'ECG';
+else
+    if ~isrecord(rec_name, ann_ext)
+        error('Invalid record name %s: Can''t find annotator %s', rec_name, ann_ext);
+    end
+    rr_intervals_source = sprintf('annotator (%s)', ann_ext);
+end
+
 % Save processing start time
 t0 = cputime;
 
@@ -93,7 +115,7 @@ if isempty(ecg_channel)
         ecg_channel = default_ecg_channel;
     end
 end
-fprintf('[%.3f] >> rhrv: Processing ECG signal from record %s (ch. %d)...\n', cputime-t0, rec_name, ecg_channel);
+fprintf('[%.3f] >> rhrv: Processing record %s (ch. %d)...\n', cputime-t0, rec_name, ecg_channel);
 
 % Length of signal in seconds
 t_max = floor(ecg_N / ecg_Fs);
@@ -134,8 +156,8 @@ for curr_win_idx = window_index_offset : window_max_index
 
     try
         % Read & process RR intervals from ECG signal
-        fprintf('[%.3f] >> rhrv: [%d/%d] Detecting QRS and RR intervals... ', cputime-t0, curr_win_idx+1, num_win);
-        [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
+        fprintf('[%.3f] >> rhrv: [%d/%d] Detecting RR intervals from %s... ', cputime-t0, curr_win_idx+1, num_win, rr_intervals_source);
+        [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'ann_ext', ann_ext, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
         fprintf('%d intervals detected.\n', length(trr_window));
 
         % Apply transform function if available
@@ -228,9 +250,12 @@ if (should_plot)
 
         window = sprintf('%d/%d', ii, length(plot_datas));
 
-        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.ecgrr.name);
-        figure('NumberTitle','off', 'Name', fig_name);
-        plot_ecgrr(gca, plot_datas{ii}.ecgrr);
+        % When using annotations, wont have ecgrr plot data
+        if ~isempty(fieldnames(plot_datas{ii}.ecgrr))
+            fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.ecgrr.name);
+            figure('NumberTitle','off', 'Name', fig_name);
+            plot_ecgrr(gca, plot_datas{ii}.ecgrr);
+        end
 
         fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.filtrr.name);
         figure('NumberTitle','off', 'Name', fig_name);
