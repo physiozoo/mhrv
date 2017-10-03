@@ -90,12 +90,16 @@ set(all_axes, ...
 
 % Set title if specified. Will be set only to first axes.
 if (~isempty(axes_title))
-    title(all_axes(end), axes_title, 'FontName', font, 'FontWeight', 'normal');
+    title(all_axes(end), axes_title, 'FontName', font, 'FontWeight', 'normal', 'FontSize', font_size);
 end
 
 % Set font for all text objects
 all_text = findall(fig_handle, 'type', 'text');
-set(all_text, 'FontName', font);
+set(all_text, 'FontName', font, 'FontSize', font_size);
+
+% Set font for legend
+lgd = findall(fig_handle, 'type', 'legend');
+set(lgd, 'FontName', font, 'FontSize', font_size);
 
 % Make sure output folder exists
 out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
