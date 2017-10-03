@@ -124,7 +124,7 @@ for rec_type_idx = 1:n_rec_types
     rec_type_transform = rec_transforms{rec_type_idx};
 
     % Get files matching the currect record type's pattern
-    files = dir([rec_dir sprintf('%s.dat', rec_type_filenames)])';
+    files = dir([rec_dir sprintf('%s.hea', rec_type_filenames)])';
     nfiles = length(files);
 
     if nfiles == 0
