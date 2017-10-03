@@ -8,6 +8,9 @@ function [ batch_data ] = rhrv_batch( rec_dir, varargin )
 %   Inputs:
 %       - rec_dir: Directory to scan for input files.
 %       - varargin: Optional key-value parameter pairs.
+%           - ann_ext: Specify an annotation file extention to use instead of loading the record
+%             itself (.dat file). If provided, RR intervals will be loaded from the annotation file
+%             instead of from the ECG.  Default: empty (don't use annotation).
 %           - rec_types: A cell array containing the names of the type of record to analyze.
 %           - rec_filenames: A cell array with identical length as 'rec_names', containing
 %             patterns to match against the files in 'rec_dir' for each 'rec_type'.
@@ -41,6 +44,7 @@ function [ batch_data ] = rhrv_batch( rec_dir, varargin )
 %% Handle input
 
 % Defaults
+DEFAULT_ANN_EXT = '';
 DEFAULT_REC_TYPES = {'ALL'};
 DEFAULT_REC_FILENAMES = {'*'};
 DEFAULT_RHRV_PARAMS = 'defaults';
@@ -52,6 +56,7 @@ DEFAULT_OUTPUT_FILENAME = [];
 % Define input
 p = inputParser;
 p.addRequired('rec_dir', @(x) exist(x,'dir'));
+p.addParameter('ann_ext', DEFAULT_ANN_EXT, @(x) ischar(x));
 p.addParameter('rec_types', DEFAULT_REC_TYPES, @iscellstr);
 p.addParameter('rec_filenames', DEFAULT_REC_FILENAMES, @iscellstr);
 p.addParameter('rec_transforms', {}, @iscell);
@@ -65,6 +70,7 @@ p.addParameter('writexls', false, @islogical);
 
 % Get input
 p.parse(rec_dir, varargin{:});
+ann_ext = p.Results.ann_ext;
 rec_types = p.Results.rec_types;
 rec_filenames = p.Results.rec_filenames;
 rec_transforms = p.Results.rec_transforms;
@@ -139,7 +145,7 @@ for rec_type_idx = 1:n_rec_types
         fprintf('-> Analyzing record %s\n', rec_name);
         try
             [curr_hrv, ~, curr_plot_datas] = rhrv(rec_name, 'window_minutes', window_minutes,...
-                'params', rhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
+                'ann_ext', ann_ext, 'params', rhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
         catch e
             warning('Error analyzing record %s: %s\nSkipping...', rec_name, e.message);
             continue;
