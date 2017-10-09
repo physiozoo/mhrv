@@ -51,9 +51,9 @@ if (~isempty(ann_types))
     command = sprintf('%s -p %s', command, ann_types);
 end
 
-[res, out] = jsystem(command, [], rec_path);
+[res, out, err] = jsystem(command, [], rec_path);
 if(res ~= 0)
-    error('rdann error: %s', out);
+    error('rdann error: %s\n%s', err, out);
 end
 
 % Extract just the sample numbers from the rdann output

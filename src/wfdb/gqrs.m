@@ -101,9 +101,9 @@ if (gqpost)
 end
 
 %% === Run gqrs
-[retval, output] = jsystem(cmdline, [], rec_path);
+[retval, output, stderr] = jsystem(cmdline, [], rec_path);
 if(retval ~= 0)
-    error('gqrs error: %s', output);
+    error('gqrs error: %s\n%s', stderr, output);
 end
 
 %% === Parse annotation

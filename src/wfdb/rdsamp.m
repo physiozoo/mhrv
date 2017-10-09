@@ -65,9 +65,9 @@ end
 
 % run the command and write results to a temp file
 command = sprintf('%s > %s', command, temp_filename);
-[res, out] = jsystem(command,[], rec_path);
+[res, out, err] = jsystem(command,[], rec_path);
 if(res ~= 0)
-    error('rdann error: %s', out);
+    error('rdsamp error: %s\n%s', err, out);
 end
 
 M = dlmread(temp_file, ',');
