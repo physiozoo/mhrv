@@ -151,7 +151,7 @@ for jj = 1:n_bands
     legend_entries{jj} = sprintf('%.3fHz, n=%d, std=%.3f', cmu, csize, csigma);
 end
 legend(ax, [legend_handles{:}], legend_entries, 'location', 'northeast');
-xlabel(ax, 'Frequency [Hz]'); ylabel(ax, 'PSD Peak Distribution');
+xlabel(ax, 'Frequency (Hz)'); ylabel(ax, 'PSD Peak Distribution');
 
 %% Print
 

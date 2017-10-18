@@ -72,7 +72,7 @@ set(ax, 'XScale', 'log', 'YScale', 'log');
 grid(ax, 'on');
 axis(ax, 'tight');
 
-xlabel(ax, 'log(frequency [hz])');
+xlabel(ax, 'log(frequency (hz))');
 ylabel(ax, 'log(PSD [s^2/Hz])');
 
 legend(legend_handles, legend_entries, 'Location', 'southwest');

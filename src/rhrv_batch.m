@@ -187,7 +187,7 @@ for rec_type_idx = 1:n_rec_types
     stats_tables{rec_type_idx} = table_stats(rec_type_table);
     plot_datas{rec_type_idx} = rec_type_plot_datas;
 end
-fprintf('-> Batch processing complete (%.3f[s])\n', toc(t0));
+fprintf('-> Batch processing complete (%.3f(s))\n', toc(t0));
 
 %% Convert output to maps
 
@@ -297,7 +297,7 @@ end
 % Restore warning state
 warning(orig_warnings);
 
-fprintf('-> Done. (%.3f[s])\n', toc(t0));
+fprintf('-> Done. (%.3f(s))\n', toc(t0));
 end
 
 %% Helper functions

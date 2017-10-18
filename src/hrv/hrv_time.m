@@ -11,7 +11,7 @@ function [ hrv_td, plot_data ] = hrv_time( nni, varargin )
 %       AVNN - Average NN interval duration
 %       SDNN - Standard deviation of NN interval durations
 %       RMSSD - Square root of mean summed squares of NN interval differences
-%       pNNx - The percentage of NN intervals which differ by at least x [ms] (default 50)
+%       pNNx - The percentage of NN intervals which differ by at least x (ms) (default 50)
 %              from their preceding interval. The value of x in milliseconds can be set
 %              with the optional parameter 'pnn_thresh_ms'.
 %       SEM - Standard error of the mean NN interval length.

@@ -25,7 +25,7 @@ end
 
 [~] = histogram(ax, nni, 'Normalization','probability');
 
-xlabel(ax, 'NN Interval [sec]'); ylabel(ax, 'Probability');
+xlabel(ax, 'NN Interval (sec)'); ylabel(ax, 'Probability');
 
 line(ones(1,2)*hrv_td.AVNN, ylim(ax), 'Parent', ax, 'LineStyle', '-', 'Color', 'red', 'LineWidth', 2.5);
 line(ones(1,2)*(hrv_td.AVNN + hrv_td.SDNN), ylim(ax), 'Parent', ax, 'LineStyle', ':', 'Color', 'red', 'LineWidth', 2);

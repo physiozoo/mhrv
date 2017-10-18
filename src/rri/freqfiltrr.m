@@ -93,7 +93,7 @@ if should_plot
     figure;
     plot(trr, rri, trr_downsample, rri_downsample);
     grid on;
-    xlabel('time [sec]'); ylabel('RR intervals');
+    xlabel('time (sec)'); ylabel('RR intervals');
     legend('Original', 'Filtered');
 end
 end

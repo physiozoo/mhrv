@@ -39,8 +39,8 @@ end
 
 hold(ax, 'on');
 grid(ax, 'on');
-xlabel(ax, 'time [s]');
-ylabel(ax, 'RR Intervals [s]');
+xlabel(ax, 'time (s)');
+ylabel(ax, 'RR Intervals (s)');
 ylim(ax, yrange);
 
 % Init legend data

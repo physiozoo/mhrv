@@ -145,9 +145,9 @@ legend(ax, legend_handles, legend_entries);
 %% Labels
 % X
 if strcmpi(xscale, 'linear')
-    xlabel(ax, 'Frequency [Hz]');
+    xlabel(ax, 'Frequency (Hz)');
 else
-    xlabel(ax, 'Log Frequency [Hz]');
+    xlabel(ax, 'Log Frequency (Hz)');
 end
 
 % Y

@@ -29,8 +29,8 @@ end
 hold(ax, 'on');
 axis(ax, 'equal', 'tight');
 grid(ax, 'on');
-xlabel(ax, 'RR(n) [sec]');
-ylabel(ax, 'RR(n+1) [sec]');
+xlabel(ax, 'RR(n) (sec)');
+ylabel(ax, 'RR(n+1) (sec)');
 
 plot(ax, plot_data.x_orig, plot_data.y_orig, 'b+', 'MarkerSize', msz);
 plot(ax, plot_data.ellipse_old(1,:), plot_data.ellipse_old(2,:),'k--', 'LineWidth', lw_ellipse);
@@ -38,7 +38,7 @@ plot(ax, plot_data.ellipse_old(1,:), plot_data.ellipse_old(2,:),'k--', 'LineWidt
 h_sd1 = plot(ax, plot_data.sd1_line_old(1,:), plot_data.sd1_line_old(2,:), 'r-', 'LineWidth', lw_sdline);
 h_sd2 = plot(ax, plot_data.sd2_line_old(1,:), plot_data.sd2_line_old(2,:), 'g-', 'LineWidth', lw_sdline);
 
-legend([h_sd1,h_sd2], {sprintf('SD1=%.4f', plot_data.sd1), sprintf('SD2=%.4f', plot_data.sd2)});
+legend([h_sd1,h_sd2], {sprintf('SD_1=%.4f', plot_data.sd1), sprintf('SD_2=%.4f', plot_data.sd2)});
 
 %% Tag
 ax.Tag = tag;
