@@ -78,11 +78,11 @@ rri_out = rri_scaled + y;
 %% Plots
 
 if should_plot
-    figure;
-    subplot(2,1,1);
+    f1 = figure;
+    subplot(3,1,1);
     plot(t_axis, x, trr, y, trr, rri, trr, rri_out);
     xlabel('time (sec)');
-    legend('x', 'y','RR', sprintf('RR+%.1fy',mix_ratio));
+    legend(sprintf('x (\\sigma=%.3f)',sigma_x), 'y',sprintf('RR (\\sigma=%.3f)', sigma_r), 'RR + y');
 
     % Spectrum
     df = 1/T; f_max = Fs/2;
@@ -91,18 +91,25 @@ if should_plot
     pxx_x = pwelch(x, welch_win, length(welch_win)/2, f_axis, Fs);
     pxx_y = pwelch(y, welch_win, length(welch_win)/2, f_axis, Fs);
 
-    subplot(2,1,2);
+    subplot(3,1,2);
     plot(f_axis, pxx_x, 'DisplayName', 'PXX_x'); hold on;
     plot(f_axis, pxx_y, 'DisplayName', 'PXX_y'); hold on;
+    % f2 = figure; plot(f_axis, pxx_y, 'LineWidth', 1.5, 'DisplayName', 'Simulated ANS'); hold on;
     for f = freqs
         plot(f, pxx_y(find(abs(f_axis-f)<df/2)), 'DisplayName', sprintf('%.2fHz', f),...
             'LineStyle', 'none', 'Marker', 'V', 'MarkerSize', 8);
     end
-
-    xlabel('freq (Hz)'); ylabel('PSD');
+    plot(f_axis, ones(size(f_axis)).*(sigma_n^2), 'DisplayName', '\sigma^{2}_{n}', 'LineWidth', 1.5, 'LineStyle','--', 'Color', 'black');
+    xlabel('Frequency (Hz)'); ylabel('PSD');
     grid on;
     set(gca, 'XScale','log','YScale','log');
-    legend('show');
+    legend('show', 'Location', 'northwest');
+
+    % MSE
+    figure(f1);
+    ax = subplot(3,1,3);
+    [~,~,mse_pd] = mse(y);
+    plot_mse(ax, mse_pd);
 end
 
 end
