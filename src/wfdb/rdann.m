@@ -37,7 +37,7 @@ from_sample = p.Results.from;
 to_sample = p.Results.to;
 
 %% === Run rdann
-[rec_path, rec_filename, ~] = fileparts(rec_name);
+[rec_path, rec_filename, ~] = file_parts(rec_name);
 
 % Command to run rdann and cut only the annotation samples out
 rdann_path = get_wfdb_tool_path('rdann');

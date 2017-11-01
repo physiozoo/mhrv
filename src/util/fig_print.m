@@ -103,7 +103,7 @@ set(lgd, 'FontName', font, 'FontSize', font_size);
 
 % Make sure output folder exists
 out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
-[out_dir, ~, ~] = fileparts(out_filename);
+[out_dir, ~, ~] = file_parts(out_filename);
 [~, ~, ~] = mkdir(out_dir);
 
 % Print figure as EPS

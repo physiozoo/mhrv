@@ -42,7 +42,7 @@ to_sample = p.Results.to;
 suffix = num2str(randi(999999));
 out_ext = ['rdsamp' suffix];
 
-[rec_path, rec_filename, ~] = fileparts(rec_name);
+[rec_path, rec_filename, ~] = file_parts(rec_name);
 temp_filename = sprintf('%s.%s', rec_filename, out_ext);
 temp_file = [rec_path filesep temp_filename];
 

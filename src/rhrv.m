@@ -72,8 +72,8 @@ should_plot = p.Results.plot;
 %% Make sure toolbox is set up
 
 % Find the rhrv_init script path (we don't assume it's in the matlab path until it's run)
-[curr_folder, ~, ~] = fileparts(mfilename('fullpath'));
-[parent_folder, ~, ~] = fileparts(curr_folder);
+[curr_folder, ~, ~] = file_parts(mfilename('fullpath'));
+[parent_folder, ~, ~] = file_parts(curr_folder);
 init_path = [parent_folder filesep 'rhrv_init.m'];
 
 % Run rhrv_init. This won't actually do anything if it has already run before.
@@ -239,7 +239,7 @@ end
 
 if (should_plot)
     fprintf('[%.3f] >> rhrv: Generating plots...\n', cputime-t0);
-    [~, filename] = fileparts(rec_name);
+    [~, filename] = file_parts(rec_name);
     for ii = 1:length(plot_datas)
 
         % Might have empty cells in plot_datas because we don't always calculate metrics for all

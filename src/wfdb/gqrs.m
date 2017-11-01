@@ -79,7 +79,7 @@ if isempty(ecg_channel)
 end
 
 %% === Create commandline arguments
-[rec_path, rec_filename, ~] = fileparts(rec_name);
+[rec_path, rec_filename, ~] = file_parts(rec_name);
 
 % commanline for gqrs
 gqrs_path = get_wfdb_tool_path('gqrs');
