@@ -10,7 +10,7 @@ function [] = fig_print( fig_handle, out_filename, varargin )
 % Defaults
 DEFAULT_WIDTH = 15; % cm
 DEFAULT_HEIGHT = 10; % cm
-DEFAULT_FONT_SIZE = 10; % pt
+DEFAULT_FONT_SIZE = 12; % pt
 DEFAULT_FONT = 'Times';
 DEFAULT_OUTPUT_FORMAT = 'pdf'; % epsc, tiff, ...
 DEFAULT_RENDERER = 'painters';
