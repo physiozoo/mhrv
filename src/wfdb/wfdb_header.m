@@ -1,10 +1,10 @@
-function [ Fs, N_samples, N_channels, channel_info ] = wfdb_record_info( rec_name )
-%WFDB_RECORD_INFO Return info about a WFDB record
+function [ Fs, N_samples, N_channels, channel_info ] = wfdb_header( rec_name )
+%WFDB_HEADER Returns metadata about a WFDB record based on it's header file
 %   By default, if no description is specified it looks for ECG signal channels.
 %   Inputs:
 %       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
 %                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
-
+%
 %   Output:
 %       - Fs: Sampling frequency
 %       - N_samples: Number of samples

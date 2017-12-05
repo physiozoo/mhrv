@@ -80,8 +80,8 @@ delete(temp_file);
 % Note: We don't use the '-P' option of rdsamp because it doesn't handle NaN (missing) values in the
 % signal correctly.
 
-% Get channel metadata
-[Fs, ~, ~, channel_info] = wfdb_record_info(rec_name);
+% Read channel metadata from header file
+[Fs, ~, ~, channel_info] = wfdb_header(rec_name);
 
 % Get channel info for requested channels only
 if (~isempty(chan_list))
