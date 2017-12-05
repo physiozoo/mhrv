@@ -25,7 +25,7 @@ DEFAULT_TO_SAMPLE = [];
 % Define input
 p = inputParser;
 p.addRequired('rec_name', @isrecord);
-p.addParameter('chan_list', DEFAULT_CHAN_LIST, @isvector);
+p.addOptional('chan_list', DEFAULT_CHAN_LIST, @isvector);
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
 
