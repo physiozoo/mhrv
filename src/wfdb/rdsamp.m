@@ -5,7 +5,7 @@ function [ t, sig, Fs ] = rdsamp( rec_name, varargin )
 %       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
 %                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
 %       - varargin: Pass in name-value pairs to configure advanced options:
-%           - 'sig_list': A list of channel numbers (starting from 1) to read from the record, e.g.
+%           - 'chan_list': A list of channel numbers (starting from 1) to read from the record, e.g.
 %                        to read the first three channels use [1, 2, 3]. Default is [], i.e. read
 %                        all channels from the record.
 %           - 'from': Number of first sample to start detecting from (default 1)
@@ -15,27 +15,27 @@ function [ t, sig, Fs ] = rdsamp( rec_name, varargin )
 %       - sig: A matrix where is column is a different channel from the signal.
 %       - Fs: The sampling frequency of the data.
 
-%% === Input
+%% Input
 
 % Defaults
-DEFAULT_SIG_LIST = [];
+DEFAULT_CHAN_LIST = [];
 DEFAULT_FROM_SAMPLE = 1;
 DEFAULT_TO_SAMPLE = [];
 
 % Define input
 p = inputParser;
 p.addRequired('rec_name', @isrecord);
-p.addOptional('sig_list', DEFAULT_SIG_LIST, @isvector);
+p.addParameter('chan_list', DEFAULT_CHAN_LIST, @isvector);
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
 
 % Get input
 p.parse(rec_name, varargin{:});
-sig_list = p.Results.sig_list;
+chan_list = p.Results.chan_list;
 from_sample = p.Results.from;
 to_sample = p.Results.to;
 
-%% === Run rdsamp
+%% Run rdsamp
 
 % Create a random suffix for the output file extension (this prevents collisions when running on
 % the same file in parallel)
@@ -46,21 +46,21 @@ out_ext = ['rdsamp' suffix];
 temp_filename = sprintf('%s.%s', rec_filename, out_ext);
 temp_file = [rec_path filesep temp_filename];
 
-% Command to run rdann with natural units
+% Command to run rdsamp
 rdsamp_path = get_wfdb_tool_path('rdsamp');
-command = sprintf('%s -P -c -r %s -f s%d', rdsamp_path, rec_filename, from_sample-1);
+command = sprintf('%s -c -r %s -f s%d', rdsamp_path, rec_filename, from_sample-1);
 if (~isempty(to_sample))
     command = sprintf('%s -t s%d', command, to_sample-1);
 end
 
 % Check if we only need part of the signals
-if (~isempty(sig_list))
+if (~isempty(chan_list))
     % convert signal list to string, and make it zero-based
-    sig_list_str = mat2str(sig_list - 1);
-    if (length(sig_list) > 1)
-        sig_list_str = sig_list_str(2:end-1); % remove brackets
+    chan_list_str = mat2str(chan_list - 1);
+    if (length(chan_list) > 1)
+        chan_list_str = chan_list_str(2:end-1); % remove brackets
     end
-    command = sprintf('%s -s %s', command, sig_list_str);
+    command = sprintf('%s -s %s', command, chan_list_str);
 end
 
 % run the command and write results to a temp file
@@ -70,12 +70,33 @@ if(res ~= 0)
     error('rdsamp error: %s\n%s', err, out);
 end
 
+% Load contents of temp file
 M = dlmread(temp_file, ',');
-t = M(:,1);
-sig = M(:,2:end);
-Fs = floor(size(sig,1) / (t(end) - t(1))); % since tm is in seconds
 
 % Delete the temp file
 delete(temp_file);
+
+%% Convert to physical units
+% Note: We don't use the '-P' option of rdsamp because it doesn't handle NaN (missing) values in the
+% signal correctly.
+
+% Get channel metadata
+[Fs, ~, ~, channel_info] = wfdb_record_info(rec_name);
+
+% Get channel info for requested channels only
+if (~isempty(chan_list))
+    channel_info = channel_info(chan_list);
+end
+
+t = M(:,1) .* (1/Fs);
+
+sig = zeros(size(M,1), size(M,2)-1);
+for chan_idx = 1:size(sig,2)
+    baseline = channel_info{chan_idx}.baseline;
+    adc_gain = channel_info{chan_idx}.adc_gain;
+
+    sig(:,chan_idx) = (M(:,chan_idx+1) - baseline) ./ adc_gain;
+end
+
 end
 
