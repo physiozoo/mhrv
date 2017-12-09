@@ -1,15 +1,19 @@
-function [ Fs, N_samples, N_channels, channel_info ] = wfdb_header( rec_name )
+function [ header_info ] = wfdb_header( rec_name )
 %WFDB_HEADER Returns metadata about a WFDB record based on it's header file.
 %
 %   Inputs:
 %       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
 %                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
 %
-%   Output:
+%   Output: A struct with the following fields:
+%       - rec_name: The record name
 %       - Fs: Sampling frequency
 %       - N_samples: Number of samples
 %       - N_channels: Number of channels (different signals) in the record
 %       - channel_info: A cell array of length N_channels with the metadata about each channel
+%       - duration: A struct with the fields h,m,s,ms corresponding to duration fields - hours,
+%                   miutes, seconds, milliseconds.
+%       - total_seconds: Records total duration in seconds.
 %
 %   If no output arguments are given, prints record and channel info to console.
 %
@@ -149,11 +153,20 @@ end
 
 fclose(fheader);
 
+%% Create output struct
+
+[t_max, h,m,s,ms] = signal_duration(N_samples, Fs);
+
+header_info = struct(...
+    'rec_name', rec_name,...
+    'Fs', Fs, 'N_samples', N_samples, 'N_channels', N_channels, 'channel_info', {channel_info},...
+    'duration', struct('h', h, 'm', m, 's', s, 'ms', ms),...
+    'total_seconds', t_max...
+);
+
 %% Display info
 
 if nargout == 0
-    [t_max, h,m,s,ms] = signal_duration(N_samples, Fs);
-
     fprintf('Record %s\n', rec_name);
     fprintf('  Duration [HH:mm:ss.ms]: %02d:%02d:%02d.%03d (%.3f seconds)\n', h,m,s,ms,t_max);
     fprintf('  Sampling frequency: %.1f\n', Fs);

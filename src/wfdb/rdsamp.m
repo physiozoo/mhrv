@@ -81,7 +81,9 @@ delete(temp_file);
 % signal correctly.
 
 % Read channel metadata from header file
-[Fs, ~, ~, channel_info] = wfdb_header(rec_name);
+header_info = wfdb_header(rec_name);
+Fs = header_info.Fs;
+channel_info = header_info.channel_info;
 
 % Get channel info for requested channels only
 if (~isempty(chan_list))
