@@ -26,14 +26,23 @@ DEFAULT_TO_SAMPLE = [];
 p = inputParser;
 p.addRequired('rec_name', @isrecord);
 p.addOptional('chan_list', DEFAULT_CHAN_LIST, @isvector);
+p.addParameter('header_info', [], @(x) isempty(x) || isstruct(x));
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
 
 % Get input
 p.parse(rec_name, varargin{:});
 chan_list = p.Results.chan_list;
+header_info = p.Results.header_info;
 from_sample = p.Results.from;
 to_sample = p.Results.to;
+
+% Validate header info
+if isempty(header_info)
+    header_info = wfdb_header(rec_name);
+elseif ~strcmp(rec_name, header_info.rec_name)
+    error('Provided header_info was for a different record');
+end
 
 %% Run rdsamp
 
@@ -80,8 +89,7 @@ delete(temp_file);
 % Note: We don't use the '-P' option of rdsamp because it doesn't handle NaN (missing) values in the
 % signal correctly.
 
-% Read channel metadata from header file
-header_info = wfdb_header(rec_name);
+% Get channel metadata from header file
 Fs = header_info.Fs;
 channel_info = header_info.channel_info;
 
