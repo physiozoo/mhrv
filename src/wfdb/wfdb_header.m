@@ -10,11 +10,14 @@ function [ Fs, N_samples, N_channels, channel_info ] = wfdb_header( rec_name )
 %       - N_samples: Number of samples
 %       - N_channels: Number of channels (different signals) in the record
 %       - channel_info: A cell array of length N_channels with the metadata about each channel
+%
+%   If no output arguments are given, prints record and channel info to console.
+%
 
 % DEFAULTS
 COMMENT_REGEX = '^\s*#.*';
 FORMAT_REGEX = '(\d+)(x\d+)?(:\d+)?(+\d+)?';
-ADC_GAIN_REGEX = '([\d.-+]+)(\(\d+\))?(/.*)?';
+ADC_GAIN_REGEX = '([\d.-+]+)(\([\d.-+]+\))?(/.*)?';
 DEFGAIN = 200;
 
 % Define input
