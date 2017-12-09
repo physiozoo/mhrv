@@ -106,9 +106,14 @@ end
 % Save processing start time
 t0 = cputime;
 
-% Get data about the ECG channel in the signal
-[default_ecg_channel, ecg_Fs, ecg_N] = get_signal_channel(rec_name);
+% Get data about the signal from the header
+header_info = wfdb_header(rec_name);
+ecg_Fs = header_info.Fs;
+ecg_N = header_info.N_samples;
+
+% Get ECG channel number
 if isempty(ecg_channel)
+    default_ecg_channel = get_signal_channel(rec_name, 'header_info', header_info);
     if isempty(default_ecg_channel)
         error('No ECG channel found in record %s', rec_name);
     else
@@ -118,15 +123,12 @@ end
 fprintf('[%.3f] >> rhrv: Processing record %s (ch. %d)...\n', cputime-t0, rec_name, ecg_channel);
 
 % Length of signal in seconds
-t_max = floor(ecg_N / ecg_Fs);
+t_max = floor(header_info.total_seconds);
 
 % Duration of signal
-duration_h  = mod(floor(t_max / 3600), 60);
-duration_m  = mod(floor(t_max / 60), 60);
-duration_s  = mod(floor(t_max), 60);
-duration_ms = floor(mod(t_max, 1)*1000);
+duration = header_info.duration;
 fprintf('[%.3f] >> rhrv: Signal duration: %02d:%02d:%02d.%03d [HH:mm:ss.ms]\n', cputime-t0,...
-        duration_h, duration_m, duration_s, duration_ms);
+        duration.h, duration.m, duration.s, duration.ms);
 
 % Length of each window in seconds and samples (make sure the window is not longer than the signal)
 t_win = min([window_minutes * 60, t_max]);
