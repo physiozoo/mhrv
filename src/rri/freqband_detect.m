@@ -1,4 +1,4 @@
-function [ GMModel, peaks ] = freqband_detect( pxx_dataset, varargin )
+function [ GMModel, cutoff_freqs, peaks ] = freqband_detect( pxx_dataset, varargin )
 %FREQBAND_DETECT Detect frequency bands from multiple specrums of RR intervals
 %   This function uses an automated clustering algorithm to attempt to detect bands with
 %   high frequency power from a dataset containing multiple power spectrums obtained from RR intervals.
@@ -8,12 +8,11 @@ p = inputParser;
 p.addRequired('pxx_dataset', @iscell);
 p.addParameter('n_bands', 3, @(x)isscalar(x)&&isnumeric(x));
 p.addParameter('k_range', [], @(x)isnumeric(x));
-p.addParameter('normalize', true);
+p.addParameter('normalize', false);
 p.addParameter('max_peaks', 10, @(x)isempty(x)||(isscalar(x)&&isnumeric(x)));
 p.addParameter('peak_min_height', 0.05, @(x) x >= 0 && x <= 1);
 p.addParameter('replicates', 5, @(x)isscalar(x)&&floor(x)==x);
 p.addParameter('model_dim', 1, @(x) x==1 || x==2);
-p.addParameter('output_filename', [], @ischar);
 
 % Get input
 p.parse(pxx_dataset, varargin{:});
@@ -24,7 +23,6 @@ max_peaks = p.Results.max_peaks;
 peak_min_height = p.Results.peak_min_height;
 replicates = p.Results.replicates;
 model_dim = p.Results.model_dim;
-output_filename = p.Results.output_filename;
 
 %% Detect peaks
 
@@ -41,11 +39,10 @@ for ii = 1:length(pxx_dataset)
 
     % Normalize spectrum
     if normalize
-        pxx = pxx ./ max(pxx);
-        abs_peak_min_height = peak_min_height;
-    else
-        abs_peak_min_height = peak_min_height * max(pxx);
+        total_power = freqband_power(pxx, f_axis, [f_axis(1) f_axis(end)]);
+        pxx = pxx ./ total_power;
     end
+    abs_peak_min_height = peak_min_height * max(pxx);
 
     % Find peaks if requested
     if ~isempty(max_peaks)
@@ -60,8 +57,11 @@ for ii = 1:length(pxx_dataset)
 end
 warning(warnstate);
 
-% Convert to a long Nx1 vector of all peaks
+% Convert to a long Nx2 vector of all peaks freqs and heights
 peaks = cell2mat(peaks);
+
+% Sort by frequency
+peaks = sortrows(peaks);
 
 %% Fit Model
 
@@ -76,10 +76,11 @@ if ~isempty(k_range)
     warnstate = warning;
     warning('off','stats:gmdistribution:FailedToConvergeReps');
 
-    for kk = k_range
-        GMModel = fitgmdist(cluster_dataset, kk, 'Start', 'plus', 'Replicates', replicates);
-        aic(kk) = GMModel.AIC;
-        bic(kk) = GMModel.BIC;
+    for ii = 1:length(k_range)
+        k = k_range(ii);
+        GMModel = fitgmdist(cluster_dataset, k, 'Start', 'plus', 'Replicates', replicates);
+        aic(ii) = GMModel.AIC;
+        bic(ii) = GMModel.BIC;
     end
     figure;
     plot(k_range, aic, k_range, bic);
@@ -106,6 +107,42 @@ end
 labels = sorted_labels;
 clear sorted_labels;
 
+%% Find frequency band cutoffs
+
+freq_band = [min(peaks(:,1)), max(peaks(:,1))];
+xpdf = freq_band(1):0.001:freq_band(2);
+
+% Calculate the probability that each frequency belongs to each cluster
+postxpdf = posterior(GMModel, xpdf');
+
+% Rearrange so that clusters are sorted by their mean frequency, as before
+postxpdf = postxpdf(:,sort_idx);
+
+% For each frequency, find the cluster number that has the maximal probability.
+[~, xpdf_clusters] = max(postxpdf,[], 2);
+
+% Find indices where the cluster changes - those are the indices of cutoff frequencies.
+% Note that since we re-arranged the clusters by mean frequency, we know that 'xpdf_clusters' will
+% be a monotonically rising vector (first cluster 1 is most likely, then 2, then 3...). That's
+% why we can use diff().
+cutoff_freq_idx = find(diff(xpdf_clusters) == 1);
+
+% Set the cutoff frequency as the average between the frequency at the index we found and the next
+% freqency (diff() found the frequency where 1 is still more probable than 2, so at the next
+% frequency 2 is more probably than 1 - set the cutoff in the middle).
+cutoff_freqs = zeros(1, n_bands-1);
+for ii = 1:length(cutoff_freqs)
+    cutoff_freqs(ii) = mean(xpdf( cutoff_freq_idx(ii):(cutoff_freq_idx(ii)+1) ));
+end
+
+% Remove 2SE from first gaussian component and add 2SE to the last in order to estimate
+% the start of the first band and the end of the last.
+cutoff_freqs = [
+    max(C_mu(1)-2*sqrt(C_sigma2(1)), 0),...
+    cutoff_freqs,...
+    C_mu(end)+2*sqrt(C_sigma2(end))
+    ];
+
 %% Visualize data
 colors = lines(n_bands);
 scatter_size = 100;
@@ -115,11 +152,8 @@ fig = figure; ax = gca;
 grid(ax, 'on'); hold(ax, 'on');
 
 % Plot data of each cluster
-freq_band = [min(peaks(:,1)), max(peaks(:,1))];
 legend_handles = cell(1, n_bands);
 legend_entries = cell(1, n_bands);
-xpdf = freq_band(1):0.005:freq_band(2);
-
 for jj = 1:n_bands
     % Current cluster parameters
     cidx = labels == jj;
@@ -127,6 +161,7 @@ for jj = 1:n_bands
     cmu = C_mu(jj,1);
     calpha = C_alpha(jj);
 
+    % In case model dimentions is 2:
     % Find eigenvactors/values for the covariance matrix.
     % The eigenvector with the maximal eigenvalue is the main component of the covariance
     % matrix. We'll find the variance along that component, and then take only the first element
@@ -146,17 +181,19 @@ for jj = 1:n_bands
     peaks_f = peaks(cidx,1);
     peaks_pxx = peaks(cidx,2) ./ max(peaks(cidx,2)) .* max(ypdf);
 
-    % Plot the points in the current cluster
+    % Plot band cutoffs and the points in the current cluster
     legend_handles{jj} = scatter(ax, peaks_f, peaks_pxx, scatter_size, colors(jj,:), scatter_marker);
-    legend_entries{jj} = sprintf('%.3fHz, n=%d, std=%.3f', cmu, csize, csigma);
+    legend_entries{jj} = sprintf('Band %d: %.3f~%.3f Hz, n=%d', jj, cutoff_freqs(jj), cutoff_freqs(jj+1), csize);
 end
 legend(ax, [legend_handles{:}], legend_entries, 'location', 'northeast');
 xlabel(ax, 'Frequency (Hz)'); ylabel(ax, 'PSD Peak Distribution');
 
 %% Print
 
-if ~isempty(output_filename)
-    fig_print(fig, output_filename, 'width', 20,'height', 15);
+if nargout == 0
+    for ii = 1:(length(cutoff_freqs)-1)
+        fprintf('Band %d: [%f,%f] Hz\n', ii, cutoff_freqs(ii), cutoff_freqs(ii+1));
+    end
 end
 
 end
