@@ -28,6 +28,7 @@ DEFAULT_ECG_CHANNEL = [];
 % Define input
 p = inputParser;
 p.addRequired('rec_name');
+p.addParameter('header_info', [], @(x) isempty(x) || isstruct(x));
 p.addParameter('ann_ext', DEFAULT_ANN_EXT, @(x) ischar(x));
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
@@ -36,6 +37,7 @@ p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rec_name, varargin{:});
+header_info = p.Results.header_info;
 ann_ext = p.Results.ann_ext;
 from_sample = p.Results.from;
 to_sample = p.Results.to;
@@ -53,10 +55,18 @@ else
     end
 end
 
+% Validate header info
+if isempty(header_info)
+    header_info = wfdb_header(rec_name);
+elseif ~strcmp(rec_name, header_info.rec_name)
+    error('Provided header_info was for a different record');
+end
+
 %% QRS detection
 % Make sure we have an ECG channel in the record
-[default_ecg_channel, Fs, N] = get_signal_channel(rec_name);
+Fs = header_info.Fs;
 if isempty(ecg_channel)
+    default_ecg_channel = get_signal_channel(rec_name, 'header_info', header_info);
     if isempty(default_ecg_channel)
         error('No ECG channel found in record %s', rec_name);
     else
@@ -80,7 +90,8 @@ if ~isempty(ann_ext)
     return;
 else
     % Use rqrs to find QRS complex locations
-    [qrs, qrs_outliers, tm, sig, Fs] = rqrs(rec_name, 'ecg_channel', ecg_channel, ...
+    [qrs, qrs_outliers, tm, sig, Fs] = rqrs(rec_name, 'header_info', header_info,...
+        'ecg_channel', ecg_channel, ...
         'from', from_sample, 'to', to_sample);
 
     % Make sure we got detections before continuing (it's possible to get none in e.g. very noisy

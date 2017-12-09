@@ -39,6 +39,7 @@ DEFAULT_WINDOW_SIZE_SECONDS = rhrv_get_default('rqrs.window_size_sec', 'value');
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @isrecord);
+p.addParameter('header_info', [], @(x) isempty(x) || isstruct(x));
 p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('gqpost', DEFAULT_GQPOST, @(x) islogical(x) && isscalar(x));
 p.addParameter('gqconf', DEFAULT_GQCONF, @isstr);
@@ -49,6 +50,7 @@ p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rec_name, varargin{:});
+header_info = p.Results.header_info;
 ecg_channel = p.Results.ecg_channel;
 gqpost = p.Results.gqpost;
 gqconf = p.Results.gqconf;
@@ -57,11 +59,18 @@ to_sample = p.Results.to;
 window_size_sec = p.Results.window_size_sec;
 should_plot = p.Results.plot;
 
+% Validate header info
+if isempty(header_info)
+    header_info = wfdb_header(rec_name);
+elseif ~strcmp(rec_name, header_info.rec_name)
+    error('Provided header_info was for a different record');
+end
+
 %% Run gqrs
 
 % Make sure we have an ECG channel in the record
 if (isempty(ecg_channel))
-    ecg_channel = get_signal_channel(rec_name);
+    ecg_channel = get_signal_channel(rec_name, 'header_info', header_info);
     if (isempty(ecg_channel))
         error('Failed to find an ECG channel in the record %s', rec_name);
     end
@@ -72,7 +81,7 @@ end
                                         'from', from_sample, 'to', to_sample);
 
 %% Read Signal
-[tm, sig, Fs] = rdsamp(rec_name, ecg_channel, 'from', from_sample, 'to', to_sample);
+[tm, sig, Fs] = rdsamp(rec_name, ecg_channel, 'header_info', header_info, 'from', from_sample, 'to', to_sample);
 
 %% Augment gqrs detections
 

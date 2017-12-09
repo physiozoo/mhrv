@@ -159,7 +159,7 @@ for curr_win_idx = window_index_offset : window_max_index
     try
         % Read & process RR intervals from ECG signal
         fprintf('[%.3f] >> rhrv: [%d/%d] Detecting RR intervals from %s... ', cputime-t0, curr_win_idx+1, num_win, rr_intervals_source);
-        [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'ann_ext', ann_ext, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
+        [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'header_info', header_info, 'ann_ext', ann_ext, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
         fprintf('%d intervals detected.\n', length(trr_window));
 
         % Apply transform function if available
