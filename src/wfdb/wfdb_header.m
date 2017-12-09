@@ -149,5 +149,21 @@ end
 
 fclose(fheader);
 
+%% Display info
+
+if nargout == 0
+    [t_max, h,m,s,ms] = signal_duration(N_samples, Fs);
+
+    fprintf('Record %s\n', rec_name);
+    fprintf('  Duration [HH:mm:ss.ms]: %02d:%02d:%02d.%03d (%.3f seconds)\n', h,m,s,ms,t_max);
+    fprintf('  Sampling frequency: %.1f\n', Fs);
+    fprintf('  Samples per channel: %d\n', N_samples);
+    fprintf('  Number of channels: %d\n', N_channels);
+
+    for ii = 1:N_channels
+        fprintf('Channel %d:\n', ii);
+        disp(channel_info{ii});
+    end
 end
 
+end
