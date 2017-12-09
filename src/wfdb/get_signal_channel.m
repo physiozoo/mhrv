@@ -16,56 +16,42 @@ function [ chan, Fs, N ] = get_signal_channel( rec_name, varargin )
 
 % DEFAULTS
 DEFAULT_SIG_REGEX = 'ECG|lead\si+|MLI+|v\d|\<I+\>'; % Default is a regex for finding SCG signals in the Physionet files
-DEFAULT_COMMENT_REGEX = '^\s*#.*';
+
 
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('rec_name', @(x) isrecord(x, 'hea'));
+p.addParameter('header_info', [], @(x) isempty(x) || isstruct(x));
 p.addParameter('sig_regex', DEFAULT_SIG_REGEX, @isstr);
-p.addParameter('comment_regex', DEFAULT_COMMENT_REGEX, @isstr);
 
 % Get input
 p.parse(rec_name, varargin{:});
+header_info = p.Results.header_info;
 sig_regex = p.Results.sig_regex; % regex for the desired signal
-comment_regex = p.Results.comment_regex; % regex for comment line in the header file
+
+if isempty(header_info)
+    header_info = wfdb_header(rec_name);
+elseif ~strcmp(rec_name, header_info.rec_name)
+    error('Provided header_info was for a different record');
+end
 
 % default value if we can't find the description
 chan = [];
+Fs = header_info.Fs;
+N = header_info.N_samples;
 
-% Open the header file of the record for reading
-fheader = fopen([rec_name, '.hea']);
-
-% Read lines in the header file until a match is found
-i = 1;
-first_line = true; % first non-comment line is the 'record line', we need to skip it
-line = fgetl(fheader);
-while ischar(line)
-    
-    % if line is not a comment line, test it
-    if (isempty(regexpi(line, comment_regex)))
-        
-        % Skip the first non-comment line because it's the 'record line'
-        if first_line
-            first_line = false;
-            record_line = strsplit(line, ' ');
-            Fs = str2double(record_line{3});
-            N  = str2double(record_line{4});
-        else
-            
-            % if line matches the description (partial match), return it's index
-            if (~isempty(regexpi(line, sig_regex)))
-                chan = i;
-                break;
-            else
-                i = i+1;
-            end
-        end
+channel_info = header_info.channel_info;
+for ii = 1:length(channel_info)
+    if ~isfield(channel_info{ii}, 'description')
+        continue;
     end
-    
-    line = fgetl(fheader);
-end
 
-fclose(fheader);
+    description = channel_info{ii}.description;
+    if ~isempty(regexpi(description, sig_regex))
+        chan = ii;
+        break;
+    end
+end
 
 end
