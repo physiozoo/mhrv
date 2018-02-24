@@ -114,7 +114,7 @@ ecg_N = header_info.N_samples;
 % Get ECG channel number
 if isempty(ecg_channel)
     default_ecg_channel = get_signal_channel(rec_name, 'header_info', header_info);
-    if isempty(default_ecg_channel)
+    if isempty(default_ecg_channel) && isempty(ann_ext)
         error('No ECG channel found in record %s', rec_name);
     else
         ecg_channel = default_ecg_channel;
