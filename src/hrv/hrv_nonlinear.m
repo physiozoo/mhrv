@@ -82,9 +82,11 @@ hrv_nl.Properties.VariableDescriptions{'alpha2'} = 'DFA high-scale slope';
 [ mse_values, scale_axis, mse_plot_data ] = mse(nni, 'mse_max_scale', mse_max_scale, 'sampen_m', sampen_m, 'sampen_r',sampen_r);
 
 % Save the first MSE value (this is the sample entropy).
-hrv_nl.SampEn = mse_values(1);
-hrv_nl.Properties.VariableUnits{'SampEn'} = 'n.u.';
-hrv_nl.Properties.VariableDescriptions{'SampEn'} = 'Sample entropy';
+if ~isempty(mse_values)
+    hrv_nl.SampEn = mse_values(1);
+    hrv_nl.Properties.VariableUnits{'SampEn'} = 'n.u.';
+    hrv_nl.Properties.VariableDescriptions{'SampEn'} = 'Sample entropy';
+end
 
 if mse_metrics
     for ii = 1:length(mse_values)
