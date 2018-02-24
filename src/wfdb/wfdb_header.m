@@ -96,13 +96,19 @@ while true
     % Third field - 'ADC Gain' and optionally 'baseline' and 'units':
     % <ADC_Gain>(<baseline>)/<units>
     if length(split_line) < 3
-        % Set defaults for gain and baseline according to the documentation
+        % Set defaults for gain and baseline if they are missing,
+        % according to the documentation
         channel_info{channel_idx}.adc_gain = DEFGAIN;
         channel_info{channel_idx}.baseline = 0;
         continue;
     end
     tokens = regexpi(split_line{3}, ADC_GAIN_REGEX, 'tokens'); tokens = tokens{1};
     channel_info{channel_idx}.adc_gain = str2double(tokens{1});
+    if (channel_info{channel_idx}.adc_gain == 0)
+        % If gain was specified but it's value is zero, it should be set to DEFGAIN
+        % according to the documentation
+        channel_info{channel_idx}.adc_gain = DEFGAIN;
+    end
     if ~isempty(tokens{2})
         channel_info{channel_idx}.baseline = str2double(tokens{2}(2:end-1));
     end
