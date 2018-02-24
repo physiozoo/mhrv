@@ -111,6 +111,10 @@ header_info = wfdb_header(rec_name);
 ecg_Fs = header_info.Fs;
 ecg_N = header_info.N_samples;
 
+if ecg_N == 0
+    warning('Number of samples in the record wasn''t specified in the header file. Can''t calculate duration or split into windows.');
+end
+
 % Get ECG channel number
 if isempty(ecg_channel)
     default_ecg_channel = get_signal_channel(rec_name, 'header_info', header_info);
@@ -136,6 +140,10 @@ window_samples = t_win * ecg_Fs;
 
 % Number of windows
 num_win = floor(ecg_N / window_samples);
+if (isnan(num_win))
+    % This can happen in some records where number of samples is not provided
+    num_win = 1;
+end
 
 % Account for window index offset and limit
 if (window_index_offset >= num_win)
@@ -155,6 +163,7 @@ for curr_win_idx = window_index_offset : window_max_index
     % Calculate sample indices of the current window
     window_start_sample = curr_win_idx * window_samples + 1;
     window_end_sample   = window_start_sample + window_samples - 1;
+    if (window_end_sample == 0); window_end_sample = []; end
 
     try
         % Read & process RR intervals from ECG signal
