@@ -32,7 +32,7 @@ p.addParameter('header_info', [], @(x) isempty(x) || isstruct(x));
 p.addParameter('ann_ext', DEFAULT_ANN_EXT, @(x) ischar(x));
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
-p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @(x) isempty(x)||(isnumeric(x) && isscalar(x)));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -67,7 +67,7 @@ end
 Fs = header_info.Fs;
 if isempty(ecg_channel)
     default_ecg_channel = get_signal_channel(rec_name, 'header_info', header_info);
-    if isempty(default_ecg_channel)
+    if isempty(default_ecg_channel) && isempty(ann_ext)
         error('No ECG channel found in record %s', rec_name);
     else
         ecg_channel = default_ecg_channel;
