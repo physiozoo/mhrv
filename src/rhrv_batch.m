@@ -138,7 +138,7 @@ for rec_type_idx = 1:n_rec_types
     parfor file_idx = 1:nfiles
         % Extract the rec_name from the filename
         file = files(file_idx);
-        [path, name, ~] = file_parts([rec_dir file.name]);
+        [path, name, ~] = file_parts([file.folder filesep file.name]);
         rec_name = [path filesep name];
 
         % Analyze the record
