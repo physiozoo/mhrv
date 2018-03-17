@@ -12,8 +12,8 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %                       be performed for this method.
 %               - 'welch': Welch's method (overlapping windows).
 %               - 'fft': Simple fft-based periodogram, no overlap (also known as Bartlett's method).
-%             In all cases, a Hamming window will be used on the samples. Data will not be resampled
-%             for all methods except 'lomb', to 10*hf_band(2) (ten times the maximal frequency).
+%             In all cases, a window will be used on the samples according to the 'win_func' parameter.
+%             Data will be resampled for all methods except 'lomb'.
 %             Default value is {'lomb', 'ar', 'welch'}.
 %           - power_methods: The method(s) to use for calculating the power in each band. A cell array
 %             where each element can be any one of the methods given in 'methods'. This also
@@ -28,7 +28,7 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %           - hf_band: 2-element vector of frequencies in Hz defining the HF band.
 %             Default: [0.15, 0.4].
 %           - window_minutes: Split intervals into windows of this length, calcualte the spectrum in
-%             each window, and average them. A Hamming window will be also be applied to each window
+%             each window, and average them. A window funciton will be also be applied to each window
 %             after breaking the intervals into windows. Set to [] if you want to disable windowing.
 %             Default: 5 minutes.
 %           - detrend_order: Order of polynomial to fit to the data for detrending.
@@ -37,6 +37,9 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %             Default: 24.
 %           - welch_overlap: Percentage of overlap between windows when using Welch's method.
 %             Default: 50 percent.
+%           - win_func: The window function to apply to each segment. Should be a function that
+%             accepts one parameter (length in samples) and returns a window of that length.
+%             Default: @hamming.
 %           - plot: true/false whether to generate plots. Defaults to true if no output arguments
 %             were specified.
 %   Outputs:
@@ -75,6 +78,7 @@ DEFAULT_WELCH_OVERLAP = rhrv_get_default('hrv_freq.welch_overlap', 'value');
 DEFAULT_NUM_PEAKS = 5;
 DEFAULT_RESAMPLE_FACTOR = rhrv_get_default('hrv_freq.resample_factor', 'value');
 DEFAULT_FREQ_OSF = rhrv_get_default('hrv_freq.osf', 'value');
+DEFAULT_WIN_FUNC = rhrv_get_default('hrv_freq.win_func', 'value');
 
 % Define input
 p = inputParser;
@@ -93,6 +97,7 @@ p.addParameter('welch_overlap', DEFAULT_WELCH_OVERLAP, @(x) isnumeric(x)&&isscal
 p.addParameter('num_peaks', DEFAULT_NUM_PEAKS, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('resample_factor', DEFAULT_RESAMPLE_FACTOR, @(x) isnumeric(x)&&isscalar(x)&&x>=2);
 p.addParameter('freq_osf', DEFAULT_FREQ_OSF, @(x) isnumeric(x)&&isscalar(x)&&x>1);
+p.addParameter('win_func', DEFAULT_WIN_FUNC, @(x) isa(x,'function_handle') || ischar(x));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -111,6 +116,7 @@ welch_overlap = p.Results.welch_overlap;
 num_peaks = p.Results.num_peaks;
 resample_factor = p.Results.resample_factor;
 freq_osf = p.Results.freq_osf;
+win_func = p.Results.win_func;
 should_plot = p.Results.plot;
 
 % Validate methods
@@ -134,6 +140,11 @@ end
 % Default beta_band to vlf_band if unspecified
 if isempty(beta_band)
     beta_band = vlf_band;
+end
+
+% Convert window function to function handle if specified as string
+if (ischar(win_func))
+    win_func = str2func(win_func);
 end
 
 %% Preprocess
@@ -231,7 +242,7 @@ if (calc_lomb)
         nni_win = nni_win - mean(nni_win);
 
         n_win = length(nni_win);
-        window_func = hamming(n_win);
+        window_func = win_func(n_win);
         nni_win = nni_win .* window_func;
 
         % Check Nyquist criterion
@@ -265,14 +276,14 @@ end
 
 %% Welch Method
 if (calc_welch)
-    window = hamming(n_win_uni);
+    window = win_func(n_win_uni);
     welch_overlap_samples = floor(n_win_uni * welch_overlap / 100);
     [pxx_welch, ~] = pwelch(nni_uni, window, welch_overlap_samples, f_axis, fs_uni);
 end
 
 %% FFT method
 if (calc_fft)
-    window_func = hamming(n_win_uni);
+    window_func = win_func(n_win_uni);
     for curr_win = 1:num_windows_uni
         curr_win_idx = ((curr_win - 1) * n_win_uni + 1) : (curr_win * n_win_uni);
         nni_win = nni_uni(curr_win_idx);
