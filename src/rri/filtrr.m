@@ -81,50 +81,63 @@ rr_max_change = p.Results.rr_max_change;
 
 should_plot = p.Results.plot;
 
+rri_filtered = rri;
+trr_filtered = trr;
+
 %% Range-based filtering
 
-range_outliers = [];
+range_outliers_idx = [];
 if filter_range
-    range_outliers = find(rri < rr_min | rri > rr_max);
+    range_outliers_idx = find(rri < rr_min | rri > rr_max);
 end
+
+rri_filtered(range_outliers_idx) = [];
+range_outliers = trr_filtered(range_outliers_idx);
+trr_filtered(range_outliers_idx) = [];
 
 %% Lowpass-filter-based filtering
 
-lp_outliers = []; rri_lp = [];
+lp_outliers_idx = []; rri_lp = []; trr_lp = [];
 if filter_lowpass
     % Filter the NN intervals with a moving average window
     b_fir = 1/(2 * win_samples) .* [ones(win_samples,1); 0; ones(win_samples,1)];
-    rri_lp = filtfilt(b_fir, 1, rri); % using filtfilt for zero-phase
+    
+    rri_lp = filtfilt(b_fir, 1, rri_filtered); % using filtfilt for zero-phase
+    trr_lp = trr_filtered;
 
     % Find outliers
-    lp_outliers = find( abs(rri - rri_lp) > (win_percent/100) .* rri_lp );
+    lp_outliers_idx = find( abs(rri_filtered - rri_lp) > (win_percent/100) .* rri_lp );
 end
+
+rri_filtered(lp_outliers_idx) = [];
+lp_outliers = trr_filtered(lp_outliers_idx);
+trr_filtered(lp_outliers_idx) = [];
 
 %% Quotient filter
 
 rr_max_change = rr_max_change / 100;
-quotient_outliers = [];
+quotient_outliers_idx = [];
 if filter_quotient
-    rr_n0 = rri(1:end-1);   % RR(n)
-    rr_n1 = rri(2:end);     % RR(n+1)
+    rr_n0 = rri_filtered(1:end-1);   % RR(n)
+    rr_n1 = rri_filtered(2:end);     % RR(n+1)
 
     rr_q_min = 1.0 - rr_max_change;
     rr_q_max = 1.0 + rr_max_change;
 
     % Find intervals that differ by more than a specified percentage from the prev/next interval
-    quotient_outliers = find(...
+    quotient_outliers_idx = find(...
         rr_n0./rr_n1 < rr_q_min | rr_n0./rr_n1 > rr_q_max | ...
         rr_n1./rr_n0 < rr_q_min | rr_n1./rr_n0 > rr_q_max ...
         );
 end
 
-%% Calculate filtered intervals
-tnn = trr;
-nni = rri;
+rri_filtered(quotient_outliers_idx) = [];
+quotient_outliers = trr_filtered(quotient_outliers_idx);
+trr_filtered(quotient_outliers_idx) = [];
 
-all_outliers = [range_outliers(:); lp_outliers(:); quotient_outliers(:)];
-tnn(all_outliers) = [];
-nni(all_outliers) = [];
+%% Calculate filtered intervals
+tnn = trr_filtered;
+nni = rri_filtered;
 
 %% Plot if no output args or if requested
 plot_data.name = 'Filtered RR Intervals';
@@ -135,6 +148,7 @@ plot_data.nni = nni;
 plot_data.range_outliers = range_outliers;
 plot_data.lp_outliers = lp_outliers;
 plot_data.quotient_outliers = quotient_outliers;
+plot_data.trr_lp = trr_lp;
 plot_data.rri_lp = rri_lp;
 plot_data.win_percent = win_percent;
 

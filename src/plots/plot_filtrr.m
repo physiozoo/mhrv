@@ -58,17 +58,20 @@ if plot_nn
 end
 
 if plot_outliers && ~isempty(plot_data.range_outliers)
-    legend_handles(end+1) = plot(ax, plot_data.trr(plot_data.range_outliers), plot_data.rri(plot_data.range_outliers), 'm^', 'MarkerSize', msz+1);
+    rri_outliers = interp1(plot_data.trr, plot_data.rri, plot_data.range_outliers);
+    legend_handles(end+1) = plot(ax, plot_data.range_outliers, rri_outliers, 'm^', 'MarkerSize', msz+1);
     legend_labels{end+1} = 'Range outliers';
 end
 
 if plot_outliers && ~isempty(plot_data.lp_outliers)
-    legend_handles(end+1) = plot(ax, plot_data.trr(plot_data.lp_outliers), plot_data.rri(plot_data.lp_outliers), 'ko', 'MarkerSize', msz-1);
+    rri_outliers = interp1(plot_data.trr, plot_data.rri, plot_data.lp_outliers);
+    legend_handles(end+1) = plot(ax, plot_data.lp_outliers, rri_outliers, 'ko', 'MarkerSize', msz-1);
     legend_labels{end+1} = 'Lowpass outliers';
 end
 
 if plot_outliers && ~isempty(plot_data.quotient_outliers)
-    legend_handles(end+1) = plot(ax, plot_data.trr(plot_data.quotient_outliers), plot_data.rri(plot_data.quotient_outliers), 'rx', 'MarkerSize', msz);
+    rri_outliers = interp1(plot_data.trr, plot_data.rri, plot_data.quotient_outliers);
+    legend_handles(end+1) = plot(ax, plot_data.quotient_outliers, rri_outliers, 'rx', 'MarkerSize', msz);
     legend_labels{end+1} = 'Quotient outliers';
 end
 
@@ -79,12 +82,12 @@ if ~isempty(plot_data.rri_lp)
     thresh_high = plot_data.rri_lp.*(1.0 + plot_data.win_percent/100);
     
     if plot_avg
-        legend_handles(end+1) = plot(ax, plot_data.trr, plot_data.rri_lp, 'k');
+        legend_handles(end+1) = plot(ax, plot_data.trr_lp, plot_data.rri_lp, 'k');
         legend_labels{end+1} = 'window average';
     end
 
     if plot_thresh
-        h = plot(ax, plot_data.trr, tresh_low, 'k--', plot_data.trr, thresh_high, 'k--');
+        h = plot(ax, plot_data.trr_lp, tresh_low, 'k--', plot_data.trr_lp, thresh_high, 'k--');
         legend_handles(end+1) = h(1);
         legend_labels{end+1} = 'window threshold';
     end
