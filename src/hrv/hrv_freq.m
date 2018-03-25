@@ -96,7 +96,7 @@ p.addParameter('ar_order', DEFAULT_AR_ORDER, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('welch_overlap', DEFAULT_WELCH_OVERLAP, @(x) isnumeric(x)&&isscalar(x)&&x>=0&&x<100);
 p.addParameter('num_peaks', DEFAULT_NUM_PEAKS, @(x) isnumeric(x)&&isscalar(x));
 p.addParameter('resample_factor', DEFAULT_RESAMPLE_FACTOR, @(x) isnumeric(x)&&isscalar(x)&&x>=2);
-p.addParameter('freq_osf', DEFAULT_FREQ_OSF, @(x) isnumeric(x)&&isscalar(x)&&x>1);
+p.addParameter('freq_osf', DEFAULT_FREQ_OSF, @(x) isnumeric(x)&&isscalar(x)&&x>=1);
 p.addParameter('win_func', DEFAULT_WIN_FUNC, @(x) isa(x,'function_handle') || ischar(x));
 p.addParameter('plot', nargout == 0, @islogical);
 
