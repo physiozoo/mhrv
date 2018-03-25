@@ -132,6 +132,11 @@ hrv_freq:
         description: Factor of f_max (hf_band(2)) to obtain the uniform sampling frequecncy. Must be >= 2.
         name: Frequency resampling factor
         units: n.u.
+    win_func:
+        value: hamming
+        description: Name of window to apply to segments. Should be one of the matlab window functions.
+        name: Window function.
+        units: n.u.
 
 # DFA Parameters
 dfa:
