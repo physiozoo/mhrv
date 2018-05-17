@@ -85,7 +85,7 @@ res = process.waitFor();
 
 %% Helper function: Reads a java input stream until it's end
 function stream_content = read_inputstream(is)
-    scanner = java.util.Scanner(is).useDelimiter('\\A'); % '\A' is the start of input token
+    scanner = java.util.Scanner(is).useDelimiter('\A'); % '\A' is the start of input token
     if scanner.hasNext() % blocks until start of stream
         stream_content = scanner.next(); % blocks until end of stream
     else
