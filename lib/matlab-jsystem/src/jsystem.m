@@ -52,8 +52,7 @@ pb = java.lang.ProcessBuilder({''});
 % Set it's working directory to the current matlab dir
 pb.directory(java.io.File(dir));
 
-% Configure stderror redirection to stdout (so we can read both of them
-% from a single stream)
+% Disable stderror redirection to stdout
 pb.redirectErrorStream(false);
 
 % If the user doesn't wan't to use a shell, split the command from it's
@@ -86,7 +85,7 @@ res = process.waitFor();
 
 %% Helper function: Reads a java input stream until it's end
 function stream_content = read_inputstream(is)
-    scanner = java.util.Scanner(is).useDelimiter('\\A'); % '\A' is the start of input token
+    scanner = java.util.Scanner(is).useDelimiter('\A'); % '\A' is the start of input token
     if scanner.hasNext() % blocks until start of stream
         stream_content = scanner.next(); % blocks until end of stream
     else
