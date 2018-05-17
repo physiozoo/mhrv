@@ -52,8 +52,7 @@ pb = java.lang.ProcessBuilder({''});
 % Set it's working directory to the current matlab dir
 pb.directory(java.io.File(dir));
 
-% Configure stderror redirection to stdout (so we can read both of them
-% from a single stream)
+% Disable stderror redirection to stdout
 pb.redirectErrorStream(false);
 
 % If the user doesn't wan't to use a shell, split the command from it's
