@@ -28,7 +28,7 @@ p.addRequired('rri', @(x) isnumeric(x) && ~isscalar(x));
 p.addRequired('freqs', @(x) isnumeric(x));
 p.addParameter('var_r', DEFAULT_RRI_VARIANCE, @(x) isempty(x)||isscalar(x));
 p.addParameter('snr', DEFAULT_SNR, @isscalar);
-p.addParameter('mix', DEFAULT_MIXTURE_RATIO, @(x) isscalar(x) && x>=0 && x<=1);
+p.addParameter('mix', DEFAULT_MIXTURE_RATIO, @(x) isscalar(x) && x>=0 && x<=10);
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -82,7 +82,7 @@ if should_plot
     subplot(3,1,1);
     plot(t_axis, x, trr, y, trr, rri, trr, rri_out);
     xlabel('time (sec)');
-    legend(sprintf('x (\\sigma=%.3f)',sigma_x), 'y',sprintf('RR (\\sigma=%.3f)', sigma_r), 'RR + y');
+    legend(sprintf('x (\\sigma=%.3f)',sigma_x), 'y',sprintf('RR (\\sigma=%.3f)', sigma_r), sprintf('RR + y (\\sigma=%.3f)', std(rri_out)));
 
     % Spectrum
     df = 1/T; f_max = Fs/2;
