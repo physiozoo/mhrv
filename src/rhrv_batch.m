@@ -8,17 +8,23 @@ function [ batch_data ] = rhrv_batch( rec_dir, varargin )
 %   Inputs:
 %       - rec_dir: Directory to scan for input files.
 %       - varargin: Optional key-value parameter pairs.
-%           - ann_ext: Specify an annotation file extention to use instead of loading the record
-%             itself (.dat file). If provided, RR intervals will be loaded from the annotation file
-%             instead of from the ECG.  Default: empty (don't use annotation).
 %           - rec_types: A cell array containing the names of the type of record to analyze.
 %           - rec_filenames: A cell array with identical length as 'rec_names', containing
 %             patterns to match against the files in 'rec_dir' for each 'rec_type'.
 %           - rec_transforms: A cell array of transform functions to apply to each file in each
 %             record (one transform for each rec_type).
+%           - ann_ext: Specify an annotation file extention to use instead of loading the record
+%             itself (.dat file). If provided, RR intervals will be loaded from the annotation file
+%             instead of from the ECG. Can also be a cell-array of strings the same
+%             length as rec types. This allows using a different annotator
+%             extension for each rec type. Default: empty string (don't use annotation).
 %           - min_nn: Set a minumum number of NN intervals so that windows with less will be
 %             discarded. Default is 0 (don't discard anything).
-%           - rhrv_params: Parameters cell array to pass into rhrv when processing each record.
+%           - rhrv_params: Parameters pass into rhrv when
+%             processing each record. Can be either a string specifying the
+%             parameters file name, or it can be a cell array where the first
+%             entry is the parameters file name and the subsequent entires
+%             are key-value pairs that override parameters from the file.
 %           - skip_plot_data: Whether to skip saving the plot data for each record. This can reduce
 %             memory consumption significantly for large batches. Default: false.
 %           - writexls: true/false whether to write the output to an Excel file.
@@ -56,7 +62,7 @@ DEFAULT_OUTPUT_FILENAME = [];
 % Define input
 p = inputParser;
 p.addRequired('rec_dir', @(x) exist(x,'dir'));
-p.addParameter('ann_ext', DEFAULT_ANN_EXT, @(x) ischar(x));
+p.addParameter('ann_ext', DEFAULT_ANN_EXT, @(x) ischar(x) || iscellstr(x));
 p.addParameter('rec_types', DEFAULT_REC_TYPES, @iscellstr);
 p.addParameter('rec_filenames', DEFAULT_REC_FILENAMES, @iscellstr);
 p.addParameter('rec_transforms', {}, @iscell);
@@ -99,6 +105,14 @@ elseif ~all(cellfun(@(x)isempty(x) || isa(x,'function_handle'), rec_transforms))
     error('Record type transforms cell array must only contain function handles.');
 end
 
+if ischar(ann_ext)
+    ann_ext = cell(1, n_rec_types);
+    [ann_ext{:}] = deal(ann_ext);
+elseif length(ann_ext) ~= n_rec_types
+    error('Different number of record types and annotator extensions provided.');
+end
+
+
 if ~exist(output_dir, 'dir')
     mkdir(output_dir);
 end
@@ -122,6 +136,7 @@ t0 = tic;
 for rec_type_idx = 1:n_rec_types
     rec_type_filenames = rec_filenames{rec_type_idx};
     rec_type_transform = rec_transforms{rec_type_idx};
+    rec_type_ann_ext = ann_ext{rec_type_idx};
 
     % Get files matching the currect record type's pattern
     files = dir([rec_dir sprintf('%s.hea', rec_type_filenames)])';
@@ -145,7 +160,7 @@ for rec_type_idx = 1:n_rec_types
         fprintf('-> Analyzing record %s\n', rec_name);
         try
             [curr_hrv, ~, curr_plot_datas] = rhrv(rec_name, 'window_minutes', window_minutes,...
-                'ann_ext', ann_ext, 'params', rhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
+                'ann_ext', rec_type_ann_ext, 'params', rhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
         catch e
             warning('Error analyzing record %s: %s\nSkipping...', rec_name, e.message);
             continue;
