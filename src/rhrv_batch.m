@@ -106,10 +106,12 @@ elseif ~all(cellfun(@(x)isempty(x) || isa(x,'function_handle'), rec_transforms))
 end
 
 if ischar(ann_ext)
-    ann_ext = cell(1, n_rec_types);
-    [ann_ext{:}] = deal(ann_ext);
+    rec_ann_exts = cell(1, n_rec_types);
+    [rec_ann_exts{:}] = deal(ann_ext);
 elseif length(ann_ext) ~= n_rec_types
     error('Different number of record types and annotator extensions provided.');
+else
+    rec_ann_exts = ann_ext;
 end
 
 
@@ -136,7 +138,7 @@ t0 = tic;
 for rec_type_idx = 1:n_rec_types
     rec_type_filenames = rec_filenames{rec_type_idx};
     rec_type_transform = rec_transforms{rec_type_idx};
-    rec_type_ann_ext = ann_ext{rec_type_idx};
+    rec_type_ann_ext = rec_ann_exts{rec_type_idx};
 
     % Get files matching the currect record type's pattern
     files = dir([rec_dir sprintf('%s.hea', rec_type_filenames)])';
@@ -290,6 +292,7 @@ for rec_type_idx = 1:n_rec_types
 
     % Save the current rec type into a cell array at the column we'll write the table to
     summary_titles{col_num} = rec_types{rec_type_idx};
+    summary_titles{col_num+1} = sprintf('n=%d', size(curr_hrv,1));
 
     % Write summary table to file
     writetable(summary_table, output_filename,...
