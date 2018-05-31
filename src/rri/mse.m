@@ -65,7 +65,23 @@ for scale = scale_axis
     sig_coarse = mean(sig_windows, 1);
     
     % Calculate sample entropy of the coarse-grained signal
-    mse_result(scale) = sample_entropy(sig_coarse, sampen_m, sampen_r);
+    sampen = sample_entropy(sig_coarse, sampen_m, sampen_r);
+
+    % An infinite sample entropy is possible, since
+    % SampEn = -ln(A/B) where A is the number of template matches of length
+    % m+1 and B is the number of template matches of length m. It's
+    % possible that A will be zero or both will be zero (it's not possible
+    % that only B will be zero). In the case of A=0, we'll get infinity.
+    % Set it to NaN because:
+    % 1. Consistent with the case of A=B=0.
+    % 2. Easier to work with nans (e.g. to exclude them from calculations).
+    % We don't do this in the SampEn function because there is a different
+    % meaning to both this cases which will be hidden if we do it there.
+    if isinf(sampen)
+        sampen = NaN;
+    end
+
+    mse_result(scale) = sampen;
 end
 
 %% Plot
