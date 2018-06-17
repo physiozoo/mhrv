@@ -204,7 +204,6 @@ for rec_type_idx = 1:n_rec_types
     stats_tables{rec_type_idx} = table_stats(rec_type_table);
     plot_datas{rec_type_idx} = rec_type_plot_datas;
 end
-fprintf('-> Batch processing complete (%.3f(s))\n', toc(t0));
 
 %% Convert output to maps
 
@@ -240,6 +239,8 @@ for rec_type_idx = 1:n_rec_types
     fprintf(['\n-> ' rec_type ' metrics:\n']);
     disp([hrv_tables(rec_type); stats_tables(rec_type)]);
 end
+
+fprintf('-> Batch processing complete (%.3f(s))\n', toc(t0));
 
 %% Generate output structure
 
