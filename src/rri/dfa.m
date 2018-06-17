@@ -82,6 +82,11 @@ end
 fn = fn(n);
 n  = n';
 
+% If fn is zero somewhere (might happen in the small scales if there's not
+% enough data points there) set it to some small constant to prevent
+% log(0)=-Inf.
+fn(fn<1e-9) = 1e-9;
+
 %% Scaling exponent, alpha
 
 % Find DFA values in each of the alpha ranges
