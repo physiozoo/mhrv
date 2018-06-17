@@ -6,7 +6,7 @@ function [ qrs, outliers ] = gqrs( rec_name, varargin )
 %       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
 %                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
 %       - varargin: Pass in name-value pairs to configure advanced options:
-%           - 'ecg_col': Number of ecg signal in the record (default [], i.e. auto-detect signal).
+%           - 'ecg_channel': Number of ecg signal in the record (default [], i.e. auto-detect signal).
 %           - 'gqconf': Filename or Path to a gqrs config file to use. This allows adapting the
 %                       algorithm for different signal and/or animal types (default is '', i.e. no
 %                       config file). Note that if only a filename is provided, 'gqrs' will attempt
