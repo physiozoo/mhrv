@@ -79,6 +79,10 @@ if ~isempty(ann_ext)
     % Load annotations: indexes of normal beats
     ann = rdann( rec_name, ann_ext, 'from', from_sample, 'to', to_sample, 'ann_types', '"N"');
 
+    % Convert indices to double-precision to prevent rounding to integers
+    % in the following calculations
+    ann = double(ann);
+
     % Calcualte the RR intervals and their absolute time in the signal based on the
     % beat indices and the sampling frequency of the record.
     start_time = (ann(1) - 1) * (1/Fs);
