@@ -25,10 +25,11 @@ DEFAULT_TO_SAMPLE = [];
 % Define input
 p = inputParser;
 p.addRequired('rec_name', @isrecord);
-p.addOptional('chan_list', DEFAULT_CHAN_LIST, @isvector);
+p.addOptional('chan_list', DEFAULT_CHAN_LIST, @(x)isempty(x)||isvector(x));
 p.addParameter('header_info', [], @(x) isempty(x) || isstruct(x));
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
+p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rec_name, varargin{:});
@@ -36,6 +37,7 @@ chan_list = p.Results.chan_list;
 header_info = p.Results.header_info;
 from_sample = p.Results.from;
 to_sample = p.Results.to;
+should_plot = p.Results.plot;
 
 % Validate header info
 if isempty(header_info)
@@ -106,6 +108,21 @@ for chan_idx = 1:size(sig,2)
     adc_gain = channel_info{chan_idx}.adc_gain;
 
     sig(:,chan_idx) = (M(:,chan_idx+1) - baseline) ./ adc_gain;
+end
+
+%% Plot
+if (should_plot)
+    figure('Name', rec_name);
+
+    for ii = 1:length(channel_info)
+        channel_disp_name = channel_info{ii}.description;
+        plot(t, sig(:,ii), 'DisplayName', channel_disp_name);
+        hold on;
+    end
+
+    xlabel('time (s)');
+    grid on;
+    legend();
 end
 
 end
