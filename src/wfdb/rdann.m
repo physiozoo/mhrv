@@ -1,4 +1,4 @@
-function [ ann ] = rdann( rec_name, ann_ext, varargin )
+function [ ann, ann_types ] = rdann( rec_name, ann_ext, varargin )
 %RDANN Wrapper for WFDB's 'rdann' tool.
 %   Reads annotation files in PhysioNet format and returns them as a MATLAB vector.
 %   Inputs:
@@ -13,7 +13,9 @@ function [ ann ] = rdann( rec_name, ann_ext, varargin )
 %           - from: Number of first sample to start detecting from (default 1)
 %           - to: Number of last sample to detect until (default [], i.e. end of signal)
 %   Output:
-%       - ann: A vector with the sample numbers that have annotations.
+%       - ann: A Nx1 vector with the sample numbers that have annotations.
+%       - ann_types: A Nx1 cell array with annotation types (strings, see
+%                    PhysioNet documentation).
 
 %% === Input
 
@@ -53,17 +55,21 @@ end
 
 [res, out, err] = jsystem(command, [], rec_path);
 if(res ~= 0)
-    error('rdann error: %s\n%s', err, out);
+    if res == 2 && isempty(err) && isempty(out)
+        error('rdann: No annotations found (from=%d, to=%d)', from_sample, to_sample);
+    else
+        error('rdann error: %s\n%s', err, out);
+    end
 end
 
 % Extract just the sample numbers from the rdann output
 if (~isempty(out))
-    [ann, ~, errmsg] = sscanf(out, '%*s %d %*[^\n]');
-    if ~isempty(errmsg)
-        error(['Failed to convert rdann output to samples: ' errmsg]);
-    end
+    out_parsed = textscan(out, '%*s %d %s %*[^\n]');
+    ann = out_parsed{1};
+    ann_types = out_parsed{2};
 else
     ann = [];
+    ann_types = {};
 end
 
 % add 1 to all values because WFDB's indices are zero-based
