@@ -131,7 +131,6 @@ if (gqpost); delete([rec_name, '.', out_ext_gqp]); end
 
 %% Plot
 if (should_plot)
-    ecg_channel = get_signal_channel(rec_name);
     [tm, sig, ~] = rdsamp(rec_name, ecg_channel, 'from', from_sample, 'to', to_sample);
     figure;
     plot(tm, sig); hold on; grid on;
