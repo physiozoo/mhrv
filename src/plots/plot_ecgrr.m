@@ -22,15 +22,13 @@ if clear
     cla(ax);
 end
 
-qrs_no_outliers = setdiff(plot_data.qrs, plot_data.qrs_outliers);
-
 hold(ax, 'on');
 grid(ax, 'on');
 xlabel(ax, 'time (s)');
 ylabel(ax, 'ECG (mV)');
 
 plot(ax, plot_data.tm, plot_data.sig);
-plot(ax, plot_data.tm(qrs_no_outliers), plot_data.sig(qrs_no_outliers,1), 'rx', 'MarkerSize', msz);
+plot(ax, plot_data.tm(plot_data.qrs), plot_data.sig(plot_data.qrs,1), 'rx', 'MarkerSize', msz);
 
 legend(ax, 'ECG signal', 'R-peaks');
 

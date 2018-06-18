@@ -1,4 +1,4 @@
-function [ qrs, outliers, tm, sig, Fs ] = rqrs( rec_name, varargin )
+function [ qrs, tm, sig, Fs ] = rqrs( rec_name, varargin )
 %RQRS R-peak detection in ECG signals, based on 'gqrs' and 'gqpost'.
 %   RQRS Finds R-peaks in PhysioNet-format ECG records. It uses the 'gqrs' and 'gqpost' programs
 %   from the PhysioNet WFDB toolbox, to find the QRS complexes. Then, it searches forward in a small
@@ -10,8 +10,8 @@ function [ qrs, outliers, tm, sig, Fs ] = rqrs( rec_name, varargin )
 %           - 'ecg_channel': Number of ecg signal in the record (default [], i.e. auto-detect signal).
 %           - 'gqconf': Path to a gqrs config file to use. This allows adapting the algorithm for
 %                       different signal and/or animal types (default is '', i.e. no config file).
-%           - 'gqpost': Whether to run the 'gqpost' tool to find erroneous detections (default
-%                       false).
+%           - 'gqpost': Whether to run the 'gqpost' tool to find and remove
+%                       possibly erroneous detections.
 %           - 'from': Number of first sample to start detecting from (default 1)
 %           - 'to': Number of last sample to detect until (default [], i.e. end of signal)
 %           - 'window_size_sec': Size of the forward-search window, in seconds.
@@ -19,8 +19,6 @@ function [ qrs, outliers, tm, sig, Fs ] = rqrs( rec_name, varargin )
 %                   were specified.
 %   Output:
 %       - qrs: Vector of sample numbers where the an onset of a QRS complex was found.
-%       - outliers: Vector of sample numbers which were marked by gqpost as suspected false
-%                   detections.
 %       - tm: Time vector (x-axis) of the input signal.
 %       - sig: The input signal values.
 %       - Fs: The input signals sampling frequency.
@@ -85,36 +83,42 @@ end
 
 %% Augment gqrs detections
 
-if (~isempty(gqrs_outliers))
-    % put outliers in a map to easily check if an index is an outlier
-    outliers_map = containers.Map(gqrs_outliers, ones(size(gqrs_outliers)));
-else
-    outliers_map = containers.Map;
-end
+% Remove outliers
+gqrs_detections = setdiff(gqrs_detections, gqrs_outliers);
 
 window_size_samples = ceil(window_size_sec * Fs);
 if (window_size_samples > 0)
-    qrs = arrayfun(@rqrs_helper, gqrs_detections);
+    [qrs_max, qrs_min] = arrayfun(@rqrs_helper, gqrs_detections);
+
+    % Handling cases of positive vs. negative ECG polarity:
+    % Calculate median abs. difference between the signal value at the gqrs
+    % detection point (which is usually the Q-wave) and the
+    % maximal/minimal value in the relevant window. Take either all max
+    % points or all min points depending on which value is larger.
+    gqrs_values = sig(gqrs_detections);
+    diff_to_max = median(abs(gqrs_values - sig(qrs_max)));
+    diff_to_min = median(abs(gqrs_values - sig(qrs_min)));
+
+    if diff_to_max > diff_to_min
+        qrs = qrs_max;
+    else
+        qrs = qrs_min;
+    end
 else
     qrs = gqrs_detections;
 end
 
 % Helper function for augmenting the qrs detections
-function [new_qrs_idx] = rqrs_helper(qrs_idx)
+function [new_qrs_max, new_qrs_min] = rqrs_helper(qrs_idx)
     max_win_idx = min(length(sig), qrs_idx + window_size_samples);
     sig_win = sig(qrs_idx:max_win_idx);
+
     [~, win_max_idx] = max(sig_win);
-    new_qrs_idx = qrs_idx + win_max_idx - 1;
+    [~, win_min_idx] = min(sig_win);
 
-    % Move the outlier index if current detection is an outlier
-    if (outliers_map.isKey(qrs_idx))
-        outliers_map.remove(qrs_idx);
-        outliers_map(new_qrs_idx) = 1;
-    end
+    new_qrs_max = qrs_idx + win_max_idx - 1;
+    new_qrs_min = qrs_idx + win_min_idx - 1;
 end
-
-% Get the updated outlier indices
-outliers = cell2mat(outliers_map.keys);
 
 %% Plot
 if (should_plot)
@@ -122,13 +126,7 @@ if (should_plot)
     plot(tm, sig); hold on; grid on;
     plot(tm(qrs), sig(qrs,1), 'rx');
     xlabel('time (s)'); ylabel ('ECG (mV)');
-
-    if (~isempty(outliers))
-        plot(tm(outliers), sig(outliers,1), 'ko');
-        legend('signal', 'qrs detections', 'suspected outliers');
-    else
-        legend('signal', 'qrs detections');
-    end
+    legend('signal', 'qrs detections');
 end
 
 end

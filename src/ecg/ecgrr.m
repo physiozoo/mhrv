@@ -94,37 +94,20 @@ if ~isempty(ann_ext)
     return;
 else
     % Use rqrs to find QRS complex locations
-    [qrs, qrs_outliers, tm, sig, Fs] = rqrs(rec_name, 'header_info', header_info,...
+    [qrs, tm, sig, ~] = rqrs(rec_name, 'header_info', header_info,...
         'ecg_channel', ecg_channel, ...
         'from', from_sample, 'to', to_sample);
 
     % Make sure we got detections before continuing (it's possible to get none in e.g. very noisy
     % parts of a signal)
     if (isempty(qrs))
-        nni=[]; tnn=[]; rri=[]; trr=[]; rri_lp=[]; tresh_low=[]; thresh_high=[];
+        rri=[]; trr=[]; plot_data = struct;
         return;
     end
 
     % RR-intervals are the time-difference between R-Peaks
     rri = diff(tm(qrs));
     trr = tm(qrs(1:end-1));
-
-    % QRS Outlier removal
-    % create a time axis where qrs outliers are marked with NaN
-    tm_nan = tm;
-    tm_nan(qrs_outliers) = NaN;
-
-    % Find indices of RR intervals that start at the outlier qrs detections
-    trr_nan = tm_nan(qrs(1:end-1));
-    nanidx = find(isnan(trr_nan));
-
-    % Set the outlier indexes in of the RR intervals: For each outlier, we have two intervals
-    % that are considered outliers (the interval before the outlier peak and the one after).
-    rr_outliers = [nanidx; nanidx-1];
-
-    % Remove these RR intervals
-    trr(rr_outliers) = [];
-    rri(rr_outliers) = [];
 end
 
 %% Plot if no output args or if requested
@@ -132,7 +115,6 @@ plot_data.name = 'ECG R-peaks';
 plot_data.tm = tm;
 plot_data.sig = sig;
 plot_data.qrs = qrs;
-plot_data.qrs_outliers = qrs_outliers;
 
 if (should_plot)
     figure('Name', plot_data.name);
