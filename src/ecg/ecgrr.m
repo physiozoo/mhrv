@@ -79,6 +79,12 @@ if ~isempty(ann_ext)
     % Load annotations: indexes of normal beats
     ann = rdann( rec_name, ann_ext, 'from', from_sample, 'to', to_sample, 'ann_types', '"N"');
 
+    % Make sure we got annotations
+    if (isempty(ann))
+        rri=[]; trr=[]; plot_data = struct;
+        return;
+    end
+
     % Convert indices to double-precision to prevent rounding to integers
     % in the following calculations
     ann = double(ann);
