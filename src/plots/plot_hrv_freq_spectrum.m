@@ -87,10 +87,14 @@ for ii = 1:length(methods)
         switch lower(methods{ii})
             case {'fft', 'lomb'}
                 legend_entries{end+1} = sprintf('%s (t_{win}=%.1fm, n=%d)', methods{ii}, t_win/60, num_windows);
+                uistack(hp,'down');
+
             case 'welch'
                 legend_entries{end+1} = sprintf('%s (%d%%)', methods{ii}, welch_overlap);
+                uistack(hp,'down');
             case 'ar'
                 legend_entries{end+1} = sprintf('%s (%d)', methods{ii}, ar_order);
+                uistack(hp,'top');
         end
     else
         legend_entries{end+1} = methods{ii};
