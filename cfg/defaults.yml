@@ -44,13 +44,13 @@ filtrr:
             units: boolean
         win_length:
             value: 10
-            description: Length in samples of the lowpass filter
-            name: Lowpass filter length
+            description: Length in samples of the moving average filter
+            name: Moving average filter length
             units: Samples
         win_threshold:
             value: 20
-            description: Threshold percantage above/below the lowpass filter value.
-            name: Lowpass filter threshold
+            description: Threshold percantage above/below the moving average filter value.
+            name: Moving average filter threshold
             units: '%'
     quotient:
         enable:

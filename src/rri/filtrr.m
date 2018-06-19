@@ -2,7 +2,7 @@ function [ nni, tnn, plot_data ] = filtrr( rri, trr, varargin )
 %FILTRR Calculate an NN-interval time series (filtered RR intervals).
 % Performs outlier detection and removal on RR interval data.
 % This function can perform three types of different outlier detection, based on user input: Range
-% based detection, lowpass filter-based detection and quotient filter based detection.
+% based detection, moving-average filter-based detection and quotient filter based detection.
 %   Inputs:
 %       - rri: RR-intervals values in seconds.
 %       - trr: RR-interval times in seconds.
@@ -42,8 +42,8 @@ DEFAULT_FILTER_QUOTIENT = rhrv_get_default('filtrr.quotient.enable', 'value');
 DEFAULT_RR_MIN = rhrv_get_default('filtrr.range.rr_min', 'value');
 DEFAULT_RR_MAX = rhrv_get_default('filtrr.range.rr_max', 'value');
 
-DEFAULT_WIN_SAMPLES = rhrv_get_default('filtrr.lowpass.win_length', 'value');
-DEFAULT_WIN_PERCENT = rhrv_get_default('filtrr.lowpass.win_threshold', 'value');
+DEFAULT_WIN_SAMPLES = rhrv_get_default('filtrr.moving_average.win_length', 'value');
+DEFAULT_WIN_PERCENT = rhrv_get_default('filtrr.moving_average.win_threshold', 'value');
 
 DEFAULT_RR_MAX_CHANGE = rhrv_get_default('filtrr.quotient.rr_max_change', 'value');
 
