@@ -180,6 +180,11 @@ mse:
         description: Sample entropy template length
         name: SampEn m
         units: n.u.
+    normalize_std:
+        value: true
+        description: Whether to normalize the signal to std=1 before calculating MSE.
+        name: Normalize Standard Deviation
+        units: boolean
     mse_metrics:
         value: false
         description: Whether to output each MSE value as a metric

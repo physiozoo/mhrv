@@ -13,6 +13,9 @@ function [ mse_result, scale_axis, plot_data ] = mse( sig, varargin )
 %                       between two points that's considered a match). Default: 0.2.
 %           - sampen_m: Value of 'm' parameter to use when calculating sample entropy (length of
 %             templates to match). Default: 2.
+%           - normalize_std: Whether or not to normalize the signal to
+%             std=1 before calculating the MSE. This affects the meaning of
+%             r.
 %           - plot: true/false whether to generate a plot. Defaults to true if no output
 %                   arguments were specified.
 %   Output:
@@ -29,6 +32,7 @@ function [ mse_result, scale_axis, plot_data ] = mse( sig, varargin )
 DEFAULT_MSE_MAX_SCALE = rhrv_get_default('mse.mse_max_scale', 'value');
 DEFAULT_SAMPEN_R = rhrv_get_default('mse.sampen_r', 'value');
 DEFAULT_SAMPEN_M = rhrv_get_default('mse.sampen_m', 'value');
+DEFAULT_NORMALIZE_STD = rhrv_get_default('mse.normalize_std', 'value');
 
 % Define input
 p = inputParser;
@@ -37,6 +41,7 @@ p.addRequired('sig', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('mse_max_scale', DEFAULT_MSE_MAX_SCALE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('sampen_r', DEFAULT_SAMPEN_R, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('sampen_m', DEFAULT_SAMPEN_M, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('normalize_std', DEFAULT_NORMALIZE_STD, @(x) islogical(x));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -44,13 +49,16 @@ p.parse(sig, varargin{:});
 mse_max_scale = p.Results.mse_max_scale;
 sampen_r = p.Results.sampen_r;
 sampen_m = p.Results.sampen_m;
+normalize_std = p.Results.normalize_std;
 should_plot = p.Results.plot;
 
 %% MSE Calculation
 % Normalize input
 N = length(sig);
 sig_normalized = sig - mean(sig);
-sig_normalized = sig_normalized / sqrt(var(sig_normalized));
+if normalize_std
+    sig_normalized = sig_normalized / sqrt(var(sig_normalized));
+end
 
 % Preallocate result vector
 mse_result = zeros(1, mse_max_scale);
