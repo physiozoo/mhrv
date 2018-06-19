@@ -63,10 +63,10 @@ if plot_outliers && ~isempty(plot_data.range_outliers)
     legend_labels{end+1} = 'Range outliers';
 end
 
-if plot_outliers && ~isempty(plot_data.lp_outliers)
-    rri_outliers = interp1(plot_data.trr, plot_data.rri, plot_data.lp_outliers);
-    legend_handles(end+1) = plot(ax, plot_data.lp_outliers, rri_outliers, 'ko', 'MarkerSize', msz-1);
-    legend_labels{end+1} = 'Lowpass outliers';
+if plot_outliers && ~isempty(plot_data.ma_outliers)
+    rri_outliers = interp1(plot_data.trr, plot_data.rri, plot_data.ma_outliers);
+    legend_handles(end+1) = plot(ax, plot_data.ma_outliers, rri_outliers, 'ko', 'MarkerSize', msz-1);
+    legend_labels{end+1} = 'MA outliers';
 end
 
 if plot_outliers && ~isempty(plot_data.quotient_outliers)
@@ -76,18 +76,18 @@ if plot_outliers && ~isempty(plot_data.quotient_outliers)
 end
 
 % Plot window average and thresholds
-if ~isempty(plot_data.rri_lp)
+if ~isempty(plot_data.rri_ma)
     % Calculate threshold lines
-    tresh_low   = plot_data.rri_lp.*(1.0 - plot_data.win_percent/100);
-    thresh_high = plot_data.rri_lp.*(1.0 + plot_data.win_percent/100);
+    tresh_low   = plot_data.rri_ma.*(1.0 - plot_data.win_percent/100);
+    thresh_high = plot_data.rri_ma.*(1.0 + plot_data.win_percent/100);
     
     if plot_avg
-        legend_handles(end+1) = plot(ax, plot_data.trr_lp, plot_data.rri_lp, 'k');
+        legend_handles(end+1) = plot(ax, plot_data.trr_ma, plot_data.rri_ma, 'k');
         legend_labels{end+1} = 'window average';
     end
 
     if plot_thresh
-        h = plot(ax, plot_data.trr_lp, tresh_low, 'k--', plot_data.trr_lp, thresh_high, 'k--');
+        h = plot(ax, plot_data.trr_ma, tresh_low, 'k--', plot_data.trr_ma, thresh_high, 'k--');
         legend_handles(end+1) = h(1);
         legend_labels{end+1} = 'window threshold';
     end

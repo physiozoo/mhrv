@@ -36,11 +36,11 @@ filtrr:
             description: Maximal allowed RR interval duration
             name: RR max
             units: Seconds
-    lowpass:
+    moving_average:
         enable:
             value: true
-            description: Whether to enable lowpass-based filtering
-            name: Enable lowpass-based filter
+            description: Whether to enable moving average-based filtering
+            name: Enable moving average filter
             units: boolean
         win_length:
             value: 10

@@ -9,7 +9,7 @@ function [ nni, tnn, plot_data ] = filtrr( rri, trr, varargin )
 %       - varargin: Pass in name-value pairs to configure advanced options:
 %           - filter_range: true/false whether to use range filtering (remove intervals smaller or
 %             larger than 'rr_min' and 'rr_max').
-%           - filter_lowpass: true/false whether to use an averaging filter to detect potential
+%           - filter_ma: true/false whether to use a moving-average filter to detect potential
 %             outliers in the rr-intervals. If an interval is greater (abs) than
 %             'win_percent' percent of the average in a window of size 'win_samples' around it,
 %              excludes the interval.
@@ -36,7 +36,7 @@ function [ nni, tnn, plot_data ] = filtrr( rri, trr, varargin )
 
 % Defaults
 DEFAULT_FILTER_RANGE = rhrv_get_default('filtrr.range.enable', 'value');
-DEFAULT_FILTER_LOWPASS = rhrv_get_default('filtrr.lowpass.enable', 'value');
+DEFAULT_FILTER_MA = rhrv_get_default('filtrr.moving_average.enable', 'value');
 DEFAULT_FILTER_QUOTIENT = rhrv_get_default('filtrr.quotient.enable', 'value');
 
 DEFAULT_RR_MIN = rhrv_get_default('filtrr.range.rr_min', 'value');
@@ -57,7 +57,7 @@ p.addParameter('filter_range', DEFAULT_FILTER_RANGE, @(x) islogical(x) && isscal
 p.addParameter('rr_min', DEFAULT_RR_MIN, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('rr_max', DEFAULT_RR_MAX, @(x) isnumeric(x) && isscalar(x));
 
-p.addParameter('filter_lowpass', DEFAULT_FILTER_LOWPASS, @(x) islogical(x) && isscalar(x));
+p.addParameter('filter_ma', DEFAULT_FILTER_MA, @(x) islogical(x) && isscalar(x));
 p.addParameter('win_samples', DEFAULT_WIN_SAMPLES, @isnumeric);
 p.addParameter('win_percent', DEFAULT_WIN_PERCENT, @(x) x >= 0 && x <= 100);
 
@@ -72,7 +72,7 @@ filter_range = p.Results.filter_range;
 rr_min = p.Results.rr_min;
 rr_max = p.Results.rr_max;
 
-filter_lowpass = p.Results.filter_lowpass;
+filter_ma = p.Results.filter_ma;
 win_samples = p.Results.win_samples;
 win_percent = p.Results.win_percent;
 
@@ -95,23 +95,23 @@ rri_filtered(range_outliers_idx) = [];
 range_outliers = trr_filtered(range_outliers_idx);
 trr_filtered(range_outliers_idx) = [];
 
-%% Lowpass-filter-based filtering
+%% Moving average filtering
 
-lp_outliers_idx = []; rri_lp = []; trr_lp = [];
-if filter_lowpass
+ma_outliers_idx = []; rri_ma = []; trr_ma = [];
+if filter_ma
     % Filter the NN intervals with a moving average window
     b_fir = 1/(2 * win_samples) .* [ones(win_samples,1); 0; ones(win_samples,1)];
     
-    rri_lp = filtfilt(b_fir, 1, rri_filtered); % using filtfilt for zero-phase
-    trr_lp = trr_filtered;
+    rri_ma = filtfilt(b_fir, 1, rri_filtered); % using filtfilt for zero-phase
+    trr_ma = trr_filtered;
 
     % Find outliers
-    lp_outliers_idx = find( abs(rri_filtered - rri_lp) > (win_percent/100) .* rri_lp );
+    ma_outliers_idx = find( abs(rri_filtered - rri_ma) > (win_percent/100) .* rri_ma );
 end
 
-rri_filtered(lp_outliers_idx) = [];
-lp_outliers = trr_filtered(lp_outliers_idx);
-trr_filtered(lp_outliers_idx) = [];
+rri_filtered(ma_outliers_idx) = [];
+ma_outliers = trr_filtered(ma_outliers_idx);
+trr_filtered(ma_outliers_idx) = [];
 
 %% Quotient filter
 
@@ -146,10 +146,10 @@ plot_data.rri = rri;
 plot_data.tnn = tnn;
 plot_data.nni = nni;
 plot_data.range_outliers = range_outliers;
-plot_data.lp_outliers = lp_outliers;
+plot_data.ma_outliers = ma_outliers;
 plot_data.quotient_outliers = quotient_outliers;
-plot_data.trr_lp = trr_lp;
-plot_data.rri_lp = rri_lp;
+plot_data.trr_ma = trr_ma;
+plot_data.rri_ma = rri_ma;
 plot_data.win_percent = win_percent;
 
 if (should_plot)
