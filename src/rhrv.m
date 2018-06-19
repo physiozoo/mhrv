@@ -185,7 +185,7 @@ for curr_win_idx = window_index_offset : window_max_index
         fprintf('%d intervals removed.\n', length(trr_window)-length(tnn_window));
 
         if (isempty(nni_window))
-            warning('\n[%.3f] >> rhrv: [%d/%d] No intervals detected in window, skipping\n', cputime-t0, curr_win_idx+1, num_win);
+            fprintf(2, '[%.3f] >> rhrv: [%d/%d] No intervals detected in window, skipping\n', cputime-t0, curr_win_idx+1, num_win);
             continue;
         end
 
@@ -231,6 +231,12 @@ end
 
 % Create full table
 hrv_metrics = vertcat(hrv_metrics_tables{:});
+
+if isempty(hrv_metrics)
+    fprintf(2,'[%.3f] >> rhrv: ERROR: All windows failed analysis. Exiting...\n', cputime-t0);
+    return;
+end
+
 hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
 
 %% Create stats table
