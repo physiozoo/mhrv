@@ -320,41 +320,41 @@ for ii = length(power_methods):-1:1
     col_vlf_power = ['VLF_POWER' suffix];
     hrv_fd{:,col_vlf_power} = freqband_power(pxx, f_axis, vlf_band) * 1e6;
     hrv_fd.Properties.VariableUnits{col_vlf_power} = 'ms^2';
-    hrv_fd.Properties.VariableDescriptions{col_vlf_power} = sprintf('Power in VLF band (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableDescriptions{col_vlf_power} = sprintf('Power in the very low frequency band (%s)', power_methods{ii});
 
     col_lf_power = ['LF_POWER' suffix];
     hrv_fd{:,col_lf_power}  = freqband_power(pxx, f_axis, lf_band) * 1e6;
     hrv_fd.Properties.VariableUnits{col_lf_power} = 'ms^2';
-    hrv_fd.Properties.VariableDescriptions{col_lf_power} = sprintf('Power in LF band (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableDescriptions{col_lf_power} = sprintf('Power in the low frequency band (%s)', power_methods{ii});
 
     col_hf_power = ['HF_POWER' suffix];
     hrv_fd{:,col_hf_power}  = freqband_power(pxx, f_axis, [hf_band(1) f_axis(end)]) * 1e6;
     hrv_fd.Properties.VariableUnits{col_hf_power} = 'ms^2';
-    hrv_fd.Properties.VariableDescriptions{col_hf_power} = sprintf('Power in HF band (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableDescriptions{col_hf_power} = sprintf('Power in the high frequency band (%s)', power_methods{ii});
 
     % Calculate normalized power in each band (normalize by TOTAL_POWER)
     total_power = hrv_fd{:,col_total_power};
 
     col_vlf_norm = ['VLF_NORM' suffix];
     hrv_fd{:,col_vlf_norm} = 100 * hrv_fd{:,col_vlf_power} / total_power;
-    hrv_fd.Properties.VariableUnits{col_vlf_norm} = 'n.u.';
-    hrv_fd.Properties.VariableDescriptions{col_vlf_norm} = sprintf('VLF to total power ratio (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableUnits{col_vlf_norm} = '%';
+    hrv_fd.Properties.VariableDescriptions{col_vlf_norm} = sprintf('Very low frequency power in normalized units: (%s)', power_methods{ii});
 
     col_lf_norm = ['LF_NORM' suffix];
     hrv_fd{:,col_lf_norm} = 100 * hrv_fd{:,col_lf_power} / total_power;
-    hrv_fd.Properties.VariableUnits{col_lf_norm} = 'n.u.';
-    hrv_fd.Properties.VariableDescriptions{col_lf_norm} = sprintf('LF to total power ratio (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableUnits{col_lf_norm} = '%';
+    hrv_fd.Properties.VariableDescriptions{col_lf_norm} = sprintf('Low frequency power in normalized units: LF/(Total power - VLF)*100 (%s)', power_methods{ii});
 
     col_hf_norm = ['HF_NORM' suffix];
     hrv_fd{:,col_hf_norm} = 100 * hrv_fd{:,col_hf_power} / total_power;
-    hrv_fd.Properties.VariableUnits{col_hf_norm} = 'n.u.';
-    hrv_fd.Properties.VariableDescriptions{col_hf_norm} = sprintf('HF to total power ratio (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableUnits{col_hf_norm} = '%';
+    hrv_fd.Properties.VariableDescriptions{col_hf_norm} = sprintf('High frequency power in normalized units: HF/(Total power - VLF)*100 (%s)', power_methods{ii});
 
     % Calculate LF/HF ratio
     col_lf_to_hf = ['LF_TO_HF' suffix];
     hrv_fd{:,col_lf_to_hf}  = hrv_fd{:,col_lf_power}  / hrv_fd{:,col_hf_power};
     hrv_fd.Properties.VariableUnits{col_lf_to_hf} = 'n.u.';
-    hrv_fd.Properties.VariableDescriptions{col_lf_to_hf} = sprintf('LF to HF power ratio (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableDescriptions{col_lf_to_hf} = sprintf('Low frequency band to high frequency band power ratio (LF/HF) (%s)', power_methods{ii});
 
     % Calculate power in the extra bands
     for jj = 1:length(extra_bands)
@@ -399,12 +399,12 @@ for ii = length(power_methods):-1:1
     col_lf_peak = ['LF_PEAK' suffix];
     hrv_fd{:,col_lf_peak} = f_peaks_lf(1);
     hrv_fd.Properties.VariableUnits{col_lf_peak} = 'Hz';
-    hrv_fd.Properties.VariableDescriptions{col_lf_peak} = sprintf('LF peak frequency (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableDescriptions{col_lf_peak} = sprintf('Peak frequency in the low frequency band (%s)', power_methods{ii});
 
     col_hf_peak = ['HF_PEAK' suffix];
     hrv_fd{:,col_hf_peak} = f_peaks_hf(1);
     hrv_fd.Properties.VariableUnits{col_hf_peak} = 'Hz';
-    hrv_fd.Properties.VariableDescriptions{col_hf_peak} = sprintf('HF peak frequency (%s)', power_methods{ii});
+    hrv_fd.Properties.VariableDescriptions{col_hf_peak} = sprintf('Peak frequency in the high frequency band (%s)', power_methods{ii});
 
     % Calculate beta (VLF slope)
     % Take the log of the spectrum in the VLF frequency band
@@ -417,7 +417,7 @@ for ii = length(power_methods):-1:1
     col_beta = ['BETA' suffix];
     hrv_fd{:,col_beta} = pxx_fit_beta(1);
     hrv_fd.Properties.VariableUnits{col_beta} = 'n.u.';
-    hrv_fd.Properties.VariableDescriptions{col_beta} = 'Log-log slope of frequency spectrum in the VLF band after linear regression';
+    hrv_fd.Properties.VariableDescriptions{col_beta} = 'Slope of the linear interpolation of the spectrum in a log-log scale for frequencies below the upper bound of the VLF band';
 end
 
 % Sort by metric, not by power method

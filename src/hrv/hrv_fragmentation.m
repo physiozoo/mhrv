@@ -82,18 +82,18 @@ hrv_frag.Properties.Description = 'Fragmentation HRV metrics';
 
 hrv_frag.PIP = pip * 100;
 hrv_frag.Properties.VariableUnits{'PIP'} = '%';
-hrv_frag.Properties.VariableDescriptions{'PIP'} = 'Percentage of inflection points';
+hrv_frag.Properties.VariableDescriptions{'PIP'} = 'Percentage of inflection points in the NN interval time series';
 
 hrv_frag.IALS = ials;
 hrv_frag.Properties.VariableUnits{'IALS'} = 'n.u.';
-hrv_frag.Properties.VariableDescriptions{'IALS'} = 'Inverse average length of segments';
+hrv_frag.Properties.VariableDescriptions{'IALS'} = 'Inverse average length of the acceleration/deceleration segments';
 
 hrv_frag.PSS = pss * 100;
 hrv_frag.Properties.VariableUnits{'PSS'} = '%';
-hrv_frag.Properties.VariableDescriptions{'PSS'} = 'Percentage of NN intervals that are in short segments';
+hrv_frag.Properties.VariableDescriptions{'PSS'} = 'Percentage of short segments';
 
 hrv_frag.PAS = pas * 100;
 hrv_frag.Properties.VariableUnits{'PAS'} = '%';
-hrv_frag.Properties.VariableDescriptions{'PAS'} = 'Percentage of NN intervals that are in alternation segments of at least 4 intervals';
+hrv_frag.Properties.VariableDescriptions{'PAS'} = 'The percentage of NN intervals in alternation segments';
 end
 
