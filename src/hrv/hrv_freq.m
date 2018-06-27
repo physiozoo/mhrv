@@ -242,8 +242,8 @@ if (calc_lomb)
         nni_win = nni_win - mean(nni_win);
 
         n_win = length(nni_win);
-        window_func = win_func(n_win);
-        nni_win = nni_win .* window_func;
+        window = win_func(n_win);
+        nni_win = nni_win .* window;
 
         % Check Nyquist criterion
         min_samples_nyquist = ceil(2*f_max*t_win);
@@ -253,6 +253,7 @@ if (calc_lomb)
         end
 
         [pxx_lomb_win, ~] = plomb(nni_win, tnn_win, f_axis);
+        pxx_lomb_win = pxx_lomb_win * (1/mean(window)); % gain correction
         pxx_lomb = pxx_lomb + pxx_lomb_win;
     end
     % Average
@@ -279,18 +280,20 @@ if (calc_welch)
     window = win_func(n_win_uni);
     welch_overlap_samples = floor(n_win_uni * welch_overlap / 100);
     [pxx_welch, ~] = pwelch(nni_uni, window, welch_overlap_samples, f_axis, fs_uni);
+    pxx_welch  = pxx_welch * (1/mean(window)); % gain correction
 end
 
 %% FFT method
 if (calc_fft)
-    window_func = win_func(n_win_uni);
+    window = win_func(n_win_uni);
     for curr_win = 1:num_windows_uni
         curr_win_idx = ((curr_win - 1) * n_win_uni + 1) : (curr_win * n_win_uni);
         nni_win = nni_uni(curr_win_idx);
         nni_win = nni_win - mean(nni_win);
 
         % FFT periodogram
-        [pxx_fft_win, ~] = periodogram(nni_win, window_func, f_axis, fs_uni);
+        [pxx_fft_win, ~] = periodogram(nni_win, window, f_axis, fs_uni);
+        pxx_fft_win = pxx_fft_win * (1/mean(window)); % gain correction
         pxx_fft = pxx_fft + pxx_fft_win;
     end
     % Average
