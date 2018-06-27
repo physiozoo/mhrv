@@ -200,7 +200,7 @@ f_axis = (f_res : f_res : f_max)';
 beta_idx = f_axis >= beta_band(1) & f_axis <= beta_band(2);
 
 % Check Nyquist criterion: We need atleast 2*f_max*t_win samples in each window to resolve f_max.
-if (n_win_uni <= 2*f_max*t_win)
+if (n_win_uni < 2*f_max*t_win)
     warning('Nyquist criterion not met for given window length and frequency bands');
 end
 
