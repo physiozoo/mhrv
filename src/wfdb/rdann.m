@@ -86,9 +86,29 @@ if (should_plot)
     ann_types_uniq = unique(ann_types);
     num_types = length(ann_types_uniq);
 
-    % Read and plot the signal
-    [ t, sig, ~ ] = rdsamp(rec_name, [],...
-        'from', from_sample, 'to', to_sample, 'plot', true);
+    if isrecord(rec_name, 'dat')
+        % Read and plot the signal
+        [ t, sig, ~ ] = rdsamp(rec_name, [],...
+            'from', from_sample, 'to', to_sample, 'plot', true);
+    else
+        % We don't have an actual signal to read, so just create a fake
+        % signal that has a different constant value for each annotation
+        % type.
+        header_info = wfdb_header(rec_name);
+        num_samples = double(ann(end));
+        t = linspace(0, num_samples/header_info.Fs, num_samples);
+        sig = zeros(1,ann(end));
+        for ii = 1:num_types
+            curr_ann_type = ann_types_uniq{ii};
+            curr_ann_type_idx = ann(ismember(ann_types, curr_ann_type)) - from_sample;
+            sig(curr_ann_type_idx) = ii;
+        end
+        figure;
+        yticks(gca, 1:num_types);
+        ylabel(gca, 'Annotation Type');
+        xlabel(gca, 'time (seconds)');
+        hold(gca, 'on');
+    end
     set(gcf,'Name',[rec_name ' annotations']);
 
     colors = lines(num_types + size(sig,2));
@@ -105,7 +125,7 @@ if (should_plot)
         'LineStyle', 'none', 'Marker', markers{marker_idx},...
         'MarkerEdgeColor', colors(color_idx,:),...
         'DisplayName', curr_ann_type);
-
+        hold on;
         color_idx = mod(color_idx, length(colors))+1;
         marker_idx = mod(marker_idx, length(markers))+1;
     end
