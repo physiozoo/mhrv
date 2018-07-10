@@ -7,7 +7,10 @@ function [ n, fn, alpha1, alpha2, plot_data ] = dfa( t, sig, varargin )
 %       - varargin: Pass in name-value pairs to configure advanced options:
 %           - n_min: Minimal DFA block-size (default 4)
 %           - n_max: Maximal DFA block-size (default 64)
-%           - n_incr: Increment value for n (default 2)
+%           - n_incr: Increment value for n (default 2). Can also be less
+%               than 1, in which case we interpret it as the ratio of a geometric
+%               series on box sizes (n). This should produce box size values
+%               identical to the PhysioNet DFA implmentation.
 %           - alpha1_range: Range of block size values to use for calculating the alpha1 scaling
 %             exponent. Default: [4, 15].
 %           - alpha2_range: Range of block size values to use for calculating the alpha2 scaling
@@ -46,16 +49,27 @@ alpha1_range = p.Results.alpha1_range;
 alpha2_range = p.Results.alpha2_range;
 should_plot = p.Results.plot;
 
-%% DFA
+%% Initializations
 
 % Integrate the signal without mean
 nni_int = cumsum(sig - mean(sig));
 
 N = length(nni_int);
 
-fn = ones(n_max, 1) * NaN;
-n = n_min:n_incr:n_max;
+% Create n-axis (box-sizes)
+% If n_incr is less than 1 we interpret it as the ratio of a geometric
+% series on box sizes. This should produce box sizes identical to the
+% PhysioNet DFA implmentation.
+if n_incr < 1
+    M = log2(n_max/n_min) * (1/n_incr);
+    n = unique(floor(n_min.*(2^n_incr).^(0:M)+0.5));
+else
+    n = n_min:n_incr:n_max;
+end
 
+fn = ones(n_max, 1) * NaN;
+
+%% DFA
 for nn = n
     % Calculate the number of windows we need for the current n
     num_win = floor(N/nn);
