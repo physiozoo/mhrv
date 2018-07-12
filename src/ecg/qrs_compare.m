@@ -87,14 +87,12 @@ else
     % Find first loaded variable that contains 'qrs' in it's name
     qrs_idx = find(cellfun(@(x)~isempty(regexpi(x,'qrs')), loaded_varnames));
     ref_qrs = loaded_data.(loaded_varnames{qrs_idx(1)});
+    ref_qrs = int32(ref_qrs);
 end
 
 %% Detect QRS locations
 qrs_detector_func = str2func(qrs_detector);
-[test_qrs, outliers] = qrs_detector_func(rec_name, 'ecg_channel', ecg_channel);
-
-% Remove outliers
-test_qrs = setdiff(test_qrs, outliers);
+test_qrs = qrs_detector_func(rec_name, 'ecg_channel', ecg_channel);
 
 %% Compare detections to reference
 %  See: https://en.wikipedia.org/wiki/Confusion_matrix
