@@ -13,6 +13,9 @@ function [ files_written ] = wrann( rec_name, ann_ext, ann_idx, varargin )
 %           - 'fs': The sampling frequency of the signal which is being
 %              annotated. Pass this in if writing annotations for a record
 %              which doesn't exist (i.e. a header file should be created).
+%           - 'comments': A cell array of strings which will bea written to
+%              the header file as comments (one per line). Will only be
+%              written when a new header file is craeted by this function.
 %           - 'type': Either a single character that will be used as
 %              the type for all annotations, or a cell array the same size
 %              'ann_idx' containg a different annotation type per sample.
@@ -44,6 +47,7 @@ p.addRequired('rec_name', @(x) ischar(x) && ~isempty(x));
 p.addRequired('ann_ext', @(x) ischar(x) && ~isempty(x));
 p.addRequired('ann_idx', @(x) isnumeric(x) && ~isempty(x));
 p.addParameter('fs', [], @(x) isscalar(x) && x > 0);
+p.addParameter('comments', {}, @(x)iscellstr(x));
 p.addParameter('type', DEFAULT_TYPE, @(x)ischar(x)||iscellstr(x));
 p.addParameter('sub', DEFAULT_SUB, @isnumeric);
 p.addParameter('chan', DEFAULT_CHAN, @isnumeric);
@@ -111,7 +115,16 @@ if ~isrecord(rec_name, 'hea')
         % Create a basic header file to allow wrann to work
         header_filename = [rec_name '.hea'];
         fid = fopen(header_filename, 'w');
+
+        % Header line
         fprintf(fid, '%s 0 %f 0\n', rec_name, p.fs);
+
+        % Comment lines
+        for jj = 1:length(p.comments)
+            comment = regexprep(p.comments{jj}, '(\r?\n)', '$1# ');
+            fprintf(fid, '# %s\n', comment);
+        end
+
         fclose(fid);
         files_written{end+1} = header_filename;
     end
