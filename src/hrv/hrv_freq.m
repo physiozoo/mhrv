@@ -19,6 +19,13 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %             where each element can be any one of the methods given in 'methods'. This also
 %             determines the spectrum that will be returned from this function (pxx).
 %             Default: First value in 'methods'.
+%           - norm_method: A string, either 'total' or 'lf_hf'. If 'total',
+%             then the power in each band will be normalized by the total
+%             power in the entire frequency spectrum. If 'lf_hf', then only
+%             for the LF and HF bands, the normalization will be performed
+%             by the (LF+HF) power. This is the standard method used in
+%             many papers to normalize these bands. In any case, VLF and
+%             user-defined custom bands are not affected by this parameter.
 %           - band_factor: A factor that will be applied to the frequency bands. Useful for shifting
 %             them linearly to adapt to non-human data. Default: 1.0 (no shift).
 %           - vlf_band: 2-element vector of frequencies in Hz defining the VLF band.
@@ -27,6 +34,9 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %             Default: [0.04, 0.15].
 %           - hf_band: 2-element vector of frequencies in Hz defining the HF band.
 %             Default: [0.15, 0.4].
+%           - extra_bands: A cell array of frequency pairs, for example
+%             {[f_start,f_end], ...}. Each pair defines a custom band for
+%             which the power and normalized power will be calculated.
 %           - window_minutes: Split intervals into windows of this length, calcualte the spectrum in
 %             each window, and average them. A window funciton will be also be applied to each window
 %             after breaking the intervals into windows. Set to [] if you want to disable windowing.
@@ -48,9 +58,9 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %           - VLF_POWER: Power in the VLF band.
 %           - LF_POWER: Power in the LF band.
 %           - HF_POWER: Power in the HF band.
-%           - VLF_NORM: Ratio between VLF power and total power.
-%           - LF_NORM: Ratio between LF power and total power.
-%           - HF_NORM: Ratio between HF power and total power.
+%           - VLF_NORM: 100 * Ratio between VLF power and total power.
+%           - LF_NORM: 100 * Ratio between LF power and total power or the sum of LF and HF power (see 'norm_method').
+%           - HF_NORM: 100 * Ratio between HF power and total power or the sum of LF and HF power (see 'norm_method').
 %           - LF_TO_HF: Ratio between LF and HF power.
 %           - LF_PEAK: Frequency of highest peak in the LF band.
 %           - HF_PEAK: Frequency of highest peak in the HF band.
@@ -66,6 +76,7 @@ SUPPORTED_METHODS = {'Lomb', 'AR', 'Welch', 'FFT'};
 % Defaults
 DEFAULT_METHODS = rhrv_get_default('hrv_freq.methods', 'value');
 DEFAULT_POWER_METHODS = rhrv_get_default('hrv_freq.power_methods', 'value');
+DEFAULT_NORM_METHOD = rhrv_get_default('hrv_freq.norm_method', 'value');
 DEFAULT_BAND_FACTOR = 1;
 DEFAULT_BETA_BAND = rhrv_get_default('hrv_freq.beta_band', 'value');
 DEFAULT_VLF_BAND = rhrv_get_default('hrv_freq.vlf_band', 'value');
@@ -85,6 +96,7 @@ p = inputParser;
 p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('methods', DEFAULT_METHODS, @(x) iscellstr(x) && ~isempty(x));
 p.addParameter('power_methods', DEFAULT_POWER_METHODS, @iscellstr);
+p.addParameter('norm_method', DEFAULT_NORM_METHOD, @ischar);
 p.addParameter('band_factor', DEFAULT_BAND_FACTOR, @(x) isnumeric(x)&&isscalar(x)&&x>0);
 p.addParameter('beta_band', DEFAULT_BETA_BAND, @(x) isempty(x)||(isnumeric(x)&&length(x)==2&&x(2)>x(1)));
 p.addParameter('vlf_band', DEFAULT_VLF_BAND, @(x) isnumeric(x)&&length(x)==2&&x(2)>x(1));
@@ -104,6 +116,7 @@ p.addParameter('plot', nargout == 0, @islogical);
 p.parse(nni, varargin{:});
 methods = p.Results.methods;
 power_methods = p.Results.power_methods;
+norm_method = p.Results.norm_method;
 band_factor = p.Results.band_factor;
 beta_band = p.Results.beta_band .* band_factor;
 vlf_band = p.Results.vlf_band .* band_factor;
@@ -135,6 +148,11 @@ else
     if (~all(power_methods_validity))
         error('Invalid power_method given: %s.', strjoin(power_methods(~power_methods_validity), ', '));
     end
+end
+
+% Validate norm_method
+if ~(strcmpi(norm_method, 'total') || strcmpi(norm_method, 'lf_hf'))
+    error('Invalid norm_method given: %s', norm_method);
 end
 
 % Default beta_band to vlf_band if unspecified
@@ -337,6 +355,11 @@ for ii = length(power_methods):-1:1
 
     % Calculate normalized power in each band (normalize by TOTAL_POWER)
     total_power = hrv_fd{:,col_total_power};
+    if strcmpi(norm_method, 'total')
+        total_power_lfhf = total_power;
+    else
+        total_power_lfhf = hrv_fd{:,col_lf_power} + hrv_fd{:,col_hf_power};
+    end
 
     col_vlf_norm = ['VLF_NORM' suffix];
     hrv_fd{:,col_vlf_norm} = 100 * hrv_fd{:,col_vlf_power} / total_power;
@@ -344,12 +367,12 @@ for ii = length(power_methods):-1:1
     hrv_fd.Properties.VariableDescriptions{col_vlf_norm} = sprintf('Very low frequency power in normalized units: (%s)', power_methods{ii});
 
     col_lf_norm = ['LF_NORM' suffix];
-    hrv_fd{:,col_lf_norm} = 100 * hrv_fd{:,col_lf_power} / total_power;
+    hrv_fd{:,col_lf_norm} = 100 * hrv_fd{:,col_lf_power} / total_power_lfhf;
     hrv_fd.Properties.VariableUnits{col_lf_norm} = '%';
     hrv_fd.Properties.VariableDescriptions{col_lf_norm} = sprintf('Low frequency power in normalized units: LF/(Total power - VLF)*100 (%s)', power_methods{ii});
 
     col_hf_norm = ['HF_NORM' suffix];
-    hrv_fd{:,col_hf_norm} = 100 * hrv_fd{:,col_hf_power} / total_power;
+    hrv_fd{:,col_hf_norm} = 100 * hrv_fd{:,col_hf_power} / total_power_lfhf;
     hrv_fd.Properties.VariableUnits{col_hf_norm} = '%';
     hrv_fd.Properties.VariableDescriptions{col_hf_norm} = sprintf('High frequency power in normalized units: HF/(Total power - VLF)*100 (%s)', power_methods{ii});
 

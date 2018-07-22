@@ -82,6 +82,10 @@ hrv_freq:
         value: [] # Empty means first method in 'methods'
         description: Spectrums to calculate power from
         name: Spectrums for power calculation
+    norm_method:
+        value: total # total, lf_hf
+        description: How to normalize the LF and HF bands
+        name: LF and HF band power normalization method
     beta_band:
         value: []
         description: Frequency band range for beta calculation (empty = use VLF band)
