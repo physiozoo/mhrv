@@ -107,7 +107,7 @@ end
 
 % Check WFDB tools version
 supported_version_ = '10.5.24';
-[~, wfdb_version_] = jsystem([wfdb_config_bin_ ' --version'], 'noshell');
+[~, wfdb_version_] = jsystem([wfdb_config_bin_ ' --version']);
 ver_cmp_ = vercmp(wfdb_version_, supported_version_);
 if ver_cmp_ < 0
     warning('Detected WFDB version (%s) is older than the tested version, please use %s or newer', wfdb_version_, supported_version_);

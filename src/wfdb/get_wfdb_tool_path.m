@@ -34,6 +34,7 @@ persistent wfdb_path;
 if ~isempty(wfdb_path)
     tool_path = [wfdb_path, filesep(), tool_name];
     if exist(tool_path, 'file')
+        tool_path = escape_spaces(tool_path);
         return;
     else
         % Issue warning but don't exit so that we also look under pwd and $PATH
@@ -57,6 +58,7 @@ for path_idx = 1:length(search_path)
     if exist(tool_path, 'file') && ~exist([tool_path '.m'], 'file')
         % Update wfdb_path for next time
         wfdb_path = search_path{path_idx};
+        tool_path = escape_spaces(tool_path);
         return;
     end
 end
@@ -64,4 +66,16 @@ end
 % Print an error with the path in case we didn't find anything
 error(['Could not find the wfdb tool ''', tool_name, ...
        '''. Searched in: ', strjoin(search_path, pathsep())]);
+
+
+   %% Helper function
+    function escaped_path = escape_spaces(path)
+        if ispc
+            escape_seq = '^ ';
+        else
+            escape_seq = '\\ ';
+        end
+        escaped_path = regexprep(path, '\s+', escape_seq);
+    end
+
 end
