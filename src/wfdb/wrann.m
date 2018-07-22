@@ -169,7 +169,7 @@ catch e
 end
 
 %% Cleanup
-if isfile(temp_file_name)
+if exist(temp_file_name, 'file')
     delete(temp_file_name);
 end
 
