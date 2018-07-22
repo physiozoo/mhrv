@@ -85,7 +85,8 @@ hrv_freq:
     norm_method:
         value: total # total, lf_hf
         description: How to normalize the LF and HF bands
-        name: LF and HF band power normalization method
+        name: LF and HF band normalization method
+        units: ''
     beta_band:
         value: []
         description: Frequency band range for beta calculation (empty = use VLF band)
