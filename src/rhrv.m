@@ -251,6 +251,11 @@ end
 
 hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
 
+% Remove empty entries from plot data (windows that were skipped and don't
+% appear in the hrv metrics table).
+nonempty_idx = cellfun(@(x) ~isempty(x), plot_datas);
+plot_datas = plot_datas(nonempty_idx);
+
 %% Create stats table
 fprintf('[%.3f] >> rhrv: Building statistics table...\n', cputime-t0);
 hrv_stats = table_stats(hrv_metrics);

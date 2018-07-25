@@ -222,10 +222,6 @@ for rec_type_idx = 1:n_rec_types
 
     % Map from each filename to the plot data for it
     if ~isempty(rec_type_plot_datas)
-        % Remove any empty plot datas (from skipped files)
-        nonempty_idx = cellfun(@(x) ~isempty(x), rec_type_plot_datas);
-        rec_type_plot_datas = rec_type_plot_datas(nonempty_idx);
-
         plot_datas(rec_type) = containers.Map(rec_type_filenames, rec_type_plot_datas);
     end
 end
