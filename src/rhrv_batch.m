@@ -20,6 +20,10 @@ function [ batch_data ] = rhrv_batch( rec_dir, varargin )
 %             extension for each rec type. Default: empty string (don't use annotation).
 %           - min_nn: Set a minumum number of NN intervals so that windows with less will be
 %             discarded. Default is 0 (don't discard anything).
+%           - rr_dist_max: Sanity threshold for RR interval distribution.
+%             Windows where mean(RR)+std(RR) > rr_dist_max will be discarded.
+%           - rr_dist_min: Similar to above, but will discard windows where
+%             mean(RR)-std(RR) < rr_dist_min.
 %           - rhrv_params: Parameters pass into rhrv when
 %             processing each record. Can be either a string specifying the
 %             parameters file name, or it can be a cell array where the first
@@ -56,6 +60,8 @@ DEFAULT_REC_FILENAMES = {'*'};
 DEFAULT_RHRV_PARAMS = 'defaults';
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_MIN_NN = 0;
+DEFAULT_RR_DIST_MAX = rhrv_get_default('filtrr.range.rr_max', 'value');
+DEFAULT_RR_DIST_MIN = rhrv_get_default('filtrr.range.rr_min', 'value');
 DEFAULT_OUTPUT_FOLDER = '.';
 DEFAULT_OUTPUT_FILENAME = [];
 
@@ -69,6 +75,8 @@ p.addParameter('rec_transforms', {}, @iscell);
 p.addParameter('rhrv_params', DEFAULT_RHRV_PARAMS, @(x) ischar(x)||iscell(x));
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('min_nn', DEFAULT_MIN_NN, @isscalar);
+p.addParameter('rr_dist_max', DEFAULT_RR_DIST_MAX, @isscalar);
+p.addParameter('rr_dist_min', DEFAULT_RR_DIST_MIN, @isscalar);
 p.addParameter('skip_plot_data', false, @islogical);
 p.addParameter('output_dir', DEFAULT_OUTPUT_FOLDER, @isstr);
 p.addParameter('output_filename', DEFAULT_OUTPUT_FILENAME, @isstr);
@@ -83,6 +91,8 @@ rec_transforms = p.Results.rec_transforms;
 rhrv_params = p.Results.rhrv_params;
 window_minutes = p.Results.window_minutes;
 min_nn = p.Results.min_nn;
+rr_dist_max = p.Results.rr_dist_max;
+rr_dist_min = p.Results.rr_dist_min;
 output_dir = p.Results.output_dir;
 output_filename = p.Results.output_filename;
 writexls = p.Results.writexls;
@@ -168,11 +178,16 @@ for rec_type_idx = 1:n_rec_types
             continue;
         end
 
-        % Make sure we have a minimal amount of data in this file.
-        if curr_hrv.NN < min_nn
-            warning('Less than %d NN intervals detected, skipping...', min_nn);
+        % Filter out non-sane windows
+        filter_idx = (curr_hrv.NN > min_nn);
+        filter_idx = filter_idx & ((curr_hrv.AVNN + curr_hrv.SDNN)/1000 < rr_dist_max);
+        filter_idx = filter_idx & ((curr_hrv.AVNN - curr_hrv.SDNN)/1000 > rr_dist_min);
+        if ~any(filter_idx)
+            warning('record %s contains no usable windows', rec_name);
             continue;
         end
+        curr_hrv = curr_hrv(filter_idx, :);
+        curr_plot_datas = curr_plot_datas(filter_idx);
 
         % Handle naming of rows to prevent duplicate names from different files
         % The number of rows depends on the lenghth of the data and the value of 'window_minutes'
