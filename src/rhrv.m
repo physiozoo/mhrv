@@ -112,7 +112,19 @@ ecg_Fs = header_info.Fs;
 ecg_N = header_info.N_samples;
 
 if ecg_N == 0
-    warning('Number of samples in the record wasn''t specified in the header file. Can''t calculate duration or split into windows.');
+    if isempty(ann_ext)
+        warning('Number of samples in the record wasn''t specified in the header file. Can''t calculate duration or split into windows.');
+    else
+        % This header file contains no channels, so the number of samples
+        % is zero. Since we have an annotation file, we'll determine the
+        % number of samples from it.
+        ann = rdann(rec_name, ann_ext);
+        ecg_N = double(ann(end));
+
+        % Set length of record based on it
+        header_info.total_seconds = ecg_N / ecg_Fs;
+        header_info.duration = seconds_to_hmsms(header_info.total_seconds);
+    end
 end
 
 % Get ECG channel number
