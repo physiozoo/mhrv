@@ -19,7 +19,7 @@ function [ header_info ] = wfdb_header( rec_name )
 %
 
 % DEFAULTS
-COMMENT_REGEX = '^\s*#.*';
+COMMENT_REGEX = '^\s*#\s*(.*)?';
 FORMAT_REGEX = '(\d+)(x\d+)?(:\d+)?(+\d+)?';
 ADC_GAIN_REGEX = '([\d.-+]+)(\([\d.-+]+\))?(/.*)?';
 DEFGAIN = 200;
@@ -35,9 +35,13 @@ p.parse(rec_name);
 fheader = fopen([rec_name, '.hea']);
 
 try
-% Read lines in the header file until a match is found
+% first non-comment line is the 'record line', we need to skip it
+first_line = true;
+
 channel_idx = 0;
-first_line = true; % first non-comment line is the 'record line', we need to skip it
+comments = {};
+
+% Read lines in the header file until a match is found
 while true
     % Read next line from file
     line = fgetl(fheader);
@@ -45,8 +49,10 @@ while true
         break;
     end
 
-    % Skip comment lines
-    if (~isempty(regexpi(line, COMMENT_REGEX)))
+    % Save comment lines
+    comment_tokens = regexpi(line, COMMENT_REGEX, 'tokens');
+    if (~isempty(comment_tokens))
+        comments{end+1} = comment_tokens{1}{1};
         continue;
     end
 
@@ -167,7 +173,8 @@ header_info = struct(...
     'rec_name', rec_name,...
     'Fs', Fs, 'N_samples', N_samples, 'N_channels', N_channels, 'channel_info', {channel_info},...
     'duration', struct('h', h, 'm', m, 's', s, 'ms', ms),...
-    'total_seconds', t_max...
+    'total_seconds', t_max,...
+    'comments', {comments}...
 );
 
 %% Display info
@@ -178,6 +185,7 @@ if nargout == 0
     fprintf('  Sampling frequency: %.1f\n', Fs);
     fprintf('  Samples per channel: %d\n', N_samples);
     fprintf('  Number of channels: %d\n', N_channels);
+    fprintf('  Comments: %s\n', strjoin(comments, '; '));
 
     for ii = 1:N_channels
         fprintf('Channel %d:\n', ii);
