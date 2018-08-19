@@ -1,16 +1,16 @@
-function [] = rhrv_load_defaults( varargin )
-%RHRV_LOAD_DEFAULTS Loads an rhrv defaults file, setting it's values as default for all toolbox
+function [] = mhrv_load_defaults( varargin )
+%MHRV_LOAD_DEFAULTS Loads an mhrv defaults file, setting it's values as default for all toolbox
 %functions. Optionally, all current parameter defaults will be cleared.
 %
 %   Usage:
-%       rhrv_load_defaults [--clear]
-%       rhrv_load_defaults [--clear] <defaults_filename>
-%       rhrv_load_defaults(defaults_filename, 'param1', value1, 'param2', value2, ...)
+%       mhrv_load_defaults [--clear]
+%       mhrv_load_defaults [--clear] <defaults_filename>
+%       mhrv_load_defaults(defaults_filename, 'param1', value1, 'param2', value2, ...)
 %
-%   This function loads the parameter values from the default rhrv parameters file and sets them as
+%   This function loads the parameter values from the default mhrv parameters file and sets them as
 %   the default value for the various toolbox functions.
 %
-%   The second usage form loads the parameter values from an arbitrary rhrv parameters file (.yml).
+%   The second usage form loads the parameter values from an arbitrary mhrv parameters file (.yml).
 %   The given file can be a name of a file on the matlab path, or, if it's not found there, it will be
 %   interpreted as a path (absolute or relative to pwd).
 %
@@ -84,24 +84,24 @@ if ~isempty(params_filename)
     loaded_params = fix_simple_cell_arrays(loaded_params);
 end
 
-global rhrv_default_values;
+global mhrv_default_values;
 if should_clear
     % Repalce current parameters with the ones we just loaded
-    rhrv_default_values = loaded_params;
+    mhrv_default_values = loaded_params;
 else
     % Convert loaded params into key-value pairs
-    loaded_params_map = rhrv_get_all_defaults(loaded_params);
+    loaded_params_map = mhrv_get_all_defaults(loaded_params);
     param_ids = loaded_params_map.keys;
     param_values = loaded_params_map.values;
     params_kvps = [param_ids; param_values]; % 2xN cell array of key-value pairs
     
     % Merge loaded with current parameters, overriding the existing ones
-    rhrv_set_default(params_kvps{:});
+    mhrv_set_default(params_kvps{:});
 end
 
 % If extra parameters were provided, add them to the parameters (overrides existing)
 if ~isempty(extra_params)
-    rhrv_set_default(extra_params{:});
+    mhrv_set_default(extra_params{:});
 end
 
 end

@@ -1,14 +1,14 @@
-function [] = rhrv_init( varargin )
-%% RHRV_INIT Initialize MATLAB environment of the rhrv tools.
+function [] = mhrv_init( varargin )
+%% MHRV_INIT Initialize MATLAB environment of the mhrv tools.
 % Run this script before using the toolkit.
-% It will initialize the matlab path and environment for the rhrv tools, and also download the
+% It will initialize the matlab path and environment for the mhrv tools, and also download the
 % PhysioNet tools if they are not found on this system.
 % To set custom user-specific options (e.g. PhysioNet tools location), edit the file
-% cfg/rhrv_config.m before running this.
+% cfg/mhrv_config.m before running this.
 % By default this script won't do anything if it was run previously during the same MATLAB session.
 %
 %   Usage:
-%       rhrv_init [-f/--force] [-c/--close]
+%       mhrv_init [-f/--force] [-c/--close]
 %
 %   * The --force/-f option forces running of this script again, even if it was run before.
 %   * The --close/-c option causes the script to close all open figures.
@@ -30,31 +30,31 @@ end
 % Base toolbox dir is the directory containing this script
 basepath_ = fileparts(mfilename('fullpath'));
 
-% The rhrv_basepath global variable holds the base toolbox directory. If it's empty, then this is
+% The mhrv_basepath global variable holds the base toolbox directory. If it's empty, then this is
 % the first time this script is run.
-global rhrv_basepath;
+global mhrv_basepath;
 
 % If the toolbox was not previously initialized, OR it was previously initialized in a different
 % directory, always run. Otherwize, only run if should_force is true.
-if ~isempty(rhrv_basepath)
-    if ~strcmp(rhrv_basepath, basepath_)
-        fprintf('Initializing rhrv toolbox in new basepath %s...\n', basepath_);
+if ~isempty(mhrv_basepath)
+    if ~strcmp(mhrv_basepath, basepath_)
+        fprintf('Initializing mhrv toolbox in new basepath %s...\n', basepath_);
     elseif should_force
-        fprintf('Initializing rhrv toolbox in %s (--force)...\n', basepath_);
+        fprintf('Initializing mhrv toolbox in %s (--force)...\n', basepath_);
     else
         % Already initialized in the current basepath and should_force is false
         return;
     end
 else
-    fprintf('Initializing rhrv toolbox in %s...\n', basepath_);
+    fprintf('Initializing mhrv toolbox in %s...\n', basepath_);
 end
 
 % Save the root toolbox dir as a global variable
-rhrv_basepath = basepath_;
+mhrv_basepath = basepath_;
 
 %% Reset workspaces
 
-% Remove rhrv-realted persistent variables
+% Remove mhrv-realted persistent variables
 clear get_wfdb_tool_path;
 
 if should_close
@@ -76,11 +76,11 @@ addpath(genpath(cfg_dir_));
 addpath(genpath(src_dir_));
 
 %% Load default toolbox parameters
-rhrv_load_defaults --clear;
-wfdb_path_ = rhrv_get_default('rhrv.paths.wfdb_path', 'value');
+mhrv_load_defaults --clear;
+wfdb_path_ = mhrv_get_default('mhrv.paths.wfdb_path', 'value');
 
 %% WFDB paths
-% Check if user specified a custom wfdb path. If not, use rhrv root folder.
+% Check if user specified a custom wfdb path. If not, use mhrv root folder.
 if (isempty(wfdb_path_))
     wfdb_search_path_ = basepath_;
 else

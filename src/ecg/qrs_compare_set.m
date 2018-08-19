@@ -38,8 +38,8 @@ files = dir([set_dir filesep '*.' ann_ext]);
 fprintf('** Found %d ''%s'' files in %s, processing...\n', length(files), ann_ext, set_dir);
 
 spmd
-    rhrv_init;
-    rhrv_load_defaults(params);
+    mhrv_init;
+    mhrv_load_defaults(params);
 end
 
 % Process files

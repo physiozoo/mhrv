@@ -29,10 +29,10 @@ function [ mse_result, scale_axis, plot_data ] = mse( sig, varargin )
 %       http://doi.org/10.1103/PhysRevLett.92.089803
 
 %% Input
-DEFAULT_MSE_MAX_SCALE = rhrv_get_default('mse.mse_max_scale', 'value');
-DEFAULT_SAMPEN_R = rhrv_get_default('mse.sampen_r', 'value');
-DEFAULT_SAMPEN_M = rhrv_get_default('mse.sampen_m', 'value');
-DEFAULT_NORMALIZE_STD = rhrv_get_default('mse.normalize_std', 'value');
+DEFAULT_MSE_MAX_SCALE = mhrv_get_default('mse.mse_max_scale', 'value');
+DEFAULT_SAMPEN_R = mhrv_get_default('mse.sampen_r', 'value');
+DEFAULT_SAMPEN_M = mhrv_get_default('mse.sampen_m', 'value');
+DEFAULT_NORMALIZE_STD = mhrv_get_default('mse.normalize_std', 'value');
 
 % Define input
 p = inputParser;

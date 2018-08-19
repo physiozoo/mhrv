@@ -1,7 +1,7 @@
-function [] = rhrv_set_default( varargin )
-%RHRV_SET_DEFAULT Sets (overrides) current default parameter value(s) with new values.
+function [] = mhrv_set_default( varargin )
+%MHRV_SET_DEFAULT Sets (overrides) current default parameter value(s) with new values.
 %   Usage:
-%       rhrv_set_default('param1', value1, 'param2', value2, ...)
+%       mhrv_set_default('param1', value1, 'param2', value2, ...)
 %
 %   This function allows overriding specific parameters with custom values given
 %   to the function. The input should consist of key-value pairs, where the keys use the '.'
@@ -30,7 +30,7 @@ end
 %% Override parameters
 
 % Get the global parameters variable
-global rhrv_default_values;
+global mhrv_default_values;
 
 % Override existing values
 for ii = 1:2:length(extra_params)
@@ -39,25 +39,25 @@ for ii = 1:2:length(extra_params)
 
     % If the new value is a struct with metadata, set it directly
     if isfield(new_value, 'value')
-        rhrv_default_values = setfield(rhrv_default_values, field_path{:}, new_value);
+        mhrv_default_values = setfield(mhrv_default_values, field_path{:}, new_value);
         continue;
     end
 
     % Otherwise, set the value field at the given path, or create a new parameter with metadata
     try
         % Try to get the field value at the given path
-        field_data = getfield(rhrv_default_values, field_path{:});
+        field_data = getfield(mhrv_default_values, field_path{:});
         % If the field data contains metadata, just change the value subfield
         if isfield(field_data, 'value')
             value_path = [field_path, 'value'];
-            rhrv_default_values = setfield(rhrv_default_values, value_path{:}, new_value);
+            mhrv_default_values = setfield(mhrv_default_values, value_path{:}, new_value);
         else
             % Replace the field data with a metadata object containing the new value
-            rhrv_default_values = setfield(rhrv_default_values, field_path{:}, rhrv_parameter(new_value));
+            mhrv_default_values = setfield(mhrv_default_values, field_path{:}, mhrv_parameter(new_value));
         end
     catch
         % Field doesn't exist, so add it with the given value, and set empty metadata
-        rhrv_default_values = setfield(rhrv_default_values, field_path{:}, rhrv_parameter(new_value));
+        mhrv_default_values = setfield(mhrv_default_values, field_path{:}, mhrv_parameter(new_value));
     end
 end
 

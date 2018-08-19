@@ -1,6 +1,6 @@
-function [ batch_data ] = rhrv_batch( rec_dir, varargin )
-%RHRV_BATCH Performs batch processing of multiple records with rhrv
-%   This function analyzes multiple physionet records with rhrv and outputs tables containting the
+function [ batch_data ] = mhrv_batch( rec_dir, varargin )
+%MHRV_BATCH Performs batch processing of multiple records with mhrv
+%   This function analyzes multiple physionet records with mhrv and outputs tables containting the
 %   results. The records to analyze can be subdivided into record types, in which case output
 %   tables will be generated for each record type.
 %   Optionally, an Excel file can be generated containing the results of the analysis.
@@ -24,7 +24,7 @@ function [ batch_data ] = rhrv_batch( rec_dir, varargin )
 %             Windows where mean(RR)+2std(RR) > rr_dist_max will be discarded.
 %           - rr_dist_min: Similar to above, but will discard windows where
 %             mean(RR)-2std(RR) < rr_dist_min.
-%           - rhrv_params: Parameters pass into rhrv when
+%           - mhrv_params: Parameters pass into mhrv when
 %             processing each record. Can be either a string specifying the
 %             parameters file name, or it can be a cell array where the first
 %             entry is the parameters file name and the subsequent entires
@@ -40,10 +40,10 @@ function [ batch_data ] = rhrv_batch( rec_dir, varargin )
 %           - rec_types: A cell of strings of the names of the record types that were analyzed.
 %           - rec_transforms: A cell array of the RR transformation functis used on each record
 %             type.
-%           - rhrv_window_minutes: Number of minutes in each analysis windows that each record was
+%           - mhrv_window_minutes: Number of minutes in each analysis windows that each record was
 %             split into.
-%           - rhrv_params: A cell array containing the value of the `params` argument passed to rhrv
-%             for the analysis (see rhrv documentation).
+%           - mhrv_params: A cell array containing the value of the `params` argument passed to mhrv
+%             for the analysis (see mhrv documentation).
 %           - hrv_tables: A map from each value in 'rec_types' to the table of HRV values for that type.
 %           - stats_tables: A map with keys as above, whose values are summary tables for each type.
 %           - plot_datas: A map with keys as above, whose values are also maps, mapping from an
@@ -57,11 +57,11 @@ function [ batch_data ] = rhrv_batch( rec_dir, varargin )
 DEFAULT_ANN_EXT = '';
 DEFAULT_REC_TYPES = {'ALL'};
 DEFAULT_REC_FILENAMES = {'*'};
-DEFAULT_RHRV_PARAMS = 'defaults';
+DEFAULT_MHRV_PARAMS = 'defaults';
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_MIN_NN = 0;
-DEFAULT_RR_DIST_MAX = rhrv_get_default('filtrr.range.rr_max', 'value');
-DEFAULT_RR_DIST_MIN = rhrv_get_default('filtrr.range.rr_min', 'value');
+DEFAULT_RR_DIST_MAX = mhrv_get_default('filtrr.range.rr_max', 'value');
+DEFAULT_RR_DIST_MIN = mhrv_get_default('filtrr.range.rr_min', 'value');
 DEFAULT_OUTPUT_FOLDER = '.';
 DEFAULT_OUTPUT_FILENAME = [];
 
@@ -72,7 +72,7 @@ p.addParameter('ann_ext', DEFAULT_ANN_EXT, @(x) ischar(x) || iscellstr(x));
 p.addParameter('rec_types', DEFAULT_REC_TYPES, @iscellstr);
 p.addParameter('rec_filenames', DEFAULT_REC_FILENAMES, @iscellstr);
 p.addParameter('rec_transforms', {}, @iscell);
-p.addParameter('rhrv_params', DEFAULT_RHRV_PARAMS, @(x) ischar(x)||iscell(x));
+p.addParameter('mhrv_params', DEFAULT_MHRV_PARAMS, @(x) ischar(x)||iscell(x));
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('min_nn', DEFAULT_MIN_NN, @isscalar);
 p.addParameter('rr_dist_max', DEFAULT_RR_DIST_MAX, @isscalar);
@@ -88,7 +88,7 @@ ann_ext = p.Results.ann_ext;
 rec_types = p.Results.rec_types;
 rec_filenames = p.Results.rec_filenames;
 rec_transforms = p.Results.rec_transforms;
-rhrv_params = p.Results.rhrv_params;
+mhrv_params = p.Results.mhrv_params;
 window_minutes = p.Results.window_minutes;
 min_nn = p.Results.min_nn;
 rr_dist_max = p.Results.rr_dist_max;
@@ -131,7 +131,7 @@ end
 
 if isempty(output_filename)
     [~, output_dirname, ~] = file_parts(output_dir);
-    output_filename = ['rhrv_batch_' output_dirname];
+    output_filename = ['mhrv_batch_' output_dirname];
 end
 output_filename = [output_dir filesep output_filename '.xlsx'];
 
@@ -171,8 +171,8 @@ for rec_type_idx = 1:n_rec_types
         % Analyze the record
         fprintf('-> Analyzing record %s\n', rec_name);
         try
-            [curr_hrv, ~, curr_plot_datas] = rhrv(rec_name, 'window_minutes', window_minutes,...
-                'ann_ext', rec_type_ann_ext, 'params', rhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
+            [curr_hrv, ~, curr_plot_datas] = mhrv(rec_name, 'window_minutes', window_minutes,...
+                'ann_ext', rec_type_ann_ext, 'params', mhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
         catch e
             warning('Error analyzing record %s: %s\nSkipping...', rec_name, e.message);
             continue;
@@ -258,8 +258,8 @@ fprintf('-> Batch processing complete (%.3f(s))\n', toc(t0));
 batch_data = struct;
 batch_data.rec_types = rec_types;
 batch_data.rec_transforms = rec_transforms;
-batch_data.rhrv_window_minutes = window_minutes;
-batch_data.rhrv_params = rhrv_params;
+batch_data.mhrv_window_minutes = window_minutes;
+batch_data.mhrv_params = mhrv_params;
 batch_data.hrv_tables = hrv_tables;
 batch_data.stats_tables = stats_tables;
 batch_data.plot_datas = plot_datas;

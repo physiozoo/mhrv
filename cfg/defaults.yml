@@ -1,4 +1,4 @@
-# Default parameter values of the rhrv toolbox
+# Default parameter values of the mhrv toolbox
 ---
 
 # Peak detection
@@ -197,6 +197,6 @@ mse:
         units: boolean
 
 # General toolbox options
-rhrv:
+mhrv:
     paths:
         wfdb_path: ''

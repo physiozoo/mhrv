@@ -22,11 +22,11 @@ function [ n, fn, alpha1, alpha2, plot_data ] = dfa( t, sig, varargin )
 %
 
 %% Input
-DEFAULT_NMIN = rhrv_get_default('dfa.n_min', 'value');
-DEFAULT_NMAX = rhrv_get_default('dfa.n_max', 'value');
-DEFAULT_N_INCR = rhrv_get_default('dfa.n_incr', 'value');
-DEFAULT_ALPHA1_RANGE = rhrv_get_default('dfa.alpha1_range', 'value');
-DEFAULT_ALPHA2_RANGE = rhrv_get_default('dfa.alpha2_range', 'value');
+DEFAULT_NMIN = mhrv_get_default('dfa.n_min', 'value');
+DEFAULT_NMAX = mhrv_get_default('dfa.n_max', 'value');
+DEFAULT_N_INCR = mhrv_get_default('dfa.n_incr', 'value');
+DEFAULT_ALPHA1_RANGE = mhrv_get_default('dfa.alpha1_range', 'value');
+DEFAULT_ALPHA2_RANGE = mhrv_get_default('dfa.alpha2_range', 'value');
 
 % Define input
 p = inputParser;

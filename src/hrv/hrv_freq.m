@@ -74,22 +74,22 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 SUPPORTED_METHODS = {'Lomb', 'AR', 'Welch', 'FFT'};
 
 % Defaults
-DEFAULT_METHODS = rhrv_get_default('hrv_freq.methods', 'value');
-DEFAULT_POWER_METHODS = rhrv_get_default('hrv_freq.power_methods', 'value');
-DEFAULT_NORM_METHOD = rhrv_get_default('hrv_freq.norm_method', 'value');
+DEFAULT_METHODS = mhrv_get_default('hrv_freq.methods', 'value');
+DEFAULT_POWER_METHODS = mhrv_get_default('hrv_freq.power_methods', 'value');
+DEFAULT_NORM_METHOD = mhrv_get_default('hrv_freq.norm_method', 'value');
 DEFAULT_BAND_FACTOR = 1;
-DEFAULT_BETA_BAND = rhrv_get_default('hrv_freq.beta_band', 'value');
-DEFAULT_VLF_BAND = rhrv_get_default('hrv_freq.vlf_band', 'value');
-DEFAULT_LF_BAND  = rhrv_get_default('hrv_freq.lf_band', 'value');
-DEFAULT_HF_BAND  = rhrv_get_default('hrv_freq.hf_band', 'value');
-DEFAULT_EXTRA_BANDS = rhrv_get_default('hrv_freq.extra_bands', 'value');
-DEFAULT_WINDOW_MINUTES = rhrv_get_default('hrv_freq.window_minutes', 'value');
-DEFAULT_AR_ORDER = rhrv_get_default('hrv_freq.ar_order', 'value');
-DEFAULT_WELCH_OVERLAP = rhrv_get_default('hrv_freq.welch_overlap', 'value');
+DEFAULT_BETA_BAND = mhrv_get_default('hrv_freq.beta_band', 'value');
+DEFAULT_VLF_BAND = mhrv_get_default('hrv_freq.vlf_band', 'value');
+DEFAULT_LF_BAND  = mhrv_get_default('hrv_freq.lf_band', 'value');
+DEFAULT_HF_BAND  = mhrv_get_default('hrv_freq.hf_band', 'value');
+DEFAULT_EXTRA_BANDS = mhrv_get_default('hrv_freq.extra_bands', 'value');
+DEFAULT_WINDOW_MINUTES = mhrv_get_default('hrv_freq.window_minutes', 'value');
+DEFAULT_AR_ORDER = mhrv_get_default('hrv_freq.ar_order', 'value');
+DEFAULT_WELCH_OVERLAP = mhrv_get_default('hrv_freq.welch_overlap', 'value');
 DEFAULT_NUM_PEAKS = 5;
-DEFAULT_RESAMPLE_FACTOR = rhrv_get_default('hrv_freq.resample_factor', 'value');
-DEFAULT_FREQ_OSF = rhrv_get_default('hrv_freq.osf', 'value');
-DEFAULT_WIN_FUNC = rhrv_get_default('hrv_freq.win_func', 'value');
+DEFAULT_RESAMPLE_FACTOR = mhrv_get_default('hrv_freq.resample_factor', 'value');
+DEFAULT_FREQ_OSF = mhrv_get_default('hrv_freq.osf', 'value');
+DEFAULT_WIN_FUNC = mhrv_get_default('hrv_freq.win_func', 'value');
 
 % Define input
 p = inputParser;

@@ -1,5 +1,5 @@
-function [ param_default ] = rhrv_get_default( param_id, meta )
-%RHRV_GET_DEFAULT Returns the default value configured for a parameter.
+function [ param_default ] = mhrv_get_default( param_id, meta )
+%MHRV_GET_DEFAULT Returns the default value configured for a parameter.
 %   This function attemps to get the value of a parameter as configured by a user config file.
 %   If it can't find a user-specified default for the parameter, it throws an error.
 %
@@ -18,9 +18,9 @@ function [ param_default ] = rhrv_get_default( param_id, meta )
 %   If a value for 'meta' was specified, only the corresponding field will be returned.
 
 % If no defaults were loaded, it's an error
-global rhrv_default_values;
-if isempty(rhrv_default_values)    
-    error('No defaults were loaded! Run rhrv_init or rhrv_load_defaults.');
+global mhrv_default_values;
+if isempty(mhrv_default_values)    
+    error('No defaults were loaded! Run mhrv_init or mhrv_load_defaults.');
 end
 
 % Split the "path" to the field in the parameter struct
@@ -31,7 +31,7 @@ end
 
 % Get the data in the field corresponding to the given param_id
 try
-    field_data = getfield(rhrv_default_values, field_path{:});
+    field_data = getfield(mhrv_default_values, field_path{:});
 catch
     error('Parameter %s doesn''t exist', param_id);
 end
@@ -39,7 +39,7 @@ end
 % Check the data in the field
 if ~isstruct(field_data)
     % If the field is not a structure, we'll wrap it in a metadata object
-    param_default = rhrv_parameter(field_data);
+    param_default = mhrv_parameter(field_data);
 elseif isfield(field_data, 'value')
     % If the field is a parameter struct return it
     param_default = field_data;

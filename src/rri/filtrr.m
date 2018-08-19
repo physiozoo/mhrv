@@ -35,17 +35,17 @@ function [ nni, tnn, plot_data ] = filtrr( rri, trr, varargin )
 %% Input
 
 % Defaults
-DEFAULT_FILTER_RANGE = rhrv_get_default('filtrr.range.enable', 'value');
-DEFAULT_FILTER_MA = rhrv_get_default('filtrr.moving_average.enable', 'value');
-DEFAULT_FILTER_QUOTIENT = rhrv_get_default('filtrr.quotient.enable', 'value');
+DEFAULT_FILTER_RANGE = mhrv_get_default('filtrr.range.enable', 'value');
+DEFAULT_FILTER_MA = mhrv_get_default('filtrr.moving_average.enable', 'value');
+DEFAULT_FILTER_QUOTIENT = mhrv_get_default('filtrr.quotient.enable', 'value');
 
-DEFAULT_RR_MIN = rhrv_get_default('filtrr.range.rr_min', 'value');
-DEFAULT_RR_MAX = rhrv_get_default('filtrr.range.rr_max', 'value');
+DEFAULT_RR_MIN = mhrv_get_default('filtrr.range.rr_min', 'value');
+DEFAULT_RR_MAX = mhrv_get_default('filtrr.range.rr_max', 'value');
 
-DEFAULT_WIN_SAMPLES = rhrv_get_default('filtrr.moving_average.win_length', 'value');
-DEFAULT_WIN_PERCENT = rhrv_get_default('filtrr.moving_average.win_threshold', 'value');
+DEFAULT_WIN_SAMPLES = mhrv_get_default('filtrr.moving_average.win_length', 'value');
+DEFAULT_WIN_PERCENT = mhrv_get_default('filtrr.moving_average.win_threshold', 'value');
 
-DEFAULT_RR_MAX_CHANGE = rhrv_get_default('filtrr.quotient.rr_max_change', 'value');
+DEFAULT_RR_MAX_CHANGE = mhrv_get_default('filtrr.quotient.rr_max_change', 'value');
 
 % Define input
 p = inputParser;

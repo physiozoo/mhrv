@@ -1,9 +1,9 @@
-function [] = rhrv_save_defaults( output_filename )
-%RHRV_SAVE_DEFAULTS Save the current default values of all parameters defined in the toolbox to a
+function [] = mhrv_save_defaults( output_filename )
+%MHRV_SAVE_DEFAULTS Save the current default values of all parameters defined in the toolbox to a
 %file.
 %
 %   Usage:
-%       rhrv_save_defaults <output_filename>
+%       mhrv_save_defaults <output_filename>
 %
 %   This function saves the current default values of all parameters in the toolbox to a specified
 %   output file. The file will be in YAML format. If the output_filename parameters doesn't specify
@@ -26,9 +26,9 @@ end
 %% Write parameters
 
 % Load the global parameters variable into workspace
-global rhrv_default_values;
+global mhrv_default_values;
 
 % Write it to the specified path
-WriteYaml(output_filename, rhrv_default_values);
+WriteYaml(output_filename, mhrv_default_values);
 
 end

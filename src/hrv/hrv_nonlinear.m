@@ -18,10 +18,10 @@ function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %
 
 %% Input
-DEFAULT_MSE_MAX_SCALE = rhrv_get_default('mse.mse_max_scale', 'value');
-DEFAULT_MSE_METRICS = rhrv_get_default('mse.mse_metrics', 'value');
-DEFAULT_SAMPEN_R = rhrv_get_default('mse.sampen_r', 'value');
-DEFAULT_SAMPEN_M = rhrv_get_default('mse.sampen_m', 'value');
+DEFAULT_MSE_MAX_SCALE = mhrv_get_default('mse.mse_max_scale', 'value');
+DEFAULT_MSE_METRICS = mhrv_get_default('mse.mse_metrics', 'value');
+DEFAULT_SAMPEN_R = mhrv_get_default('mse.sampen_r', 'value');
+DEFAULT_SAMPEN_M = mhrv_get_default('mse.sampen_m', 'value');
 
 % Define input
 p = inputParser;

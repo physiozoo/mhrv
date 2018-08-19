@@ -1,5 +1,5 @@
-function [ defaults_map ] = rhrv_get_all_defaults(params_struct)
-%RHRV_GET_ALL_DEFAULTS Returns all parameter default values of the rhrv toolbox in a map.
+function [ defaults_map ] = mhrv_get_all_defaults(params_struct)
+%MHRV_GET_ALL_DEFAULTS Returns all parameter default values of the mhrv toolbox in a map.
 %
 %   Inputs:
 %       params_struct: Optional. The parameter structure to work on. If not provided, this function
@@ -9,10 +9,10 @@ function [ defaults_map ] = rhrv_get_all_defaults(params_struct)
 % The map's values are structures containing the value of the parameter and metadata fields.
 %
 
-global rhrv_default_values;
+global mhrv_default_values;
 if nargin == 0
     % Use global default parameters structure
-    params_struct = rhrv_default_values;
+    params_struct = mhrv_default_values;
 elseif ~isstruct(params_struct)
     error('Provided parameter must be a struct');
 end
@@ -28,7 +28,7 @@ function output_map = recurse_defaults_struct(curr_path, curr_element, output_ma
     % the map.
     if ~isstruct(curr_element)
         if ~isempty(curr_path)
-            output_map(curr_path) = rhrv_parameter(curr_element);
+            output_map(curr_path) = mhrv_parameter(curr_element);
         end
         return;
     end
