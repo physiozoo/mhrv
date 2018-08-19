@@ -21,9 +21,9 @@ function [ batch_data ] = rhrv_batch( rec_dir, varargin )
 %           - min_nn: Set a minumum number of NN intervals so that windows with less will be
 %             discarded. Default is 0 (don't discard anything).
 %           - rr_dist_max: Sanity threshold for RR interval distribution.
-%             Windows where mean(RR)+std(RR) > rr_dist_max will be discarded.
+%             Windows where mean(RR)+2std(RR) > rr_dist_max will be discarded.
 %           - rr_dist_min: Similar to above, but will discard windows where
-%             mean(RR)-std(RR) < rr_dist_min.
+%             mean(RR)-2std(RR) < rr_dist_min.
 %           - rhrv_params: Parameters pass into rhrv when
 %             processing each record. Can be either a string specifying the
 %             parameters file name, or it can be a cell array where the first
@@ -180,8 +180,8 @@ for rec_type_idx = 1:n_rec_types
 
         % Filter out non-sane windows
         filter_idx = (curr_hrv.NN > min_nn);
-        filter_idx = filter_idx & ((curr_hrv.AVNN + curr_hrv.SDNN)/1000 < rr_dist_max);
-        filter_idx = filter_idx & ((curr_hrv.AVNN - curr_hrv.SDNN)/1000 > rr_dist_min);
+        filter_idx = filter_idx & ((curr_hrv.AVNN + 2*curr_hrv.SDNN)/1000 < rr_dist_max);
+        filter_idx = filter_idx & ((curr_hrv.AVNN - 2*curr_hrv.SDNN)/1000 > rr_dist_min);
         if ~any(filter_idx)
             warning('record %s contains no usable windows', rec_name);
             continue;
