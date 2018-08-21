@@ -13,7 +13,6 @@ function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %           - SD2: Poincare plot SD2 descriptor (std. dev. of intervals along the line of identity).
 %           - alpha1: Log-log slope of DFA in the low-scale region.
 %           - alpha2: Log-log slope of DFA in the high-scale region.
-%           - beta: Log-log slope of frequency in VLF band.
 %           - SampEn: The sample entropy.
 %
 
