@@ -1,39 +1,67 @@
 # mhrv
 
-Matlab tools for calculating Heart-Rate Variability (HRV) metrics on ECG
+Matlab toolbox for calculating Heart-Rate Variability (HRV) metrics on ECG
 signals. Supports working with the [PhysioNet](https://physionet.org/) data
 format.
 
 ## Features
 
-* WFDB wrappers: A small subset of the WFDB tools are wrapped with matlab functions.
+* WFDB wrappers and helpers: A small subset of the WFDB tools are wrapped with matlab functions.
     * `gqrs` - A QRS detection algorithm.
     * `rdsamp` - For reading PhysioNet signal data into matlab.
     * `rdann` - For reading PhysioNet annotation data into matlab.
+    * `wrann` - For writing PhysioNet annotation data from matlab datatypes.
+    * `wfdb_header` - Read record metadata from a WFDB header file (`.hea`).
 
-* QRS detection: Finding the beats in ECG signals.
-    * `rqrs` - Detection of R-peaks in ECG signals (based on PhysioNet's `gqrs`). Configurable for use with both human and animal ECGs.
-    * `qrs_compare` - Comparison of QRS detections to reference annotations and calculation of quality indices like Sensitivity, PPV.
+* ECG signal processing: Peak detection and RR interval extraction from ECG data
+    in PhysioNet format.
+    * `rqrs` - Detection of R-peaks in ECG signals (based on PhysioNet's
+        `gqrs`). Configurable for use with both human and animal ECGs.
+    * `egcrr` - Construction of RR intervals from ECG data in PhysioNet format.
+    * `qrs_compare` - Comparison of QRS detections to reference annotations and
+        calculation of quality indices like Sensitivity, PPV.
 
-* ECG signal processing
-     * `egcrr` - Construction of RR intervals from ECG data in PhysioNet format.
-     * `filtrr` - Filtering of RR interval time series to detect ectopic (out of place) beats.
+* RR-intervals signal processing:
+    * `filtrr` - Filtering of RR interval time series to detect ectopic (out of place) beats.
+    * `dfa` - Detrended Fluctuation Analysis, a method of estimating the fractal
+        scaling exponent of a signal.
+    * `mse` - Multiscale Sample Entropy, a measure of the complexity of the
+        signal computed on multiple time scales.
+    * `sample_entropy` - Sample Entropy, a measure of the irregularity of a signal.
 
-* HRV Metrics: Calculating quantative measures that indicate the activity of the heart based on RR intervals.
-    * `hrv_time` - Time Domain: AVNN, SDNN, pXNN.
+* HRV Metrics: Calculating quantitative measures that indicate the activity of
+    the heart based on RR intervals based on the standard HRV metrics defined in
+    the literature.
+    * `hrv_time` - Time Domain: AVNN, SDNN, RMSSD, pNNx.
     * `hrv_freq` - Frequency Domain:
-        * Total and normalized power in VLF, LF and HF bands.
+        * Total and normalized power in (configurable) VLF, LF, HF and custom user-defined bands.
         * Spectral power estimation using Lomb, Auto Regressive, Welch and FFT methods.
+        * Additional frequency-domain features: LF/HF ratio, LF and HF peak
+            frequencies, power-law scaling exponent (beta).
     * `hrv_nonlinear` - Nonlinear methods:
-        * Detrended fluctuation analysis (DFA), with short- and long-term scaling exponents (alpha1, alpha2).
-        * Spectral power-law scaling exponent (beta).
-        * Multiscale sample entropy (MSE).
+        * Short- and long-term scaling exponents (alpha1, alpha2) based on DFA.
+        * Sample Entropy and Multiscale sample entropy (MSE).
         * Poincaré plot metrics (SD1, SD2).
-    * `hrv_fragmentation` - Time-domain RR interval fragmentation analysis.
+    * `hrv_fragmentation` - Time-domain RR interval fragmentation analysis (see
+        [4]).
+
+* Configuration: The toolbox is fully configurable with many user-adjustable
+    parameters.
+    * The configuration files are in human-readable YAML format which
+        is easy to edit and extend.
+    * The user can create custom configurations files based on the
+        `defatuls.yml` file (only overriding what's required).
+    * Custom configuration files can be loaded with a single call which updates
+        the defaults for the entire toolbox. This allows simple, reproducible
+        analysis of different datasets that require different analysis
+        configurations.
+    * The settings for any of the functions can either be configured globally
+        with configuration `yml` files or on a per-call basis with matlab-style
+        key-value argument pairs.
 
 ## Requirements
 * Matlab with Signal Processing toolbox. Should work on Matlab R2014b or newer.
-* The Pysionet WFDB tools. The toolbox can install this for you.
+* The PhysioNet WFDB tools. The toolbox can install this for you.
 
 ## Installation
 
