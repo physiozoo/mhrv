@@ -59,6 +59,20 @@ format.
         with configuration `yml` files or on a per-call basis with matlab-style
         key-value argument pairs.
 
+* Plotting: All toolbox functions support plotting their output for data
+    visualization. The plotting code is separated from the algorithmic code in
+    order to simplify embedding this toolbox in other matlab applications.
+
+* Top-level analysis functions: These functions work with PhysioNet records and
+    allow streamlined HRV analysis by composing the functions of this toolbox.
+    * `mhrv` - Analyzes a single PhysioNet record (ECG data or annotations),
+        optionally split into multiple analysis windows.  Extracts all
+        supported HRV features and optionally generates plots.
+    * `mhrv_batch` - Analyzes many PhysioNet records (ECG data or annotations) which
+        can be further separated into user-defined groups (e.g. Control, Test).
+        Automatically computes HRV metrics per group and generates a comparative
+        summary of the HRV features in each group.
+
 ## Requirements
 * Matlab with Signal Processing toolbox. Should work on Matlab R2014b or newer.
 * The PhysioNet WFDB tools. The toolbox can install this for you.
