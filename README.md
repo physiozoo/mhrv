@@ -1,12 +1,13 @@
 # mhrv
 
 Matlab toolbox for calculating Heart-Rate Variability (HRV) metrics on ECG
-signals. Supports working with the [PhysioNet](https://physionet.org/) data
+signals. Supports working with the [PhysioNet](https://physionet.org/) [1] data
 format.
 
 ## Features
 
-* WFDB wrappers and helpers: A small subset of the WFDB tools are wrapped with matlab functions.
+* WFDB wrappers and helpers: A small subset of the PhysioNet WFDB tools are
+    wrapped with matlab functions, to allow using them directly from matlab.
     * `gqrs` - A QRS detection algorithm.
     * `rdsamp` - For reading PhysioNet signal data into matlab.
     * `rdann` - For reading PhysioNet annotation data into matlab.
@@ -17,24 +18,26 @@ format.
     in PhysioNet format.
     * `rqrs` - Detection of R-peaks in ECG signals (based on PhysioNet's
         `gqrs`). Configurable for use with both human and animal ECGs.
-    * `egcrr` - Construction of RR intervals from ECG data in PhysioNet format.
+    * `ecgrr` - Construction of RR intervals from ECG data in PhysioNet format.
     * `qrs_compare` - Comparison of QRS detections to reference annotations and
-        calculation of quality indices like Sensitivity, PPV.
+        calculation of quality measures like Sensitivity, PPV.
 
 * RR-intervals signal processing:
-    * `filtrr` - Filtering of RR interval time series to detect ectopic (out of place) beats.
+    * `filtrr` - Filtering of RR interval time series to detect ectopic (out of
+        place) beats.
     * `dfa` - Detrended Fluctuation Analysis, a method of estimating the fractal
-        scaling exponent of a signal.
+        scaling exponent of a signal [3].
     * `mse` - Multiscale Sample Entropy, a measure of the complexity of the
-        signal computed on multiple time scales.
+        signal computed on multiple time scales [4].
     * `sample_entropy` - Sample Entropy, a measure of the irregularity of a signal.
 
 * HRV Metrics: Calculating quantitative measures that indicate the activity of
     the heart based on RR intervals based on the standard HRV metrics defined in
-    the literature.
+    the literature (see e.g. [2]).
     * `hrv_time` - Time Domain: AVNN, SDNN, RMSSD, pNNx.
     * `hrv_freq` - Frequency Domain:
-        * Total and normalized power in (configurable) VLF, LF, HF and custom user-defined bands.
+        * Total and normalized power in (configurable) VLF, LF, HF and custom
+            user-defined bands.
         * Spectral power estimation using Lomb, Auto Regressive, Welch and FFT methods.
         * Additional frequency-domain features: LF/HF ratio, LF and HF peak
             frequencies, power-law scaling exponent (beta).
@@ -42,8 +45,7 @@ format.
         * Short- and long-term scaling exponents (alpha1, alpha2) based on DFA.
         * Sample Entropy and Multiscale sample entropy (MSE).
         * Poincaré plot metrics (SD1, SD2).
-    * `hrv_fragmentation` - Time-domain RR interval fragmentation analysis (see
-        [4]).
+    * `hrv_fragmentation` - Time-domain RR interval fragmentation analysis [5].
 
 * Configuration: The toolbox is fully configurable with many user-adjustable
     parameters.
@@ -74,8 +76,10 @@ format.
         summary of the HRV features in each group.
 
 ## Requirements
+
 * Matlab with Signal Processing toolbox. Should work on Matlab R2014b or newer.
-* The PhysioNet WFDB tools. The toolbox can install this for you.
+* The [PhysioNet WFDB tools](https://www.physionet.org/physiotools/wfdb.shtml).
+    The toolbox can install this for you.
 
 ## Installation
 
@@ -89,24 +93,29 @@ format.
     * Set up your MATLAB path to include the code from this toolbox.
 
 ### Manual WFDB Installation (Optional)
+
 The above steps should be enough to get most users started. If however you
 don't want `mhrv_init` to download the WFDB tools for you, or the automatic
 installation fails for some reason, you can install them yourself.
 
-  * On OSX, you can use [homebrew](http://brew.sh) to install it easily with `brew install homebrew/science/wfdb`.
-  * On Windows and Linux, you should either [download the WFDB binaries](https://physionet.org/physiotools/binaries/)
-    for your OS or compile them [from source](https://physionet.org/physiotools/wfdb.shtml#downloading)
-    using the instructions on their website.
+  * On OSX, you can use [homebrew](http://brew.sh) to install it easily with
+      `brew install wfdb`.
+  * On Windows and Linux, you should either [download the WFDB
+      binaries](https://physionet.org/physiotools/binaries/)
+      for your OS or compile them [from
+      source](https://physionet.org/physiotools/wfdb.shtml#downloading)
+      using the instructions on their website.
 
-Once you have the binaries, place them in some folder on your `$PATH` or somewere under the repo's
-root folder (`bin/wfdb` would be a good choice as it's `.gitignore`d) and they will be found and
-used automatically. Or, if you would like to manually specify a path outside the repo which contains
-the WFDB binaries (e.g. `/usr/local/bin` for a homebrew install), you can edit
-[`cfg/defaults.yml`](https://github.com/avivrosenberg/mhrv/blob/master/cfg/defaults.yml) and set
-the `mhrv.paths.wfdb_path` variable to the desired path.
+Once you have the binaries, place them in some folder on your `$PATH` or
+somewere under the repo's root folder (`bin/wfdb` would be a good choice as it's
+`.gitignore`d) and they will be found and used automatically. Or, if you would
+like to manually specify a path outside the repo which contains the WFDB
+binaries (e.g. `/usr/local/bin` for a homebrew install), you can edit
+[`cfg/defaults.yml`](https://github.com/avivrosenberg/mhrv/blob/master/cfg/defaults.yml)
+and set the `mhrv.paths.wfdb_path` variable to the desired path.
 
-For linux users it's recommended to install from source as the binaries
-provided on the PhysioNet website are very outdated.
+For linux users it's recommended to install from source as the binaries provided
+on the PhysioNet website are very outdated.
 
 ## Usage
 Exaple of calculating HRV measures for a PhysioNet record (in this case from [`mitdb`](https://www.physionet.org/physiobank/database/mitdb/)):
@@ -166,14 +175,63 @@ Example plots (generated by the example above):
 * Nonlinear HRV Metrics ![Example nonlinear metrics](https://github.com/avivrosenberg/mhrv/blob/master/fig/example_hrv.png?raw=true)
 * Poincaré plot and ellipse fitting ![Example poincaré plot](https://github.com/avivrosenberg/mhrv/blob/master/fig/example_poincare.png?raw=true)
 
+
+## Citing
+
+This toolbox, initially called `rhrv`, was created as part of my MSc research
+thesis. It was then renamed and updated to be used  as the basis of the
+[PhysioZoo](https://physiozoo.github.io) platform for HRV analysis of human and
+animal data.
+
+To use it in you own research, please cite:
+
+* Rosenberg, A. A. (2018) ‘Non-invasive in-vivo analysis of intrinsic clock-like
+    pacemaker mechanisms: Decoupling neural input using heart rate variability
+    measurements.’ MSc Thesis. Technion, Israel Institute of Technology.
+
+* Behar J. A., Rosenberg A. A. et. al. (2018) ‘PhysioZoo: a novel open access
+    platform for heart rate variability analysis of mammalian
+    electrocardiographic data.’ Frontiers in Physiology.
+
+
+## Similar projects
+
+Several other projects exist with various levels of overlapping functionality and
+purpose.
+
+* The [PhysioNet WFDB tools](https://www.physionet.org/physiotools/wfdb.shtml).
+* The [WFDB toolbox for
+    matlab](https://www.physionet.org/physiotools/matlab/wfdb-app-matlab/).
+* The [R-HRV](http://rhrv.r-forge.r-project.org/) toolbox for the R language.
+* The [Kubios](https://www.kubios.com/) software package.
+* The [PhysioZoo](https://physiozoo.github.io/) platform for mammalian ECG and
+    HRV analysis.
+
 ## Attribution
-This project is in a early iteration and is intended for my research as part of
-my MSc thesis and other unpublished papers.  Information about how to cite this
-work will be added in the near future.
 
 Some of the code in `lib/` was created by others, used here as dependencies.
 Original author attribution exists in the source files.
 
-## Contributing
-Feel free to send pull requests or open issues.
+## Contribution
+
+Feel free to send pull requests or open issues via GitHub.
+
+## References
+
+1. Goldberger, A. L. et al. (2000) ‘PhysioBank, PhysioToolkit, and PhysioNet’,
+   Circulation, 101(23), pp. E215-20.
+2. Task Force of the European Society of Cardiology and the North American
+   Society of Pacing and Electrophysiology. (1996) ‘Heart rate variability.
+   Standards of measurement, physiological interpretation, and clinical use.’,
+   European Heart Journal, 17(3), pp. 354–81.
+3. Peng, C.-K., Hausdorff, J. M. and Goldberger, A. L. (2000) ‘Fractal mechanisms
+   in neuronal control: human heartbeat and gait dynamics in health and disease,
+   Self-organized biological dynamics and nonlinear control.’ Cambridge:
+   Cambridge University Press.
+4. Costa, M. D., Goldberger, A. L. and Peng, C.-K. (2005) ‘Multiscale entropy
+   analysis of biological signals’, Physical Review E - Statistical, Nonlinear,
+   and Soft Matter Physics, 71(2), pp. 1–18.
+5. Costa, M. D., Davis, R. B. and Goldberger, A. L. (2017) ‘Heart Rate
+   Fragmentation : A New Approach to the Analysis of Cardiac Interbeat Interval
+   Dynamics’, Frontiers in Physiology, 8(May), pp. 1–13.
 
