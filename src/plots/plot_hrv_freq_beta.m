@@ -39,6 +39,7 @@ hold(ax, 'on');
 f_axis_beta = plot_data.f_axis(plot_data.beta_idx);
 for ii = 1:length(methods)
     pxx = plot_data.(['pxx_' lower(methods{ii})]);
+    pxx = pxx * 1e6; % convert to ms^2/Hz
 
     % Skip this power method if it wasn't calculated or if it wasn't requested for plotting
     if isempty(pxx) || ~any(cellfun(@(m) strcmp(methods{ii}, m), methods))
@@ -73,7 +74,7 @@ grid(ax, 'on');
 axis(ax, 'tight');
 
 xlabel(ax, 'log(frequency (hz))');
-ylabel(ax, 'log(PSD [s^2/Hz])');
+ylabel(ax, 'log(PSD [ms^2/Hz])');
 
 legend(legend_handles, legend_entries, 'Location', 'southwest');
 

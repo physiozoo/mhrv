@@ -74,6 +74,8 @@ for ii = 1:length(methods)
         total_power = freqband_power(pxx, f_axis, [min(f_axis), max(f_axis)]);
         pxx = pxx ./ total_power;
         pxx = pxx ./ max(pxx);
+    else
+        pxx = pxx * 1e6; % convert from s^2/Hz to ms^2/Hz
     end
 
     % Plot PSD
@@ -160,7 +162,7 @@ if normalize
     ylabel_units = 'n.u.';
 else
     ylabel_prefix = '';
-    ylabel_units = 's^2/Hz';
+    ylabel_units = 'ms^2/Hz';
 end
 if strcmpi(yscale, 'log')
     ylabel_prefix = ['Log ' ylabel_prefix];
