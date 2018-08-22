@@ -117,7 +117,8 @@ if ~isrecord(rec_name, 'hea')
         fid = fopen(header_filename, 'w');
 
         % Header line
-        fprintf(fid, '%s 0 %f 0\n', rec_name, p.fs);
+        [~, rec_name_no_path, ~] = file_parts(rec_name);
+        fprintf(fid, '%s 0 %f 0\n', rec_name_no_path, p.fs);
 
         % Comment lines
         for jj = 1:length(p.comments)
