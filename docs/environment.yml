@@ -1,0 +1,10 @@
+name: mhrv-docs
+dependencies:
+  - python=3.6
+  - pip:
+    - sphinx
+    - sphinx-autobuild
+    - sphinx_rtd_theme
+    - recommonmark
+    - sphinxcontrib-matlabdomain
+    - m2r
