@@ -1,46 +1,47 @@
 # mhrv
 
-Matlab toolbox for calculating Heart-Rate Variability (HRV) metrics on ECG
-signals. Supports working with the [PhysioNet](https://physionet.org/) [1] data
-format.
+`mhrv` is a matlab toolbox for calculating Heart-Rate Variability (HRV) metrics
+from both ECG signals and RR-interval time series. The toolbox works with ECG
+data in the [PhysioNet](https://physionet.org/) [1] WFDB data format.
 
 ## Features
 
-* WFDB wrappers and helpers: A small subset of the PhysioNet WFDB tools are
-    wrapped with matlab functions, to allow using them directly from matlab.
+- **WFDB wrappers and helpers**. A small subset of the PhysioNet WFDB tools are
+  wrapped with matlab functions, to allow using them directly from matlab.
     * `gqrs` - A QRS detection algorithm.
     * `rdsamp` - For reading PhysioNet signal data into matlab.
     * `rdann` - For reading PhysioNet annotation data into matlab.
     * `wrann` - For writing PhysioNet annotation data from matlab datatypes.
     * `wfdb_header` - Read record metadata from a WFDB header file (`.hea`).
 
-* ECG signal processing: Peak detection and RR interval extraction from ECG data
-    in PhysioNet format.
+- **ECG signal processing**. Peak detection and RR interval extraction from ECG data
+  in PhysioNet format.
     * `rqrs` - Detection of R-peaks in ECG signals (based on PhysioNet's
-        `gqrs`). Configurable for use with both human and animal ECGs.
+      `gqrs`). Configurable for use with both human and animal ECGs.
     * `ecgrr` - Construction of RR intervals from ECG data in PhysioNet format.
     * `qrs_compare` - Comparison of QRS detections to reference annotations and
-        calculation of quality measures like Sensitivity, PPV.
+      calculation of quality measures like Sensitivity, PPV.
 
-* RR-intervals signal processing:
+- **RR-intervals signal processing**. Ectopic beat rejection, frequency filtering,
+  nonlinear dynamic and fractal analysis.
     * `filtrr` - Filtering of RR interval time series to detect ectopic (out of
-        place) beats.
+      place) beats.
     * `dfa` - Detrended Fluctuation Analysis, a method of estimating the fractal
-        scaling exponent of a signal [3].
+      scaling exponent of a signal [3].
     * `mse` - Multiscale Sample Entropy, a measure of the complexity of the
-        signal computed on multiple time scales [4].
+      signal computed on multiple time scales [4].
     * `sample_entropy` - Sample Entropy, a measure of the irregularity of a signal.
 
 * HRV Metrics: Calculating quantitative measures that indicate the activity of
-    the heart based on RR intervals based on the standard HRV metrics defined in
+    the heart based on RR intervals using all standard HRV metrics defined in
     the literature (see e.g. [2]).
     * `hrv_time` - Time Domain: AVNN, SDNN, RMSSD, pNNx.
     * `hrv_freq` - Frequency Domain:
         * Total and normalized power in (configurable) VLF, LF, HF and custom
-            user-defined bands.
+          user-defined bands.
         * Spectral power estimation using Lomb, Auto Regressive, Welch and FFT methods.
         * Additional frequency-domain features: LF/HF ratio, LF and HF peak
-            frequencies, power-law scaling exponent (beta).
+          frequencies, power-law scaling exponent (beta).
     * `hrv_nonlinear` - Nonlinear methods:
         * Short- and long-term scaling exponents (alpha1, alpha2) based on DFA.
         * Sample Entropy and Multiscale sample entropy (MSE).
@@ -48,38 +49,38 @@ format.
     * `hrv_fragmentation` - Time-domain RR interval fragmentation analysis [5].
 
 * Configuration: The toolbox is fully configurable with many user-adjustable
-    parameters.
+  parameters.
     * The configuration files are in human-readable YAML format which
-        is easy to edit and extend.
+      is easy to edit and extend.
     * The user can create custom configurations files based on the
-        `defatuls.yml` file (only overriding what's required).
+      `defatuls.yml` file (only overriding what's required).
     * Custom configuration files can be loaded with a single call which updates
-        the defaults for the entire toolbox. This allows simple, reproducible
-        analysis of different datasets that require different analysis
-        configurations.
+      the defaults for the entire toolbox. This allows simple, reproducible
+      analysis of different datasets that require different analysis
+      configurations.
     * The settings for any of the functions can either be configured globally
-        with configuration `yml` files or on a per-call basis with matlab-style
-        key-value argument pairs.
+      with configuration `yml` files or on a per-call basis with matlab-style
+      key-value argument pairs.
 
 * Plotting: All toolbox functions support plotting their output for data
-    visualization. The plotting code is separated from the algorithmic code in
-    order to simplify embedding this toolbox in other matlab applications.
+  visualization. The plotting code is separated from the algorithmic code in
+  order to simplify embedding this toolbox in other matlab applications.
 
 * Top-level analysis functions: These functions work with PhysioNet records and
-    allow streamlined HRV analysis by composing the functions of this toolbox.
+  allow streamlined HRV analysis by composing the functions of this toolbox.
     * `mhrv` - Analyzes a single PhysioNet record (ECG data or annotations),
-        optionally split into multiple analysis windows.  Extracts all
-        supported HRV features and optionally generates plots.
+      optionally split into multiple analysis windows.  Extracts all
+      supported HRV features and optionally generates plots.
     * `mhrv_batch` - Analyzes many PhysioNet records (ECG data or annotations) which
-        can be further separated into user-defined groups (e.g. Control, Test).
-        Automatically computes HRV metrics per group and generates a comparative
-        summary of the HRV features in each group.
+      can be further separated into user-defined groups (e.g. Control, Test).
+      Automatically computes HRV metrics per group and generates a comparative
+      summary of the HRV features in each group.
 
 ## Requirements
 
 * Matlab with Signal Processing toolbox. Should work on Matlab R2014b or newer.
 * The [PhysioNet WFDB tools](https://www.physionet.org/physiotools/wfdb.shtml).
-    The toolbox can install this for you.
+  The toolbox can install this for you.
 
 ## Installation
 
@@ -160,11 +161,12 @@ calculating all metrics per window. You can pass in an empty array `[]` to
 disable spliting.
 
 Note that in order to run the example you need to first download the relevant
-record (`mitdb/111`) from PhysioNet's [`mitdb` database](https://physionet.org/physiobank/database/mitdb/)
-(both `.dat` and `.hea` files). In the example, they were downloaded to the
-folder `db/mitdb` relative to MATLABs current folder. Any relative or absolute
-path can be used.  See also [this FAQ](https://physionet.org/faq.shtml#downloading-databases)
-in case you would like to download entire PhysioNet databases in bulk. 
+record (`mitdb/111`) from PhysioNet's [`mitdb`
+database](https://physionet.org/physiobank/database/mitdb/) (both `.dat` and
+`.hea` files). In the example, they were downloaded to the folder `db/mitdb`
+relative to MATLABs current folder. Any relative or absolute path can be used.
+See also [this FAQ](https://physionet.org/faq.shtml#downloading-databases) in
+case you would like to download entire PhysioNet databases in bulk. 
 
 Example plots (generated by the example above):
 
@@ -186,12 +188,12 @@ animal data.
 To use it in you own research, please cite:
 
 * Rosenberg, A. A. (2018) ‘Non-invasive in-vivo analysis of intrinsic clock-like
-    pacemaker mechanisms: Decoupling neural input using heart rate variability
-    measurements.’ MSc Thesis. Technion, Israel Institute of Technology.
+  pacemaker mechanisms: Decoupling neural input using heart rate variability
+  measurements.’ MSc Thesis. Technion, Israel Institute of Technology.
 
 * Behar J. A., Rosenberg A. A. et. al. (2018) ‘PhysioZoo: a novel open access
-    platform for heart rate variability analysis of mammalian
-    electrocardiographic data.’ Frontiers in Physiology.
+  platform for heart rate variability analysis of mammalian
+  electrocardiographic data.’ Frontiers in Physiology.
 
 
 ## Similar projects
@@ -201,11 +203,11 @@ purpose.
 
 * The [PhysioNet WFDB tools](https://www.physionet.org/physiotools/wfdb.shtml).
 * The [WFDB toolbox for
-    matlab](https://www.physionet.org/physiotools/matlab/wfdb-app-matlab/).
+  matlab](https://www.physionet.org/physiotools/matlab/wfdb-app-matlab/).
 * The [R-HRV](http://rhrv.r-forge.r-project.org/) toolbox for the R language.
 * The [Kubios](https://www.kubios.com/) software package.
 * The [PhysioZoo](https://physiozoo.github.io/) platform for mammalian ECG and
-    HRV analysis.
+  HRV analysis.
 
 ## Attribution
 
