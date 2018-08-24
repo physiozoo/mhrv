@@ -9,11 +9,11 @@ allow analysis of both ECG and R-peak annotation files in WFDB format and return
 all HRV metrics supported by the toolbox.
 
 :func:`mhrv`
---------
+------------
 .. autofunction:: mhrv
 
 :func:`mhrv_batch`
---------------
+------------------
 .. autofunction:: mhrv_batch
 
 

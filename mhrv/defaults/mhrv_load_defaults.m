@@ -1,25 +1,27 @@
 function [] = mhrv_load_defaults( varargin )
-%MHRV_LOAD_DEFAULTS Loads an mhrv defaults file, setting it's values as default for all toolbox
+%Loads an mhrv defaults file, setting it's values as default for all toolbox
 %functions. Optionally, all current parameter defaults will be cleared.
 %
-%   Usage:
-%       mhrv_load_defaults [--clear]
-%       mhrv_load_defaults [--clear] <defaults_filename>
-%       mhrv_load_defaults(defaults_filename, 'param1', value1, 'param2', value2, ...)
+%Usage:
+%   .. code-block:: matlab
+%   
+%      mhrv_load_defaults [--clear]
+%      mhrv_load_defaults [--clear] <defaults_filename>
+%      mhrv_load_defaults(defaults_filename, 'param1', value1, 'param2', value2, ...)
 %
-%   This function loads the parameter values from the default mhrv parameters file and sets them as
-%   the default value for the various toolbox functions.
+%This function loads the parameter values from the default mhrv parameters file and sets them as
+%the default value for the various toolbox functions.
 %
-%   The second usage form loads the parameter values from an arbitrary mhrv parameters file (.yml).
-%   The given file can be a name of a file on the matlab path, or, if it's not found there, it will be
-%   interpreted as a path (absolute or relative to pwd).
+%The second usage form loads the parameter values from an arbitrary mhrv parameters file (.yml).
+%The given file can be a name of a file on the matlab path, or, if it's not found there, it will be
+%interpreted as a path (absolute or relative to pwd).
 %
-%   The third usage form also allows overriding or adding specific parameters with custom values given
-%   to the function. In this form, the filename is optional; the function will also accept just
-%   key-value pairs.
+%The third usage form also allows overriding or adding specific parameters with custom values given
+%to the function. In this form, the filename is optional; the function will also accept just
+%key-value pairs.
 %
-%   Note: This function clears all current default parameters if the '--clear' option is given.
-%   Otherwise, it merges the loaded values with the previously existing parameter defaults.
+%Note: This function clears all current default parameters if the '--clear' option is given.
+%Otherwise, it merges the loaded values with the previously existing parameter defaults.
 %
 
 %% Validate input

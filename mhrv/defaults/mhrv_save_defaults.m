@@ -1,13 +1,15 @@
 function [] = mhrv_save_defaults( output_filename )
-%MHRV_SAVE_DEFAULTS Save the current default values of all parameters defined in the toolbox to a
+%Save the current default values of all parameters defined in the toolbox to a
 %file.
 %
-%   Usage:
-%       mhrv_save_defaults <output_filename>
+%Usage:
+%   .. code-block:: matlab
 %
-%   This function saves the current default values of all parameters in the toolbox to a specified
-%   output file. The file will be in YAML format. If the output_filename parameters doesn't specify
-%   a .yml extension, it will be added.
+%      mhrv_save_defaults <output_filename>
+%
+%This function saves the current default values of all parameters in the
+%toolbox to a specified output file. The file will be in YAML format. If the
+%output_filename parameters doesn't specify a ``.yml`` extension, it will be added.
 %
 
 %% Validate input

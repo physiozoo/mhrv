@@ -1,11 +1,14 @@
 function [] = mhrv_set_default( varargin )
-%MHRV_SET_DEFAULT Sets (overrides) current default parameter value(s) with new values.
-%   Usage:
+%Sets (overrides) current default parameter value(s) with new values.
+%
+%Usage:
+%   .. code-block:: matlab
+%
 %       mhrv_set_default('param1', value1, 'param2', value2, ...)
 %
-%   This function allows overriding specific parameters with custom values given
-%   to the function. The input should consist of key-value pairs, where the keys use the '.'
-%   character to separate heirarchy levels (e.g. 'rqrs.gqconf').
+%This function allows overriding specific parameters with custom values given
+%to the function. The input should consist of key-value pairs, where the keys
+%use the '.' character to separate heirarchy levels (e.g. 'rqrs.gqconf').
 %
 
 %% Validate input

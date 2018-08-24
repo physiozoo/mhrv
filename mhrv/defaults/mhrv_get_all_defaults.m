@@ -1,12 +1,13 @@
 function [ defaults_map ] = mhrv_get_all_defaults(params_struct)
-%MHRV_GET_ALL_DEFAULTS Returns all parameter default values of the mhrv toolbox in a map.
+%Returns all parameter default values of the mhrv toolbox in a map.
 %
-%   Inputs:
-%       params_struct: Optional. The parameter structure to work on. If not provided, this function
-%       will search traverse the globally defined toolbox parameters.
+%:param params_struct: Optional. The parameter structure to work on. If not
+%   provided, this function will search traverse the globally defined toolbox
+%   parameters.
 %
-% The returned map contains keys that correspond the the unique id's of parameters, e.g 'dfa.n_max'.
-% The map's values are structures containing the value of the parameter and metadata fields.
+%The returned map contains keys that correspond the the unique id's of
+%parameters, e.g ``dfa.n_max``.  The map's values are structures containing the
+%value of the parameter and metadata fields.
 %
 
 global mhrv_default_values;

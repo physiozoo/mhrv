@@ -1,20 +1,24 @@
 function [ param_default ] = mhrv_get_default( param_id, meta )
-%MHRV_GET_DEFAULT Returns the default value configured for a parameter.
-%   This function attemps to get the value of a parameter as configured by a user config file.
-%   If it can't find a user-specified default for the parameter, it throws an error.
+%Returns the default value configured for a parameter.  This function attemps
+%to get the value of a parameter as configured by a user config file.  If it
+%can't find a user-specified default for the parameter, it throws an error.
 %
-%   Inputs:
-%       - param_id: Unique id of the parameter This is made up of the keys in the
-%         defaults file leading to the parameter (not including the 'value' key), joined by a '.'
-%         character (example: 'hrv_freq.methods').
-%       - meta: Optional. A fieldname to return from the parameter structure (instead of the
-%         structure itself). Can be value/description/name/units.
+%:param param_id: Unique id of the parameter This is made up of the keys in the
+%   defaults file leading to the parameter (not including the 'value' key), joined
+%   by a '.' character (example: 'hrv_freq.methods').
 %
-%   Outputs a structure containing the following fields:
-%       - value: The user-configured parameter value, if exists, otherwise returns the 'default_value'.
-%       - name: The user-friendly/display name of the parameter.
-%       - description: A description about the parameter.
-%       - units: The units the parameter is specified in.
+%:param meta: Optional. A fieldname to return from the parameter structure
+%   (instead of the structure itself). Can be value/description/name/units.
+%
+%:returns: A structure containing the following fields:
+%
+%   - value: The user-configured parameter value, if exists, otherwise returns
+%     the 'default_value'.
+%   - name: The user-friendly/display name of the parameter.
+%   - description: A description about the parameter.
+%   - units: The units the parameter is specified in.
+%
+%.. note::
 %   If a value for 'meta' was specified, only the corresponding field will be returned.
 
 % If no defaults were loaded, it's an error

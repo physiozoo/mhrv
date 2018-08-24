@@ -1,16 +1,17 @@
 function [ parameter_object ] = mhrv_parameter( value, description, name, units )
-%MHRV_PARAMETER Creates a parameter structure for use with the mhrv toolbox.
+%Creates a parameter structure for use with the mhrv toolbox.
 %
-%   Inputs:
-%       - value: The parameter's value. Can be any matlab object.
-%       - description: Informative description of the parameter.
-%       - name: User friendly/display name of the parameter.
-%       - units: Parameters units.
+%:param value: The parameter's value. Can be any matlab object.
+%:param description: Informative description of the parameter.
+%:param name: User friendly/display name of the parameter.
+%:param units: Parameters units.
+%
+%.. note::
 %   All inputs are optional and default to an empty string if not provided.
 %
-%   Output:
-%       An object representing the parameter. Can be added to the defaults with the mhrv_set_default
-%       or mhrv_load_defaults functions.
+%:returns:
+%   An object representing the parameter. Can be added to the defaults
+%   with the mhrv_set_default or mhrv_load_defaults functions.
 %
 
 %% Input validation
