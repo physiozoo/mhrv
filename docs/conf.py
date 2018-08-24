@@ -44,9 +44,9 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
-    'sphinxcontrib.matlab',
     'sphinx.ext.viewcode',
     'm2r',
+    'sphinxcontrib.matlab',
 ]
 
 matlab_src_dir = os.path.abspath('..')

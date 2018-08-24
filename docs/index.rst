@@ -13,7 +13,7 @@ mhrv
    :caption: Documentation
 
    sections/getting_started.md
-
+   sections/src.rst
 
 Indices and tables
 ==================
