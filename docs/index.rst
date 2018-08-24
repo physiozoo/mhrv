@@ -10,10 +10,16 @@ mhrv
 
 .. toctree::
    :maxdepth: 2
-   :caption: Documentation
+   :caption: Working with the toolbox
 
    sections/getting_started.md
-   sections/src.rst
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Package API Reference
+
+   sections/mhrv.rst
+   sections/mhrv.defaults.rst
 
 Indices and tables
 ==================
