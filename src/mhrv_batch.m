@@ -1,54 +1,59 @@
 function [ batch_data ] = mhrv_batch( rec_dir, varargin )
-%MHRV_BATCH Performs batch processing of multiple records with mhrv
-%   This function analyzes multiple physionet records with mhrv and outputs tables containting the
-%   results. The records to analyze can be subdivided into record types, in which case output
-%   tables will be generated for each record type.
-%   Optionally, an Excel file can be generated containing the results of the analysis.
+%Performs batch processing of multiple records with mhrv.
 %
-%   Inputs:
-%       - rec_dir: Directory to scan for input files.
-%       - varargin: Optional key-value parameter pairs.
-%           - rec_types: A cell array containing the names of the type of record to analyze.
-%           - rec_filenames: A cell array with identical length as 'rec_names', containing
-%             patterns to match against the files in 'rec_dir' for each 'rec_type'.
-%           - rec_transforms: A cell array of transform functions to apply to each file in each
-%             record (one transform for each rec_type).
-%           - ann_ext: Specify an annotation file extention to use instead of loading the record
-%             itself (.dat file). If provided, RR intervals will be loaded from the annotation file
-%             instead of from the ECG. Can also be a cell-array of strings the same
-%             length as rec types. This allows using a different annotator
-%             extension for each rec type. Default: empty string (don't use annotation).
-%           - min_nn: Set a minumum number of NN intervals so that windows with less will be
-%             discarded. Default is 0 (don't discard anything).
-%           - rr_dist_max: Sanity threshold for RR interval distribution.
-%             Windows where mean(RR)+2std(RR) > rr_dist_max will be discarded.
-%           - rr_dist_min: Similar to above, but will discard windows where
-%             mean(RR)-2std(RR) < rr_dist_min.
-%           - mhrv_params: Parameters pass into mhrv when
-%             processing each record. Can be either a string specifying the
-%             parameters file name, or it can be a cell array where the first
-%             entry is the parameters file name and the subsequent entires
-%             are key-value pairs that override parameters from the file.
-%           - skip_plot_data: Whether to skip saving the plot data for each record. This can reduce
-%             memory consumption significantly for large batches. Default: false.
-%           - writexls: true/false whether to write the output to an Excel file.
-%           - output_dir: Directory to write output file to.
-%           - output_filename: Desired name of the output file.
+%This function analyzes multiple physionet records with mhrv and outputs tables
+%containting the results. The records to analyze can be subdivided into record
+%types, in which case output tables will be generated for each record type.
+%Optionally, an Excel file can be generated containing the results of the
+%analysis, including a comparison of the results per group.
 %
-%   Output:
-%        A structure, batch_data, containing the following fields"
-%           - rec_types: A cell of strings of the names of the record types that were analyzed.
-%           - rec_transforms: A cell array of the RR transformation functis used on each record
-%             type.
-%           - mhrv_window_minutes: Number of minutes in each analysis windows that each record was
-%             split into.
-%           - mhrv_params: A cell array containing the value of the `params` argument passed to mhrv
-%             for the analysis (see mhrv documentation).
-%           - hrv_tables: A map from each value in 'rec_types' to the table of HRV values for that type.
-%           - stats_tables: A map with keys as above, whose values are summary tables for each type.
-%           - plot_datas: A map with keys as above, whose values are also maps, mapping from an
-%             individual record filename to the matching plot data object (which can be used for
-%             generating plots).
+%:param rec_dir: Directory to scan for input files.
+%
+%:param varargin: Optional key-value parameter pairs.
+%
+%  - rec_types: A cell array containing the names of the type of record to analyze.
+%  - rec_filenames: A cell array with identical length as 'rec_names', containing
+%    patterns to match against the files in 'rec_dir' for each 'rec_type'.
+%  - rec_transforms: A cell array of transform functions to apply to each file in each
+%    record (one transform for each rec_type).
+%  - ann_ext: Specify an annotation file extention to use instead of loading the record
+%    itself (.dat file). If provided, RR intervals will be loaded from the
+%    annotation file instead of from the ECG. Can also be a cell-array of
+%    strings the same length as rec types. This allows using a different
+%    annotator extension for each rec type. Default: empty string (don't use
+%    annotation).
+%  - min_nn: Set a minumum number of NN intervals so that windows with less
+%    will be discarded. Default is 0 (don't discard anything).
+%  - rr_dist_max: Sanity threshold for RR interval distribution.
+%    Windows where mean(RR)+2std(RR) > rr_dist_max will be discarded.
+%  - rr_dist_min: Similar to above, but will discard windows where
+%    mean(RR)-2std(RR) < rr_dist_min.
+%  - mhrv_params: Parameters pass into mhrv when processing each record. Can be
+%    either a string specifying the parameters file name, or it can be a cell
+%    array where the first entry is the parameters file name and the subsequent
+%    entires are key-value pairs that override parameters from the file.
+%  - skip_plot_data: Whether to skip saving the plot data for each record. This
+%    can reduce memory consumption significantly for large batches. Default:
+%    false.
+%  - writexls: true/false whether to write the output to an Excel file.
+%  - output_dir: Directory to write output file to.
+%  - output_filename: Desired name of the output file.
+%
+%:returns: A structure, batch_data, containing the following fields:
+%
+%  - rec_types: A cell of strings of the names of the record types that were analyzed.
+%  - rec_transforms: A cell array of the RR transformation functis used on each record
+%    type.
+%  - mhrv_window_minutes: Number of minutes in each analysis windows that each record was
+%    split into.
+%  - mhrv_params: A cell array containing the value of the `params` argument
+%    passed to mhrv for the analysis (see mhrv documentation).
+%  - hrv_tables: A map from each value in 'rec_types' to the table of HRV
+%    values for that type.  - stats_tables: A map with keys as above, whose
+%    values are summary tables for each type.
+%  - plot_datas: A map with keys as above, whose values are also maps, mapping from an
+%    individual record filename to the matching plot data object (which can be used for
+%    generating plots).
 %
 
 %% Handle input

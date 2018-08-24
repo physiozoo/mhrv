@@ -1,37 +1,42 @@
 function [ hrv_metrics, hrv_stats, plot_datas ] = mhrv( rec_name, varargin )
-%MHRV Heart Rate Variability metrics
-% Analyzes an ECG signal, detects and filters R-peaks and calculates various heart-rate variability
-% (HRV) metrics on them.
-%   Inputs:
-%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
-%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - ecg_channel: The channel number to use (in case the record has more than one). If not
-%                          provided, mhrv will attempt to use the first channel that has ECG data.
-%           - ann_ext: Specify an annotation file extention to use instead of loading the record
-%            itself (.dat file). If provided, RR intervals will be loaded from the annotation file
-%            instead of from the ECG.  Default: empty (don't use annotation).
-%           - window_minutes: Split ECG signal into windows of the specified length (in minutes)
-%                             and perform the analysis on each window separately.
-%           - window_index_offset: Number of windows to skip from the beginning.
-%           - window_index_limit: Maximal number of windows to process. Combined with the above,
-%                                 this allows control of which window to start from and how many
-%                                 windows to process from there.
-%           - params: Name of mhrv defaults file to use (e.g. 'canine'). Default '', i.e. no
-%                     parameters file will be loaded. Alternatively, can also be a cell array
-%                     containing the exact arguments to pass to mhrv_load_params. This allows
-%                     overriding parameters from a script.
-%           - transform_fn: A function handle to apply to the NN intervals before calculating
-%                           metrics. The function handle should accept one argument only, the NN
-%                           interval lengths.
-%           - plot: true/false whether to generate plots. Defaults to true if no output arguments
-%                   were specified.
-%   Outputs:
-%       - hrv_metrics: A table where each row is a window and each column is an HRV metrics that was
-%                      calculated in that window.
-%       - hrv_stats: A table containing various statistics about each metric, calculated over all
-%                    windows.
-%       - plot_datas: Cell array containing the plot_data structs for each window.
+%Analyzes an ECG signal, detects and filters R-peaks and calculates various
+%heart-rate variability (HRV) metrics on them.
+%
+%:param rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if
+%   the record files (both 100.dat and 100.hea) are in a folder named 'db/mitdb'
+%   relative to MATLABs pwd.
+%
+%:param varargin: Pass in name-value pairs to configure advanced options.
+%
+%   - ecg_channel: The channel number to use (in case the record has more
+%     than one). If not provided, mhrv will attempt to use the first channel that
+%     has ECG data.
+%   - ann_ext: Specify an annotation file extention to use instead of loading
+%     the record itself (.dat file). If provided, RR intervals will be loaded from
+%     the annotation file instead of from the ECG.  Default: empty (don't use
+%     annotation).
+%   - window_minutes: Split ECG signal into windows of the specified length (in
+%     minutes) and perform the analysis on each window separately.
+%   - window_index_offset: Number of windows to skip from the beginning.
+%   - window_index_limit: Maximal number of windows to process. Combined with the above,
+%     this allows control of which window to start from and how many
+%     windows to process from there.
+%   - params: Name of mhrv defaults file to use (e.g. 'canine'). Default '', i.e. no
+%     parameters file will be loaded. Alternatively, can also be a cell array
+%     containing the exact arguments to pass to mhrv_load_params. This allows
+%     overriding parameters from a script.
+%   - transform_fn: A function handle to apply to the NN intervals before calculating
+%     metrics. The function handle should accept one argument only, the NN
+%     interval lengths.
+%   - plot: true/false whether to generate plots. Defaults to true if no output arguments
+%     were specified.
+%
+%:returns:
+%   - hrv_metrics: A table where each row is a window and each column is an
+%     HRV metrics that was calculated in that window.
+%   - hrv_stats: A table containing various statistics about each metric,
+%     calculated over all windows.
+%   - plot_datas: Cell array containing the plot_data structs for each window.
 %
 
 %% Handle input
