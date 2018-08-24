@@ -1,27 +1,33 @@
 function [ qrs, tm, sig, Fs ] = rqrs( rec_name, varargin )
-%RQRS R-peak detection in ECG signals, based on 'gqrs' and 'gqpost'.
-%   RQRS Finds R-peaks in PhysioNet-format ECG records. It uses the 'gqrs' and 'gqpost' programs
-%   from the PhysioNet WFDB toolbox, to find the QRS complexes. Then, it searches forward in a small
-%   window to find the R-peak.
-%   Inputs:
-%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
-%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - 'ecg_channel': Number of ecg signal in the record (default [], i.e. auto-detect signal).
-%           - 'gqconf': Path to a gqrs config file to use. This allows adapting the algorithm for
-%                       different signal and/or animal types (default is '', i.e. no config file).
-%           - 'gqpost': Whether to run the 'gqpost' tool to find and remove
-%                       possibly erroneous detections.
-%           - 'from': Number of first sample to start detecting from (default 1)
-%           - 'to': Number of last sample to detect until (default [], i.e. end of signal)
-%           - 'window_size_sec': Size of the forward-search window, in seconds.
-%           - 'plot': true/false whether to generate a plot. Defaults to true if no output arguments
-%                   were specified.
-%   Output:
-%       - qrs: Vector of sample numbers where the an onset of a QRS complex was found.
-%       - tm: Time vector (x-axis) of the input signal.
-%       - sig: The input signal values.
-%       - Fs: The input signals sampling frequency.
+%R-peak detection in ECG signals, based on ``gqrs`` and ``gqpost``.  ``rqrs``
+%Finds R-peaks in PhysioNet-format ECG records. It uses the ``gqrs`` and
+%``gqpost`` programs from the PhysioNet WFDB toolbox, to find the QRS
+%complexes. Then, it searches forward in a small window to find the R-peak.
+%
+%:param rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if
+%   the record files (both 100.dat and 100.hea) are in a folder named 'db/mitdb'
+%   relative to MATLABs pwd.
+%
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - ecg_channel: Number of ecg signal in the record (default [], i.e.
+%     auto-detect signal).
+%   - gqconf: Path to a gqrs config file to use. This allows adapting the
+%     algorithm for different signal and/or animal types (default is '', i.e. no
+%     config file).
+%   - gqpost: Whether to run the 'gqpost' tool to find and remove possibly
+%     erroneous detections.
+%   - from: Number of first sample to start detecting from (default 1)
+%   - to: Number of last sample to detect until (default [], i.e. end of signal)
+%   - window_size_sec: Size of the forward-search window, in seconds.
+%   - plot: true/false whether to generate a plot. Defaults to true if no
+%     output arguments were specified.
+%
+%:returns:
+%   - qrs: Vector of sample numbers where the an onset of a QRS complex was found.
+%   - tm: Time vector (x-axis) of the input signal.
+%   - sig: The input signal values.
+%   - Fs: The input signals sampling frequency.
 
 %% === Input
 

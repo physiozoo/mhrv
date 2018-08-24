@@ -1,31 +1,37 @@
 function [ sqi ] = qrs_compare( rec_name, varargin )
-%QRS_COMPARE Compare R-peak detection algorithm to annotations.
-%   qrs_compare can run a r-peak detector on a given physionet record and compare the
-%   detections to an annotation file. The function assumes that the annotation file has the same
-%   record name, with a user-configurable file extension. The function supports both wfdb format and
-%   matlab's 'mat' format for the annotation files.
-%   The comparison of the detected QRS locations to the reference annotations is performed by
-%   calculating a joint-accuracy measure (F1), based on the Sensitivity (SE) and
-%   Positive-predictivity (PPV) of the test detector's annotations [1].
+%Compare R-peak detection algorithm to annotations.  qrs_compare can run a
+%r-peak detector on a given physionet record and compare the detections to an
+%annotation file. The function assumes that the annotation file has the same
+%record name, with a user-configurable file extension. The function supports
+%both wfdb format and matlab's 'mat' format for the annotation files.  The
+%comparison of the detected QRS locations to the reference annotations is
+%performed by calculating a joint-accuracy measure (F1), based on the
+%Sensitivity (SE) and Positive-predictivity (PPV) of the test detector's
+%annotations [1]_.
 %
-%   Inputs:
-%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
-%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - 'tolerance': Threshold tolerance time, in seconds, for two peak detections to be considered equal.
-%           - 'ann_ext': Extension of annotation file.
-%           - 'ann_format': Format of annotation file. Can be 'wfdb' or 'mat'.
-%           - 'ecg_channel': Channel number of ecg signal in the record (default [], i.e. auto-detect signal).
-%           - 'qrs_detector': Name of qrs detector to use. Can be 'rqrs' or 'gqrs'.
-%           - 'plot': true/false whether to generate a plot. Defaults to true if no output arguments
-%                   were specified.
+%:param rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if
+%   the record files (both 100.dat and 100.hea) are in a folder named 'db/mitdb'
+%   relative to MATLABs pwd.
+%           
+%:param varargin: Pass in name-value pairs to configure advanced options:
 %
-%   Output:
-%       sqi: Signal quality indices for the comparison between the detector and annotations.
+%   - tolerance: Threshold tolerance time, in seconds, for two peak
+%     detections to be considered equal.
+%   - ann_ext: Extension of annotation
+%     file.
+%   - ann_format: Format of annotation file. Can be ``wfdb`` or ``mat``.
+%   - ecg_channel: Channel number of ecg signal in the record (default [],
+%     i.e. auto-detect signal).
+%   - qrs_detector: Name of qrs detector to use. Can be ``rqrs`` or ``gqrs``.
+%   - plot: true/false whether to generate a plot. Defaults to true if no
+%     output arguments were specified.
 %
-% [1] Johnson, A. E. W., Behar, J., et al. (2015).
-%     Multimodal heart beat detection using signal quality indices.
-%     Physiological Measurement, 36, 1–15. http://doi.org/10.1088/0967-3334/36/8/1665
+%:returns:
+%
+%   - sqi: Signal quality indices for the comparison between the detector and annotations.
+%
+%.. [1] Johnson, A. E. W., Behar, J., et al. (2015).  Multimodal heart beat
+%   detection using signal quality indices.  Physiological Measurement, 36, 1–15.
 %
 
 %% Input

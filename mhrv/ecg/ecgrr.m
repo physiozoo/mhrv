@@ -1,21 +1,28 @@
 function [ rri, trr, plot_data ] = ecgrr( rec_name, varargin )
-%ECGRR Calculate an RR-interval time series from PhysioNet ECG data.
-% Detects QRS in a given sigal and calculates the RR intervals.
-%   Inputs:
-%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
-%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - ann_ext: Specify an annotation file extention to use instead of loading the record
-%            itself (.dat file). If provided, RR intervals will be loaded from the annotation file
-%            instead of from the ECG. Default: empty (don't use annotation).
-%           - ecg_channel: Number of ecg signal in the record (default [], i.e. auto-detect signal).
-%           - from: Number of first sample to start detecting from (default 1)
-%           - to: Number of last sample to detect until (default [], i.e. end of signal)
-%           - plot: true/false whether to generate a plot. Defaults to true if no output arguments
-%                   were specified.
-%   Outputs:
-%       - rri: RR-intervals values in seconds.
-%       - trr: RR-interval times in seconds.
+%Calculate an RR-interval time series from PhysioNet ECG data.  Detects QRS in
+%a given sigal and calculates the RR intervals.
+%
+%:param rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if
+%   the record files (both 100.dat and 100.hea) are in a folder named 'db/mitdb'
+%   relative to MATLABs pwd.
+%
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - ann_ext: Specify an annotation file extention to use instead of loading
+%     the record itself (.dat file). If provided, RR intervals will be loaded
+%     from the annotation file instead of from the ECG. Default: empty (don't use
+%     annotation).
+%   - ecg_channel: Number of ecg signal in the record (default [], i.e.
+%     auto-detect signal).
+%   - from: Number of first sample to start detecting from (default 1)
+%   - to: Number of last sample to detect until (default [], i.e. end of signal)
+%   - plot: true/false whether to generate a plot. Defaults to true if no
+%     output arguments were specified.
+%
+%:returns:
+%
+%   - rri: RR-intervals values in seconds.
+%   - trr: RR-interval times in seconds.
 %
 
 %% Input

@@ -1,16 +1,17 @@
 function [ sqis, stats ] = qrs_compare_set( set_dir, ann_ext, varargin )
-%QRS_COMPARE_SET Compares reference QRS detections to test detections on a set of wfdb records.
-%   Inputs:
-%       - set_dir: directory path containing the wfdb files and annotations
-%       - ann_ext: file extension of the annotation files.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - any parameter supported by qrs_compare() can be passed to this function.
-%           - plot: true/false whether to generate a plot. Defaults to true if no output arguments
-%                   were specified.
+%Compares reference QRS detections to test detections on a set of wfdb records.
 %
-%   Outputs:
-%       - sqis: A table containing quality indices for each of the input files.
-%       - stats: A table containing the Mean and Gross values for the quality indices over all files.
+%:param set_dir: directory path containing the wfdb files and annotations
+%:param ann_ext: file extension of the annotation files.
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - any parameter supported by qrs_compare() can be passed to this function.
+%   - plot: true/false whether to generate a plot. Defaults to true if no
+%     output arguments were specified.
+%
+%:returns:
+%   - sqis: A table containing quality indices for each of the input files.
+%   - stats: A table containing the Mean and Gross values for the quality indices over all files.
 %
 
 %% Input
