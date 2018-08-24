@@ -65,7 +65,7 @@ end
 
 % Find source and dependencies directories
 lib_dir_ = [basepath_ filesep 'lib'];
-src_dir_ = [basepath_ filesep 'src'];
+src_dir_ = [basepath_ filesep 'mhrv'];
 cfg_dir_ = [basepath_ filesep 'cfg'];
 bin_dir_ = [basepath_ filesep 'bin'];
 
