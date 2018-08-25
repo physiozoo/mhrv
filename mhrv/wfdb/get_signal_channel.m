@@ -1,18 +1,24 @@
 function [ chan, Fs, N ] = get_signal_channel( rec_name, varargin )
-%GET_SIGNAL_CHANNEL Find the channel of a signal in the record matching a description.
-%   By default, if no description is specified it looks for ECG signal channels.
-%   Inputs:
-%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
-%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - 'sig_regex': A regular expression that should match the desired signal's description in
-%                          the header file.
-%           - 'comment_regex': A regular expression that matches the comment format in the header file.
-%   Output:
-%       - chan: Number of the first channel in the signal that matches the description regex, or an
-%               empty array if no signals match.
-%       - Fs: Sampling frequency
-%       - N: Number of samples
+%Find the channel of a signal in the record matching a description.  By
+%default, if no description is specified it looks for ECG signal channels.
+%
+%:param rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if
+%   the record files (both 100.dat and 100.hea) are in a folder named 'db/mitdb'
+%   relative to MATLABs pwd.
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - sig_regex: A regular expression that should match the desired signal's
+%     description in the header file.
+%   - comment_regex: A regular expression that matches the comment format in
+%     the header file.
+%
+%:returns:
+%
+%   - chan: Number of the first channel in the signal that matches the
+%     description regex, or an empty array if no signals match.
+%   - Fs: Sampling frequency
+%   - N: Number of samples
+%
 
 % DEFAULTS
 DEFAULT_SIG_REGEX = 'ECG|lead\si+|MLI+|v\d|\<I+\>'; % Default is a regex for finding SCG signals in the Physionet files

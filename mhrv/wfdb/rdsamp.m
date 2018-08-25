@@ -1,19 +1,24 @@
 function [ t, sig, Fs ] = rdsamp( rec_name, varargin )
-%RDSAMP Wrapper for WFDB's 'rdsamp' tool.
-%   Reads channels in PhysioNet data files and returns them in a MATLAB matrix.
-%   Inputs:
-%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
-%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - 'chan_list': A list of channel numbers (starting from 1) to read from the record, e.g.
-%                        to read the first three channels use [1, 2, 3]. Default is [], i.e. read
-%                        all channels from the record.
-%           - 'from': Number of first sample to start detecting from (default 1)
-%           - 'to': Number of last sample to detect until (default [], i.e. end of signal)
-%   Output:
-%       - t: A vector with the sample times in seconds.
-%       - sig: A matrix where is column is a different channel from the signal.
-%       - Fs: The sampling frequency of the data.
+%Wrapper for WFDB's 'rdsamp' tool.  Reads channels in PhysioNet data files and
+%returns them in a MATLAB matrix.
+%
+%:param rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if
+%  the record files (both 100.dat and 100.hea) are in a folder named 'db/mitdb'
+%  relative to MATLABs pwd.
+%
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - chan_list: A list of channel numbers (starting from 1) to read from the
+%     record, e.g.  to read the first three channels use [1, 2, 3]. Default is
+%     [], i.e. read all channels from the record.
+%   - from: Number of first sample to start detecting from (default 1)
+%   - to: Number of last sample to detect until (default [], i.e. end of
+%     signal)
+%
+%:returns:
+%   - t: A vector with the sample times in seconds.
+%   - sig: A matrix where is column is a different channel from the signal.
+%   - Fs: The sampling frequency of the data.
 
 %% Input
 

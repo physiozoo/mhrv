@@ -1,14 +1,17 @@
 function [ isrecord ] = isrecord( rec_name, data_ext )
-%ISRECORD Checks if the given WFDB record name exists locally.
-%   Input:
-%       - rec_name: Path and name of a wfdb record's files e.g. 'db/mitdb/100'. Can be an absolute or
-%                   relative path (relative to the MATLAB pwd).
-%       - data_ext: Optional. The extension of the data file to look for. Defaults to 'dat' if not
-%                   specfied.
-%   Output:
-%       - isrecord: True if the given record path is valid, otherwise false. Valid means that e.g.
-%                   both the files db/mitdb/100.dat (or another extension as specified in 'data_ext')
-%                   and db/mitdb/100.hea exist if rec_name was 'db/mitdb/100').
+%Checks if the given WFDB record name exists locally.
+%
+%:param rec_name: Path and name of a wfdb record's files e.g. 'db/mitdb/100'.
+%   Can be an absolute or relative path (relative to the MATLAB pwd).
+%:param data_ext: Optional. The extension of the data file to look for.
+%   Defaults to 'dat' if not specfied.
+%
+%:returns:
+%
+%   - isrecord: True if the given record path is valid, otherwise false. Valid
+%     means that e.g.  both the files db/mitdb/100.dat (or another extension as
+%     specified in 'data_ext') and db/mitdb/100.hea exist if rec_name was
+%     'db/mitdb/100').
 
 
 % Default for the data file extension

@@ -1,25 +1,33 @@
 function [ qrs, outliers ] = gqrs( rec_name, varargin )
-%GQRS Wrapper for WFDB's 'gqrs' and 'gqpost' tools.
-%   Finds the onset of QRS complexes in ECG signals given in PhysioNet format and returns them as a
-%   MATLAB vector.
-%   Inputs:
-%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
-%                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - 'ecg_channel': Number of ecg signal in the record (default [], i.e. auto-detect signal).
-%           - 'gqconf': Filename or Path to a gqrs config file to use. This allows adapting the
-%                       algorithm for different signal and/or animal types (default is '', i.e. no
-%                       config file). Note that if only a filename is provided, 'gqrs' will attempt
-%                       to find the gqconf file on the MATLAB path.
-%           - 'gqpost': Whether to run the 'gqpost' tool to find erroneous detections (default
-%                       false).
-%           - 'from': Number of first sample to start detecting from (default 1)
-%           - 'to': Number of last sample to detect until (default [], i.e. end of signal)
+%Wrapper for WFDB's 'gqrs' and 'gqpost' tools.  Finds the onset of QRS
+%complexes in ECG signals given in PhysioNet format and returns them as a
+%MATLAB vector.
 %
-%   Output:
-%       - qrs: Vector of sample numbers where the an onset of a QRS complex was found.
-%       - outliers: Vector of sample numbers which were marked by gqpost as suspected false
-%                   detections.
+%:param rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if
+%   the record files (both 100.dat and 100.hea) are in a folder named 'db/mitdb'
+%   relative to MATLABs pwd.
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - ecg_channel: Number of ecg signal in the record (default [], i.e.
+%     auto-detect signal).
+%   - gqconf: Filename or Path to a gqrs config file to use. This allows
+%     adapting the algorithm for different signal and/or animal types (default is
+%     '', i.e. no config file). Note that if only a filename is provided, 'gqrs'
+%     will attempt to find the gqconf file on the MATLAB path.
+%   - gqpost: Whether to run the 'gqpost' tool to find erroneous detections
+%     (default false).
+%   - from: Number of first sample to start detecting from (default 1)
+%   - to: Number of last sample to detect until (default [], i.e. end of
+%     signal)
+%
+%:returns:
+%
+%   - qrs: Vector of sample numbers where the an onset of a QRS complex was
+%     found.
+%   - outliers: Vector of sample numbers which were marked by gqpost as
+%     suspected false detections.
+%
+%.. note::
 %   If no output variables are given to the function call, the detected ECG signal and QRS complexes
 %   will be plotted in a new figure.
 

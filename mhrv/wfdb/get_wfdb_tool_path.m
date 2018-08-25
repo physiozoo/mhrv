@@ -1,18 +1,21 @@
 function [ tool_path ] = get_wfdb_tool_path( tool_name, base_search_path )
-%GET_WFDB_TOOL_PATH Returns the path to a wfdb tool, takes OS into account
-%   Looks for the given tool recursively under the current MATLAB directory (or a given directory),
-%   and then recursively under the folders in the $PATH environment variable. In case the tool is found,
-%   the containing directory path will be persisted to speed up the next search.
+%Returns the path to a wfdb tool, takes OS into account Looks for the given
+%tool recursively under the current MATLAB directory (or a given directory),
+%and then recursively under the folders in the ``$PATH`` environment variable. In
+%case the tool is found, the containing directory path will be persisted to
+%speed up the next search.
 %
-%   Inputs:
-%       tool_name - A string containg the name of the wfdb tool, e.g. 'gqrs',
-%       'wfdb-config', 'rdsamp' etc. Should not include a file extension.
-%       base_search_path - Optional. An absolute path to use as a base for searching for the tool.
-%                          If not provided defaults to pwd().
-%   Output:
-%       tool_path - The path of the wfdb tool, including it's os-specific
-%       file extension (e.g. .exe). In case the tool wasn't found, an error
-%       will be raised.
+%:param tool_name: A string containg the name of the wfdb tool, e.g. 'gqrs',
+%   'wfdb-config', 'rdsamp' etc. Should not include a file extension.
+%:param base_search_path: Optional. An absolute path to use as a base for
+%   searching for the tool.  If not provided defaults to pwd().
+%
+%:returns:
+%
+%   - tool_path - The path of the wfdb tool, including it's os-specific
+%     file extension (e.g. .exe). In case the tool wasn't found, an error
+%     will be raised.
+%
 
 % Make sure tool name format is valid
 if (~ischar(tool_name) || isempty(tool_name))

@@ -1,36 +1,39 @@
 function [ files_written ] = wrann( rec_name, ann_ext, ann_idx, varargin )
-%WRANN Wrapper for WFDB's 'wrann' tool.
-%   Write annotation files in PhysioNet format given a MATLAB vector.
-%   Inputs:
-%       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100.
-%                   If a header file for the record doesn't exist one will
-%                   be created (but fs must be specified in varargin).
-%       - ann_ext: Extension of annotation file to write. E.g. use 'qrs' to
-%                  write the annotation file mitdb/100.qrs.
-%       - ann_idx: A column vector of integer type containing sample
-%                  indices of the annotations. 
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - 'fs': The sampling frequency of the signal which is being
-%              annotated. Pass this in if writing annotations for a record
-%              which doesn't exist (i.e. a header file should be created).
-%           - 'comments': A cell array of strings which will bea written to
-%              the header file as comments (one per line). Will only be
-%              written when a new header file is craeted by this function.
-%           - 'type': Either a single character that will be used as
-%              the type for all annotations, or a cell array the same size
-%              'ann_idx' containg a different annotation type per sample.
-%           - 'sub': Either a single number (-128 ~ 128) that will be used as
-%              the subtype attribute for all annotations, or a column vector
-%              the same size as 'ann_idx' containg a different subtype per sample.
-%           - 'chan': Either a single number (-128 ~ 128) that will be used as
-%              the chan attribute for all annotations, or a column vector
-%              the same size as 'ann_idx' containg a different chan per sample.
-%           - 'num': Either a single number (-128 ~ 128) that will be used as
-%              the num attribute for all annotations, or a column vector
-%              the same size as 'ann_idx' containg a different num per sample.
-%           - 'aux': Either a single string that will be used as
-%              the aux attribute for all annotations, or a string cell array
-%              the same size as 'ann_idx' containg a different aux per sample.
+%Wrapper for WFDB's 'wrann' tool.  Write annotation files in PhysioNet format
+%given a MATLAB vector.
+%
+%:param rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100.  If
+%   a header file for the record doesn't exist one will be created (but fs must be
+%   specified in varargin).
+%:param ann_ext: Extension of annotation file to write. E.g. use 'qrs' to write
+%   the annotation file mitdb/100.qrs.
+%:param ann_idx: A column vector of integer type containing sample indices of
+%   the annotations.
+%:param varargin: Pass in name-value pairs to configure %advanced options:
+%
+%   - fs: The sampling frequency of the signal which is being annotated. Pass
+%     this in if writing annotations for a record which doesn't exist (i.e. a
+%     header file should be created).
+%   - comments: A cell array of strings which will bea written to the header
+%     file as comments (one per line). Will only be written when a new header
+%     file is craeted by this function.
+%   - type: Either a single character that will be used as the type for all
+%     annotations, or a cell array the same size 'ann_idx' containg a different
+%     annotation type per sample.
+%   - sub: Either a single number (-128 ~ 128) that will be used as the subtype
+%     attribute for all annotations, or a column vector the same size as
+%     'ann_idx' containg a different subtype per sample.
+%   - chan: Either a single number (-128 ~ 128) that will be used as the chan
+%     attribute for all annotations, or a column vector the same size as
+%     'ann_idx' containg a different chan per sample.
+%   - num: Either a single number (-128 ~ 128) that will be used as the num
+%     attribute for all annotations, or a column vector the same size as
+%     'ann_idx' containg a different num per sample.
+%   - aux: Either a single string that will be used as the aux attribute for
+%     all annotations, or a string cell array the same size as 'ann_idx' containg
+%     a different aux per sample.
+%
+%:returns: A cell array with the paths of files that were created.
 
 %% === Input
 

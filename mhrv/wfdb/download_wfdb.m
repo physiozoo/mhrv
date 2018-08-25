@@ -1,13 +1,16 @@
 function bin_path = download_wfdb(dest_base_dir)
-%DOWNLOAD_WFDB Downloads the WFDB binaries for this OS.
-%   This function detects the current OS and attempts to download the approprate WFDB binaries.
-%   They will be downloaded into the folder 'bin/wfdb' under the current MATLAB directory.
-%   Input:
-%       dest_base_dir: Optional. Directory to download into. Will be created if it doesn't exist.
-%               A folder name 'wfdb' will be created inside. If this is not provided, defaults
-%               to the folder 'bin/' under the current MATLAB directory.
-%   Output:
-%       bin_path: Path the the directory containing the WFDB binaries that were downloaded.
+%Downloads the WFDB binaries for this OS.  This function detects the current OS
+%and attempts to download the approprate WFDB binaries.  By default they will
+%be downloaded into the folder 'bin/wfdb' under the current MATLAB directory.
+%
+%:param dest_base_dir: Optional. Directory to download into. Will be created if
+%   it doesn't exist.  A folder name 'wfdb' will be created inside. If this is not
+%   provided, defaults to the folder 'bin/' under the current MATLAB directory.
+%
+%:returns:
+%
+%   - bin_path: Path the the directory containing the WFDB binaries that were
+%     downloaded.
 
 %% Check input
 if nargin == 0

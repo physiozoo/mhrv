@@ -23,6 +23,7 @@ mhrv
    sections/mhrv.ecg.rst
    sections/mhrv.hrv.rst
    sections/mhrv.rri.rst
+   sections/mhrv.wfdb.rst
 
 Indices and tables
 ==================
