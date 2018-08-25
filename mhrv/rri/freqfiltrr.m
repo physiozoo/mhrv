@@ -1,19 +1,23 @@
 function [ rri_out, trr_out ] = freqfiltrr( rri, fc, varargin )
-%FREQFILTRR Performs frequency-band filtering of RR intervals.
-% This function can perform apply a low-pass or high-pass filter to an RR interval time series.
-% %   Inputs:
-%       - rri: RR-intervals values in seconds.
-%       - fc:  Filter cutoff frequency, in Hz.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - resamp_freq: Frequency to resample the RR-intervals at before filtering. Must be at
-%             least twich the maximal frequency in the signal. Default: 5 Hz.
-%           - forder: Order (length in samples) of the filter to use. Default: 100.
-%           - ftype: A string, either 'low' or 'high', specifying the type of filter to apply.
-%           - plot: true/false whether to generate a plot. Defaults to true if no output arguments
-%                   were specified.
-%   Outputs:
-%       - rri_out: RR intervals after filtering.
-%       - trr_out: Times of filtered RR intervals, in seconds.
+%Performs frequency-band filtering of RR intervals.  This function can apply
+%a low-pass or high-pass filter to an RR interval time series.
+%
+%:param rri: RR-intervals values in seconds.
+%:param fc:  Filter cutoff frequency, in Hz.
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - resamp_freq: Frequency to resample the RR-intervals at before filtering.
+%     Must be at least twich the maximal frequency in the signal. Default: 5 Hz.
+%   - forder: Order (length in samples) of the filter to use. Default: 100.
+%   - ftype: A string, either 'low' or 'high', specifying the type of filter to
+%     apply.
+%   - plot: true/false whether to generate a plot. Defaults to true if no
+%     output arguments were specified.
+%
+%:returns:
+%
+%   - rri_out: RR intervals after filtering.
+%   - trr_out: Times of filtered RR intervals, in seconds.
 
 %% Input
 

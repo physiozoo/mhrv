@@ -1,11 +1,17 @@
 function sampen = sample_entropy(sig, m, r)
-%SAMPLE_ENTROPY Calculate sample entropy (SampEn) of a signal.
-%   Sample entropy is a measure of the irregularity of a signal.
+%Calculate sample entropy [3]_ (SampEn) of a signal. Sample entropy is a measure of
+%the irregularity of a signal.
 %
-%   See:
-%   Richman, J. S., & Moorman, J. R. (2000).
-%   Physiological time-series analysis using approximate entropy and sample entropy.
-%   American Journal of Physiology. Heart and Circulatory Physiology, 278(6), H2039?H2049.
+%:param sig: The input signal.
+%:param m: Template length in samples.
+%:param r: Threshold for matching sample values.
+%
+%:returns: The sample entropy value of the input signal.
+%
+%.. [3] Richman, J. S., & Moorman, J. R. (2000).  ‘Physiological time-series
+%   analysis using approximate entropy and sample entropy.’  American Journal of
+%   Physiology. Heart and Circulatory Physiology, 278(6), H2039?H2049.
+%
 
 N = length(sig);
 

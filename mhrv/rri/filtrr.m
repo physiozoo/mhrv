@@ -1,35 +1,42 @@
 function [ nni, tnn, plot_data ] = filtrr( rri, trr, varargin )
-%FILTRR Calculate an NN-interval time series (filtered RR intervals).
-% Performs outlier detection and removal on RR interval data.
-% This function can perform three types of different outlier detection, based on user input: Range
-% based detection, moving-average filter-based detection and quotient filter based detection.
-%   Inputs:
-%       - rri: RR-intervals values in seconds.
-%       - trr: RR-interval times in seconds.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - filter_range: true/false whether to use range filtering (remove intervals smaller or
-%             larger than 'rr_min' and 'rr_max').
-%           - filter_ma: true/false whether to use a moving-average filter to detect potential
-%             outliers in the rr-intervals. If an interval is greater (abs) than
-%             'win_percent' percent of the average in a window of size 'win_samples' around it,
-%              excludes the interval.
-%           - filter_quotient: true/false whether to use the quotient filter. This fliter checks the
-%             quotient between an interval and it's predecessor and successors, and only allows a
-%             configured change percentage ('rr_max_change') between them.
-%           - win_samples: Number of samples in the filter window on each side of the current sample
-%                          (total window size will be 2*win_samples+1). Default: 10.
-%           - win_percent: The percentage above/below the average to use for filtering. Default: 20.
-%           - rr_min: Min physiological RR interval, in seconds. Intervals shorter than this will
-%             be removed prior to poincare plotting. Default: 0.32 sec.
-%           - rr_max: Max physiological RR interval, in seconds. Intervals longer than this will
-%             be removed prior to poincare plotting. Default: 1.5 sec.
-%           - rr_max_change: Maximal change, in percent, allowed between adjacent RR intervals.
-%             Intervals violating this will be removed prior to poincare plotting. Default: 25.
-%           - plot: true/false whether to generate a plot. Defaults to true if no output arguments
-%                   were specified.
-%   Outputs:
-%       - nni: NN-intervals (RR intervals after removing outliers) values in seconds
-%       - tnn: NN-interval times in seconds
+%Calculate an NN-interval time series (filtered RR intervals).  Performs
+%outlier detection and removal on RR interval data.  This function can perform
+%three types of different outlier detection, based on user input: Range based
+%detection, moving-average filter-based detection and quotient filter based
+%detection.
+%
+%:param rri: RR-intervals values in seconds.
+%:param trr: RR-interval times in seconds.
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - filter_range: true/false whether to use range filtering (remove intervals
+%     smaller or larger than 'rr_min' and 'rr_max').
+%   - filter_ma: true/false whether to use a moving-average filter to detect
+%     potential outliers in the rr-intervals. If an interval is greater (abs)
+%     than 'win_percent' percent of the average in a window of size 'win_samples'
+%     around it, excludes the interval.
+%   - filter_quotient: true/false whether to use the quotient filter. This
+%     fliter checks the quotient between an interval and it's predecessor and
+%     successors, and only allows a configured change percentage
+%     ('rr_max_change') between them.
+%   - win_samples: Number of samples in the filter window on each side of the
+%     current sample (total window size will be 2*win_samples+1). Default: 10.
+%   - win_percent: The percentage above/below the average to use for filtering.
+%     Default: 20.
+%   - rr_min: Min physiological RR interval, in seconds. Intervals shorter than
+%     this will be removed prior to poincare plotting. Default: 0.32 sec.
+%   - rr_max: Max physiological RR interval, in seconds. Intervals longer
+%     than this will be removed prior to poincare plotting. Default: 1.5 sec.
+%   - rr_max_change: Maximal change, in percent, allowed between adjacent RR
+%     intervals.  Intervals violating this will be removed prior to poincare
+%     plotting. Default: 25.
+%   - plot: true/false whether to generate a plot. Defaults to true if no
+%     output arguments were specified.
+%
+%:returns:
+%
+%   - nni: NN-intervals (RR intervals after removing outliers) values in seconds
+%   - tnn: NN-interval times in seconds
 %
 
 %% Input

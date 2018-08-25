@@ -1,32 +1,31 @@
 function [ mse_result, scale_axis, plot_data ] = mse( sig, varargin )
-%MSE Multi-scale entropy of a signal
-%   Calculates the MSE of a signal, a measure of the signals complexity.
-%   The algorithms calculates the Sample Entropy of the signal at various 'scales' from 1 to
-%   max_scale. At each scale, the signal is downsampled by averaging 'scale' samples and the Sample
-%   Entropy is calculated for the downsampled signal.
+%Calculates the Multiscale Entropy [2]_, MSE, of a signal, a measure of the
+%signals complexity.  The algorithms calculates the Sample Entropy of the
+%signal at various 'scales' from 1 to max_scale. At each scale, the signal is
+%downsampled by averaging 'scale' samples and the Sample Entropy is calculated
+%for the downsampled signal.
 %
-%   Input:
-%       - sig: Signal to calculate MSE for.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - mse_max_scale: Maximal scale to calculate up to. Default: 20.
-%           - sampen_r: Value of 'r' parameter to use when calculating sample entropy (max distance
-%                       between two points that's considered a match). Default: 0.2.
-%           - sampen_m: Value of 'm' parameter to use when calculating sample entropy (length of
-%             templates to match). Default: 2.
-%           - normalize_std: Whether or not to normalize the signal to
-%             std=1 before calculating the MSE. This affects the meaning of
-%             r.
-%           - plot: true/false whether to generate a plot. Defaults to true if no output
-%                   arguments were specified.
-%   Output:
-%       - mse_result: The sample entropy value at each scale.
-%       - scale_axis: The corresponding scale values that were used.
+%:param sig: Signal to calculate MSE for.
+%:param varargin: Pass in name-value pairs to configure advanced options:
 %
-%   Reference:
-%       Costa, M. D., Goldberger, A. L., & Peng, C.-K. (2002).
-%       Multiscale entropy analysis of complex physiologic time series.
-%       Physical Review Letters, 89(6), 68102.
-%       http://doi.org/10.1103/PhysRevLett.92.089803
+%   - mse_max_scale: Maximal scale to calculate up to. Default: 20.
+%   - sampen_r: Value of 'r' parameter to use when calculating sample entropy
+%     (max distance between two points that's considered a match). Default: 0.2.
+%   - sampen_m: Value of 'm' parameter to use when calculating sample entropy
+%     (length of templates to match). Default: 2.
+%   - normalize_std: Whether or not to normalize the signal to std=1 before
+%     calculating the MSE. This affects the meaning of r.
+%   - plot: true/false whether to generate a plot. Defaults to true if no
+%     output arguments were specified.
+%
+%:returns:
+%
+%   - mse_result: The sample entropy value at each scale.
+%   - scale_axis: The corresponding scale values that were used.
+%
+%.. [2] Costa, M. D., Goldberger, A. L. and Peng, C.-K. (2005) ‘Multiscale
+%   entropy analysis of biological signals’, Physical Review E - Statistical,
+%   Nonlinear, and Soft Matter Physics, 71(2), pp. 1–18.
 
 %% Input
 DEFAULT_MSE_MAX_SCALE = mhrv_get_default('mse.mse_max_scale', 'value');

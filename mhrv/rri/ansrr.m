@@ -1,18 +1,24 @@
 function [ rri_out ] = ansrr( rri, freqs, varargin )
-%ANSRR Add Noised Sines to RR interval time series
-% This function generates a signal of sines embedded in gaussian white noise and adds it to an RR
-% interval time series.
-% %   Inputs:
-%       - rri: RR-intervals values in seconds.
-%       - freqs:  Vector containing desired sine frequencies, in Hz.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - var_r: Desired variance of the RR intervals. Can be used the scale the intervals
-%                    before adding the noised sines. Leave empty to forgo scaling.
-%           - mix: Mixture ratio between the given RR intervals and the generated sines.
-%                  Default: 0.5 i.e. sines will have alf the variance of the RR intervals (after scaling).
-%           - snr: Signal to Noise ratio of the white gaussian noise that will be added to the sines. Default: 2.
-%   Outputs:
-%       - rri_out: RR intervals after adding noised sines.
+%Add Noised Sines to RR interval time series. This function generates a signal
+%of sines embedded in gaussian white noise and adds it to an RR interval time
+%series.
+%
+%:param rri: RR-intervals values in seconds.
+%:param freqs:  Vector containing desired sine frequencies, in Hz.
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - var_r: Desired variance of the RR intervals. Can be used the scale the
+%     intervals before adding the noised sines. Leave empty to forgo scaling.
+%   - mix: Mixture ratio between the given RR intervals and the generated
+%     sines.  Default: 0.5 i.e. sines will have alf the variance of the RR
+%     intervals (after scaling).
+%   - snr: Signal to Noise ratio of the white gaussian noise that will be added
+%     to the sines. Default: 2.
+%
+%:returns:
+%
+%   - rri_out: RR intervals after adding noised sines.
+%
 
 %% Input
 

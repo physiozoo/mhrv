@@ -1,24 +1,33 @@
 function [ n, fn, alpha1, alpha2, plot_data ] = dfa( t, sig, varargin )
-%DFA Detrended fluctuation analysis
-%   Calculates the DFA of a signal and it's scaling exponent alpha.
-%   Input:
-%       - t: time (or x values of signal)
-%       - sig: signal data (or y values of signal)
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - n_min: Minimal DFA block-size (default 4)
-%           - n_max: Maximal DFA block-size (default 64)
-%           - n_incr: Increment value for n (default 2). Can also be less
-%               than 1, in which case we interpret it as the ratio of a geometric
-%               series on box sizes (n). This should produce box size values
-%               identical to the PhysioNet DFA implmentation.
-%           - alpha1_range: Range of block size values to use for calculating the alpha1 scaling
-%             exponent. Default: [4, 15].
-%           - alpha2_range: Range of block size values to use for calculating the alpha2 scaling
-%             exponent. Default: [16, 64].
-%   Output:
-%       - n: block sizes (x-axis of DFA)
-%       - fn: DFA value for each block size n
-%       - alpha: Exponential scaling factor
+%Detrended fluctuation analysis, DFA [1]_. Calculates the DFA of a signal and it's
+%scaling exponents :math:`\alpha_1` and :math:`\alpha_2`.
+%
+%:param t: time (or x values of signal)
+%:param sig: signal data (or y values of signal)
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%   
+%   - n_min: Minimal DFA block-size (default 4)
+%   - n_max: Maximal DFA block-size (default 64)
+%   - n_incr: Increment value for n (default 2). Can also be less than 1, in
+%     which case we interpret it as the ratio of a geometric series on box sizes
+%     (n). This should produce box size values identical to the PhysioNet DFA
+%     implmentation.
+%   - alpha1_range: Range of block size values to use for calculating the
+%     :math:`\alpha_1` scaling exponent. Default: [4, 15].
+%   - alpha2_range: Range of block size values to use for calculating the
+%     :math:`\alpha_2` scaling exponent. Default: [16, 64].
+%
+%:returns:
+%
+%   - n: block sizes (x-axis of DFA)
+%   - fn: DFA value for each block size n
+%   - alpha1: Exponential scaling factor
+%   - alpha2: Exponential scaling factor
+%
+%.. [1] Peng, C.-K., Hausdorff, J. M. and Goldberger, A. L. (2000) ‘Fractal mechanisms
+%   in neuronal control: human heartbeat and gait dynamics in health and disease,
+%   Self-organized biological dynamics and nonlinear control.’ Cambridge:
+%   Cambridge University Press.
 %
 
 %% Input

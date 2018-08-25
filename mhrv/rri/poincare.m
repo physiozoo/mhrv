@@ -1,22 +1,22 @@
 function [ sd1, sd2, plot_data ] = poincare( rri, varargin )
-%POINCARE Poincare-plot HRV metrics and outlier detection
-%   Calculates HRV statistics from a poincare plot of the input data.
+%Calculates HRV metrics from a Poincaré plot of the input data.
 %
-%   Input:
-%       - rri: Row vector of RR-interval lengths in seconds.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - sd1_factor: Factor to multiply the standard devation along the perpendicular line (SD1)
-%             to get the radius of the ellipse along that axis. Default is 2 (so over 95% of points
-%             will be inside the ellipse).
-%           - sd2_factor: As above, but for the standard deviation along the line of identity (SD2).
-%             Default: 3.
-%           - plot: true/false whether to generate a plot. Defaults to true if no output
-%                   arguments were specified.
-%   Output
-%       - sd1: Standard deviation of RR intervals along the axis perpendicular to the line of
-%              identity.
-%       - sd2: Standard deviation of RR intervals along the line of identity.
-%       - outlier_idx: Vector of suspected outlier indices.
+%:param rri: Row vector of RR-interval lengths in seconds.
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - sd1_factor: Factor to multiply the standard devation along the
+%     perpendicular line (SD1) to get the radius of the ellipse along that axis.
+%     Default is 2 (so over 95% of points will be inside the ellipse).
+%   - sd2_factor: As above, but for the standard deviation along the line of
+%     identity (SD2).  Default: 3.
+%   - plot: true/false whether to generate a plot. Defaults to true if no
+%     output arguments were specified.
+%
+%:returns:
+%
+%   - sd1: Standard deviation of RR intervals along the axis perpendicular to
+%     the line of identity.
+%   - sd2: Standard deviation of RR intervals along the line of identity.
 
 %% === Input
 

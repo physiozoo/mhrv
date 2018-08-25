@@ -22,6 +22,7 @@ mhrv
    sections/mhrv.defaults.rst
    sections/mhrv.ecg.rst
    sections/mhrv.hrv.rst
+   sections/mhrv.rri.rst
 
 Indices and tables
 ==================
