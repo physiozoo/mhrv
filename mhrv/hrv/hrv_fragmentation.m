@@ -1,18 +1,18 @@
 function [ hrv_frag ] = hrv_fragmentation( nni, varargin )
-%HRV_FRAGMENTATION Computes HRV fragmentation indices of a NN interval time series.
+%Computes HRV fragmentation indices [1]_ of a NN interval time series.
 %
-%   Input:
-%       - nni: Vector of NN-interval dirations (in seconds)
-%   Output: Table containing the following fragmentation metrics:
-%       - PIP: Percentage of inflection points.
-%       - IALS: Inverse average length of segments.
-%       - PSS: Percentage of NN intervals that are in short segments.
-%       - PAS: Percentage of NN intervals that are in alternation segments of at least 4 intervals.
+%:param nni: Vector of NN-interval dirations (in seconds)
 %
-% See:
-% Costa, M. D., Davis, R. B., & Goldberger, A. L. (2017). Heart Rate Fragmentation: A New Approach
-% to the Analysis of Cardiac Interbeat Interval Dynamics. Frontiers in Physiology, 8(May), 1–13.
-% http://doi.org/10.3389/fphys.2017.00255
+%:returns: Table containing the following fragmentation metrics:
+%
+%    - PIP: Percentage of inflection points.
+%    - IALS: Inverse average length of segments.
+%    - PSS: Percentage of NN intervals that are in short segments.
+%    - PAS: Percentage of NN intervals that are in alternation segments of at least 4 intervals.
+%
+%.. [1] Costa, M. D., Davis, R. B., & Goldberger, A. L. (2017). Heart Rate
+%   Fragmentation: A New Approach to the Analysis of Cardiac Interbeat Interval
+%   Dynamics. Frontiers in Physiology, 8(May), 1–13.
 %
 
 %% Input

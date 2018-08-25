@@ -1,74 +1,90 @@
 function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
-%HRV_FREQ NN interval spectrum and frequency-domain HRV metrics
-%   This function estimates the PSD (power spectral density) of a given nn-interval sequence, and
-%   calculates the power in various frequency bands.
-%   Inputs:
-%       - nni: RR/NN intervals, in seconds.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - methods: A cell array of strings containing names of methods to use to estimate the
-%             spectrum. Supported methods are:
-%               - 'lomb': Lomb-scargle periodogram.
-%               - 'ar': Yule-Walker autoregressive model. Data will be resampled. No windowing will
-%                       be performed for this method.
-%               - 'welch': Welch's method (overlapping windows).
-%               - 'fft': Simple fft-based periodogram, no overlap (also known as Bartlett's method).
-%             In all cases, a window will be used on the samples according to the 'win_func' parameter.
-%             Data will be resampled for all methods except 'lomb'.
-%             Default value is {'lomb', 'ar', 'welch'}.
-%           - power_methods: The method(s) to use for calculating the power in each band. A cell array
-%             where each element can be any one of the methods given in 'methods'. This also
-%             determines the spectrum that will be returned from this function (pxx).
-%             Default: First value in 'methods'.
-%           - norm_method: A string, either 'total' or 'lf_hf'. If 'total',
-%             then the power in each band will be normalized by the total
-%             power in the entire frequency spectrum. If 'lf_hf', then only
-%             for the LF and HF bands, the normalization will be performed
-%             by the (LF+HF) power. This is the standard method used in
-%             many papers to normalize these bands. In any case, VLF and
-%             user-defined custom bands are not affected by this parameter.
-%           - band_factor: A factor that will be applied to the frequency bands. Useful for shifting
-%             them linearly to adapt to non-human data. Default: 1.0 (no shift).
-%           - vlf_band: 2-element vector of frequencies in Hz defining the VLF band.
-%             Default: [0.003, 0.04].
-%           - lf_band: 2-element vector of frequencies in Hz defining the LF band.
-%             Default: [0.04, 0.15].
-%           - hf_band: 2-element vector of frequencies in Hz defining the HF band.
-%             Default: [0.15, 0.4].
-%           - extra_bands: A cell array of frequency pairs, for example
-%             {[f_start,f_end], ...}. Each pair defines a custom band for
-%             which the power and normalized power will be calculated.
-%           - window_minutes: Split intervals into windows of this length, calcualte the spectrum in
-%             each window, and average them. A window funciton will be also be applied to each window
-%             after breaking the intervals into windows. Set to [] if you want to disable windowing.
-%             Default: 5 minutes.
-%           - detrend_order: Order of polynomial to fit to the data for detrending.
-%             Default: 1 (i.e. linear detrending).
-%           - ar_order: Order of the autoregressive model to use if 'ar' method is specific.
-%             Default: 24.
-%           - welch_overlap: Percentage of overlap between windows when using Welch's method.
-%             Default: 50 percent.
-%           - win_func: The window function to apply to each segment. Should be a function that
-%             accepts one parameter (length in samples) and returns a window of that length.
-%             Default: @hamming.
-%           - plot: true/false whether to generate plots. Defaults to true if no output arguments
-%             were specified.
-%   Outputs:
-%       - hrv_fd: Table containing the following HRV metrics:
-%           - TOTAL_POWER: Total power in all three bands combined.
-%           - VLF_POWER: Power in the VLF band.
-%           - LF_POWER: Power in the LF band.
-%           - HF_POWER: Power in the HF band.
-%           - VLF_NORM: 100 * Ratio between VLF power and total power.
-%           - LF_NORM: 100 * Ratio between LF power and total power or the sum of LF and HF power (see 'norm_method').
-%           - HF_NORM: 100 * Ratio between HF power and total power or the sum of LF and HF power (see 'norm_method').
-%           - LF_TO_HF: Ratio between LF and HF power.
-%           - LF_PEAK: Frequency of highest peak in the LF band.
-%           - HF_PEAK: Frequency of highest peak in the HF band.
-%           - BETA: Slope of log-log frequency plot in the VLF band.
-%           Note that each of the above metrics will be calculated for each value given in
-%           'power_methods', and their names will be suffixed with the method name (e.g. LF_PEAK_LOMB).
-%       - pxx: Power spectrum. It's type is determined by the first value in 'power_methods'.
-%       - f_axis: Frequencies, in Hz, at which pxx was calculated.
+%NN interval spectrum and frequency-domain HRV metrics This function estimates
+%the PSD (power spectral density) of a given nn-interval sequence, and
+%calculates the power in various frequency bands.
+%
+%:param nni: RR/NN intervals, in seconds.
+%
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - methods: A cell array of strings containing names of methods to use to
+%     estimate the spectrum. Supported methods are:
+%
+%       - ``lomb``: Lomb-scargle periodogram.
+%       - ``ar``: Yule-Walker autoregressive model. Data will be resampled. No windowing will
+%         be performed for this method.
+%       - ``welch``: Welch's method (overlapping windows).
+%       - ``fft``: Simple fft-based periodogram, no overlap (also known as
+%         Bartlett's method).
+%
+%     In all cases, a window will be used on the samples according to the
+%     ``win_func`` parameter.  Data will be resampled for all methods except
+%     ``lomb``.  Default value is ``{'lomb', 'ar', 'welch'}``.
+%
+%   - power_methods: The method(s) to use for calculating the power in each
+%     band. A cell array where each element can be any one of the methods given
+%     in 'methods'. This also determines the spectrum that will be returned
+%     from this function (pxx).  Default: First value in ``methods``.
+%   - norm_method: A string, either ``total`` or ``lf_hf``. If ``total``,
+%     then the power in each band will be normalized by the total
+%     power in the entire frequency spectrum. If ``lf_hf``, then only
+%     for the LF and HF bands, the normalization will be performed
+%     by the (LF+HF) power. This is the standard method used in
+%     many papers to normalize these bands. In any case, VLF and
+%     user-defined custom bands are not affected by this parameter.
+%   - band_factor: A factor that will be applied to the frequency bands. Useful
+%     for shifting them linearly to adapt to non-human data. Default: 1.0 (no
+%     shift).
+%   - vlf_band: 2-element vector of frequencies in Hz defining the VLF band.
+%     Default: [0.003, 0.04].
+%   - lf_band: 2-element vector of frequencies in Hz defining the LF band.
+%     Default: [0.04, 0.15].
+%   - hf_band: 2-element vector of frequencies in Hz defining the HF band.
+%     Default: [0.15, 0.4].
+%   - extra_bands: A cell array of frequency pairs, for example
+%     ``{[f_start,f_end], ...}``. Each pair defines a custom band for
+%     which the power and normalized power will be calculated.
+%   - window_minutes: Split intervals into windows of this length, calcualte
+%     the spectrum in each window, and average them. A window funciton will be
+%     also be applied to each window after breaking the intervals into windows.
+%     Set to [] if you want to disable windowing.  Default: 5 minutes.
+%   - detrend_order: Order of polynomial to fit to the data for detrending.
+%     Default: 1 (i.e. linear detrending).
+%   - ar_order: Order of the autoregressive model to use if ``ar`` method is specific.
+%     Default: 24.
+%   - welch_overlap: Percentage of overlap between windows when using Welch's method.
+%     Default: 50 percent.
+%   - win_func: The window function to apply to each segment. Should be a
+%     function that accepts one parameter (length in samples) and returns a
+%     window of that length. Default: @hamming.
+%   - plot: true/false whether to generate plots. Defaults to true if no output
+%     arguments were specified.
+%
+%:returns:
+%
+%   - hrv_fd: Table containing the following HRV metrics:
+%
+%       - TOTAL_POWER: Total power in all three bands combined.
+%       - VLF_POWER: Power in the VLF band.
+%       - LF_POWER: Power in the LF band.
+%       - HF_POWER: Power in the HF band.
+%       - VLF_NORM: 100 * Ratio between VLF power and total power.
+%       - LF_NORM: 100 * Ratio between LF power and total power or the sum of
+%         LF and HF power (see 'norm_method').  - HF_NORM: 100 * Ratio between HF
+%         power and total power or the sum of LF and HF power (see
+%         ``norm_method``).
+%       - LF_TO_HF: Ratio between LF and HF power.
+%       - LF_PEAK: Frequency of highest peak in the LF band.
+%       - HF_PEAK: Frequency of highest peak in the HF band.
+%       - BETA: Slope of log-log frequency plot in the VLF band.
+%
+%     Note that each of the above metrics will be calculated for each value
+%     given in ``power_methods``, and their names will be suffixed with the
+%     method name (e.g. LF_PEAK_LOMB).
+%
+%   - pxx: Power spectrum. It's type is determined by the first value in
+%     ``power_methods``.
+%   - f_axis: Frequencies, in Hz, at which pxx was calculated.
 
 %% Input
 SUPPORTED_METHODS = {'Lomb', 'AR', 'Welch', 'FFT'};

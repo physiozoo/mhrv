@@ -8,7 +8,6 @@
 -----------------------------
 .. autofunction:: ecgrr
 
-
 :func:`qrs_compare`
 -----------------------------
 .. autofunction:: qrs_compare

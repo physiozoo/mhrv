@@ -1,19 +1,39 @@
 function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
-%HRV_NONLINEAR Calcualte non-linear HRV metrics.
-%   Inputs:
-%       - nni: RR/NN intervals, in seconds.
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - beta_band: A 2-element vector specifying the frequency range (in Hz) to use for
-%             calculating the beta parameter. Default: [0.003, 0.04].
+%Calcualtes non-linear HRV metrics based on Poincaré plots, detrended
+%fluctuation analysis (DFA) [2]_  and Multiscale Entropy (MSE) [3]_.
 %
-%   Output:
-%       - hrv_nl: Table containing the following HRV metrics:
-%           - SD1: Poincare plot SD1 descriptor (std. dev. of intervals along the line perpendicular
-%             to the line of identity).
-%           - SD2: Poincare plot SD2 descriptor (std. dev. of intervals along the line of identity).
-%           - alpha1: Log-log slope of DFA in the low-scale region.
-%           - alpha2: Log-log slope of DFA in the high-scale region.
-%           - SampEn: The sample entropy.
+%:param nni: RR/NN intervals, in seconds.
+%
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%   
+%   - mse_max_scale: Maximal scale value that the MSE will be calculated up to.
+%   - mse_metrics: Whether to output MSE at each scale as a separate metric.
+%   - sampen_r: ``r`` value used to calculate Sample Entropy
+%   - sampen_m: ``m`` value used to calculate Sample Entropy
+%   - plot: true/false whether to generate plots. Defaults to true if no output
+%     arguments were specified.
+%
+%:returns:
+%
+%   - hrv_nl: Table containing the following HRV metrics:
+%
+%       - SD1: Poincare plot SD1 descriptor (std. dev. of intervals along the
+%         line perpendicular to the line of identity).
+%       - SD2: Poincare plot SD2 descriptor (std. dev. of intervals along the
+%         line of identity).
+%       - alpha1: Log-log slope of DFA in the low-scale region.
+%       - alpha2: Log-log slope of DFA in the high-scale region.
+%       - SampEn: The sample entropy.
+%
+%
+%.. [2] Peng, C.-K., Hausdorff, J. M. and Goldberger, A. L. (2000) ‘Fractal mechanisms
+%   in neuronal control: human heartbeat and gait dynamics in health and disease,
+%   Self-organized biological dynamics and nonlinear control.’ Cambridge:
+%   Cambridge University Press.
+%
+%.. [3] Costa, M. D., Goldberger, A. L. and Peng, C.-K. (2005) ‘Multiscale entropy
+%   analysis of biological signals’, Physical Review E - Statistical, Nonlinear,
+%   and Soft Matter Physics, 71(2), pp. 1–18.
 %
 
 %% Input

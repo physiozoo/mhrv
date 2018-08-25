@@ -1,20 +1,25 @@
 function [ hrv_td, plot_data ] = hrv_time( nni, varargin )
-%HRV_TIME Calculate time-domain HRV mertics from NN intervals
-%   Input:
-%       - nni: Vector of NN-interval dirations (in seconds)
-%       - varargin: Pass in name-value pairs to configure advanced options:
-%           - pnn_thresh_ms - Optional. Threshold NN interval time difference in
-%                             milliseconds (for the pNNx HRV measure).
-%           - plot: true/false whether to generate a plot. Defaults to true if no output
-%                   arguments were specified.
-%   Output: Table containing the following HRV metrics:
-%       AVNN - Average NN interval duration
-%       SDNN - Standard deviation of NN interval durations
-%       RMSSD - Square root of mean summed squares of NN interval differences
-%       pNNx - The percentage of NN intervals which differ by at least x (ms) (default 50)
-%              from their preceding interval. The value of x in milliseconds can be set
-%              with the optional parameter 'pnn_thresh_ms'.
-%       SEM - Standard error of the mean NN interval length.
+%Calculates time-domain HRV mertics from NN intervals.
+%
+%:param nni: Vector of NN-interval dirations (in seconds)
+%
+%:param varargin: Pass in name-value pairs to configure advanced options:
+%
+%   - pnn_thresh_ms: Optional. Threshold NN interval time difference in
+%     milliseconds (for the pNNx HRV measure).
+%   - plot: true/false whether to generate a plot. Defaults to true if no
+%     output arguments were specified.
+%
+%:returns: Table containing the following HRV metrics:
+%
+%       - AVNN: Average NN interval duration.
+%       - SDNN: Standard deviation of NN interval durations.
+%       - RMSSD: Square root of mean summed squares of NN interval differences.
+%       - pNNx: The percentage of NN intervals which differ by at least x (ms)
+%         (default 50) from their preceding interval. The value of x in
+%         milliseconds can be set with the optional parameter 'pnn_thresh_ms'.
+%       - SEM: Standard error of the mean NN interval length.
+%
 
 %% === Input
 % Defaults
