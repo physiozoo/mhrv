@@ -118,6 +118,11 @@ and set the `mhrv.paths.wfdb_path` variable to the desired path.
 For linux users it's recommended to install from source as the binaries provided
 on the PhysioNet website are very outdated.
 
+## Documentation
+
+Documentation is available on
+[readthedocs](https://mhrv.readthedocs.io/en/latest/).
+
 ## Usage
 Exaple of calculating HRV measures for a PhysioNet record (in this case from [`mitdb`](https://www.physionet.org/physiobank/database/mitdb/)):
 ```
