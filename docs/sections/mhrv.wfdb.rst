@@ -7,6 +7,10 @@
 -----------------------------
 .. autofunction:: download_wfdb
 
+:func:`ecgrr`
+-----------------------------
+.. autofunction:: ecgrr
+
 :func:`get_signal_channel`
 -----------------------------
 .. autofunction:: get_signal_channel
@@ -23,6 +27,14 @@
 -----------------------------
 .. autofunction:: isrecord
 
+:func:`qrs_compare`
+-----------------------------
+.. autofunction:: qrs_compare
+
+:func:`qrs_compare_set`
+-----------------------------
+.. autofunction:: qrs_compare_set
+
 :func:`rdann`
 -----------------------------
 .. autofunction:: rdann
@@ -30,6 +42,10 @@
 :func:`rdsamp`
 -----------------------------
 .. autofunction:: rdsamp
+
+:func:`rqrs`
+-----------------------------
+.. autofunction:: rqrs
 
 :func:`wfdb_header`
 -----------------------------
