@@ -7,6 +7,10 @@
 -----------------------------
 .. autofunction:: ansrr
 
+:func:`detrendrr`
+-----------------------------
+.. autofunction:: detrendrr
+
 :func:`dfa`
 -----------------------------
 .. autofunction:: dfa
