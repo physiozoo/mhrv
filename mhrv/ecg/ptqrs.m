@@ -1,4 +1,4 @@
-function qrs_pos = ptqrs(ecg, fs, thr, rp, debug)
+function qrs_pos = jqrs(ecg, fs, thr, rp, debug)
 %Implementation of an energy based qrs detector [1]_. The algorithm is an
 %adaptation of the popular Pan & Tompkins algorithm [2]_. The function assumes
 %the input ecg is already pre-filtered i.e. bandpass filtered and that the
