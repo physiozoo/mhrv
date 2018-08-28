@@ -1,7 +1,7 @@
-function qrs = ptqrs_seg(ecg, fs, thres, rp, ws)
-%This function [1]_ is used to run the ptqrs peak detector using a sliding
+function qrs = jqrs_seg(ecg, fs, thres, rp, ws)
+%This function [1]_ is used to run the jqrs peak detector using a sliding
 %(non-overlapping) window basis. This is usefull in the cases where the signal
-%contains important artefacts which could bias the ptqrs threshold evaluation
+%contains important artefacts which could bias the jqrs threshold evaluation
 %or if the amplitude of the ecg is changing substantially over long recordings
 %because of the position of the electrodes move for example.  In these
 %instances the adaptation of the energy threshold is useful.
@@ -41,7 +41,7 @@ if NbSeg==1
     stop=length(ecg);
 end
 
-qrs_temp=ptqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
+qrs_temp=jqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
 qrs{1} = qrs_temp(:);
 
 start = start+segsizeSamp;
@@ -56,7 +56,7 @@ for ch=2:NbSeg-1
     dTplus  = round(fs);
     dTminus = round(fs);
 
-    qrs_temp=ptqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
+    qrs_temp=jqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
 
     NewQRS = (start-1)-dTminus+qrs_temp;
     NewQRS(NewQRS>stop) = [];
@@ -84,7 +84,7 @@ if NbSeg>1
     stop  = length(ecg);
     dTplus  = 0;
     dTminus = round(fs);
-    qrs_temp=ptqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
+    qrs_temp=jqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
 
     NewQRS = (start-1)-dTminus+qrs_temp;
     NewQRS(NewQRS>stop) = [];
