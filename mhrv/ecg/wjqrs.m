@@ -1,6 +1,6 @@
-function qrs = jqrs_seg(ecg, fs, thres, rp, ws)
+function qrs = wjqrs(ecg, fs, thres, rp, ws)
 %This function [1]_ is used to run the jqrs peak detector using a sliding
-%(non-overlapping) window basis. This is usefull in the cases where the signal
+%(non-overlapping) window. This is usefull in the cases where the signal
 %contains important artefacts which could bias the jqrs threshold evaluation
 %or if the amplitude of the ecg is changing substantially over long recordings
 %because of the position of the electrodes move for example.  In these
