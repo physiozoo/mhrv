@@ -15,13 +15,13 @@
 -----------------------------
 .. autofunction:: ecgsqi
 
-:func:`ptqrs`
+:func:`jqrs`
 -----------------------------
-.. autofunction:: ptqrs
+.. autofunction:: jqrs
 
-:func:`ptqrs_seg`
+:func:`jqrs_seg`
 -----------------------------
-.. autofunction:: ptqrs_seg
+.. autofunction:: jqrs_seg
 
 :func:`qrs_adjust`
 -----------------------------
