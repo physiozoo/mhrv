@@ -19,9 +19,9 @@
 -----------------------------
 .. autofunction:: jqrs
 
-:func:`jqrs_seg`
+:func:`wjqrs`
 -----------------------------
-.. autofunction:: jqrs_seg
+.. autofunction:: wjqrs
 
 :func:`qrs_adjust`
 -----------------------------
