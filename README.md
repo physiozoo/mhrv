@@ -18,6 +18,10 @@ data in the [PhysioNet](https://physionet.org/) [1] WFDB data format.
   in PhysioNet format.
     * `rqrs` - Detection of R-peaks in ECG signals (based on PhysioNet's
       `gqrs`). Configurable for use with both human and animal ECGs.
+    * `jqrs`/`wjqrs` - An ECG peak-detector based on a modified Pan & Tompkins
+      algorithm and a windowed version.
+    * `bpfilt`- Bandpass filtering for removing noise artifacts from ECG
+      signals.
     * `ecgrr` - Construction of RR intervals from ECG data in PhysioNet format.
     * `qrs_compare` - Comparison of QRS detections to reference annotations and
       calculation of quality measures like Sensitivity, PPV.
