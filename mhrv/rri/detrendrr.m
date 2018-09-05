@@ -18,6 +18,22 @@ function rri_detrended = detrendrr( rri, lambda, Fs, varargin )
 %:returns:
 %   - rri_detrended: detrended rri interval (seconds)
 %
+%
+%Example: process an ecg recording sampled at 1000 Hz and
+%specifying a refractory period of 250 ms (a standard value for Human ECG)
+%and with a threshold of 0.5.
+%
+%.. code-block:: matlab
+%
+%   recordName = 'mitdb/105';
+%   [ecg,fs,~] = rdsamp(recordName,1);
+%   bpfecg = bpfilt(ecg,fs,5,45,[],0); % prefilter in range [5-45] Hz
+%   anns_jqrs = wjqrs(bpfecg,fs,0.3,0.250,10); % jqrs running on each segment of 10 sec length
+%   z = diff(anns_jqrs)/fs; % get the RR intervals
+%
+%   nni_detrend = detrend_nn(z',10,'Fs',Fs ,'plot',true); % detrend and plot
+%
+%
 %.. [4]
 %   Tarvainen, Mika P., Perttu O. Ranta-Aho, and Pasi A. Karjalainen. "An
 %   advanced detrending method with application to HRV analysis." IEEE
