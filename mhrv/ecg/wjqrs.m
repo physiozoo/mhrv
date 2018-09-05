@@ -16,6 +16,18 @@ function qrs = wjqrs(ecg, fs, thres, rp, ws)
 %
 %   - qrs: qrs location in nb samples (ms)
 %
+%Example: perform peak detection on an ecg recording from the mitdb (physionet.org), 
+%A refractory period of 250 ms (a standard value for Human ECG)
+%and a threshold of 0.3 are used.
+%
+%.. code-block:: matlab
+%
+%   recordName = 'mitdb/105';
+%   [ecg,fs,tm]=rdsamp(recordName,1);
+%
+%   bpfecg = bpfilt(ecg,fs,4,45,[],0); % prefilter in range [4-45] Hz
+%
+%   anns_jqrs = wjqrs(bpfecg,fs,0.3,0.250,10); % jqrs running on each segment of 10 sec length
 
 % TODO: manage sign change.
 
