@@ -19,6 +19,14 @@ function bpfecg = bpfilt(ecg,fs,lcf,hcf,nt,debug)
 %
 %   - bpfecg: band pass filtered ecg signal
 %
+%Example: preprocess an ecg recording from the mitdb (physionet.com) by applying a bandpass filter (0.5-100 Hz)
+%
+%.. code-block:: matlab
+%
+%   recordName = 'mitdb/105';
+%   [ecg,fs,~]=rdsamp(recordName,1);
+%
+%   bpfecg = bpfilt(ecg,fs,0.5,100,[],1); % prefilter in range [0.5-100] Hz and plot
 
 % == check NaN
 ecg(isnan(ecg))=-32768;
