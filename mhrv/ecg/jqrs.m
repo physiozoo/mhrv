@@ -16,13 +16,19 @@ function qrs_pos = jqrs(ecg, fs, thr, rp, debug)
 %   - qrs_pos: position of the qrs (sample)
 %
 %
-%Example: process an ecg recording sampled at 1000 Hz and
-%specifying a refractory period of 250 ms (a standard value for Human ECG)
-%and with a threshold of 0.5.
+%Example: process an ecg recording from the mitdb (physionet.org). A bandpass filter is used to 
+%preprocess the ECG in the range [4 - 45]Hz. Then the peak detector is ran with a refractory period of 250 ms 
+%(a standard value for Human ECG analysis) is specified.
+%
 %
 %.. code-block:: matlab
 %
-%   qrs_pos = ptqrs(bpecg,1000,0.5,0.250,0);
+%   recordName = 'mitdb/105';
+%   [ecg,fs,~] = rdsamp(recordName,1);
+%
+%   bpfecg = bpfilt(ecg,fs,4,45,[],0); % prefilter in range [4-45] Hz
+%
+%   qrs_pos = jqrs(bpfecg,fs,0.4,0.250,1); % peak detection and plot
 %
 %
 %.. [1] Behar, Joachim, Alistair Johnson, Gari D. Clifford, and Julien Oster.
