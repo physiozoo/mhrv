@@ -30,12 +30,21 @@ function [ sqi, tsqi ] = ecgsqi( ann1, ann2, ecg, fs, varargin)
 %   - sqi: signal quality time series (nu, in range 0-1)
 %   - tsqi: time vector for the sqi vector (sec)
 %
-%Example:
+%Example: an ecg sample from the mitdb (physionet.org) is downloaded, preprocessed and 
+%two peak detectors are ran (wjqrs and gqrs). The two sets of R-peak annotations are used to compare 
+%the signal quality using the ecgsqi function.
 %
 %.. code-block:: matlab
 %
-%   [ sqi, tsqi ] = ecgsqi( ann_jqrs, ann_gqrs, ecg, fs, 'plot', true, 'mw', 1, 'sw', 5, 'rw', 1, 'agw', 0.050);
+%   recordName = 'mitdb/105';
+%   [ecg,fs,tm]=rdsamp(recordName,1);
+%   bpfecg = bpfilt(ecg,fs,5,45,[],0); % prefilter in range [5 - 45] Hz
+%   anns_jqrs = wjqrs(bpfecg,fs,0.3,0.250,10); % wjqrs peak detector
+%   gqrs(recordName); % gqrs peak detector
+%   anns_gqrs = rdann(recordName,'qrs');
 %
+%   [ sqi, tsqi ] = ecgsqi( anns_jqrs', anns_gqrs, ecg, fs, 'plot', true, 'mw', 1, 'sw', 5, 'rw', 1, 'agw', 0.050);
+
 
 % Define input
 p = inputParser;
