@@ -7,6 +7,10 @@
 -----------------------------
 .. autofunction:: download_wfdb
 
+:func:`download_wfdb_records`
+-----------------------------
+.. autofunction:: download_wfdb_records
+
 :func:`ecgrr`
 -----------------------------
 .. autofunction:: ecgrr
