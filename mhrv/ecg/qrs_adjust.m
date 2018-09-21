@@ -24,8 +24,13 @@ function cqrs = qrs_adjust(ecg,qrs,fs,inputsign,tol,debug)
 %
 %.. code-block:: matlab
 %
-%   qrs_pos = adjust_qrs_location(bpecg,qrs_pos,1000,-1,0.050,0);
+%   download_wfdb_records('mitdb', '105', '.');
+%   [~,ecg,Fs]=rdsamp('mitdb/105',1);
+%   bpfecg = bpfilt(ecg,Fs,4,45,[],0); % prefilter in range [4-45] Hz
+%   anns_jqrs = wjqrs(bpfecg,Fs,0.3,0.250,10); % jqrs running on each segment of 10 sec length
 %
+%   cqrs = qrs_adjust(ecg,anns_jqrs,Fs,-1,0.050,1);
+
 
 % == general
 cqrs = zeros(length(qrs),1); % corrected qrs vector
