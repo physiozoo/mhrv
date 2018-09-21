@@ -21,6 +21,23 @@ function [ F1, IndMatch, meanDist ] = bsqi( refqrs, testqrs, agw, fs)
 %   - IndMatch: indices of matching peaks (nu)
 %   - meanDist: mean distance between matching refqrs and testqrs peaks (sec)
 %
+%
+%.. code-block:: matlab
+%
+%   download_wfdb_records('mitdb', '105', '.');
+%   [tm,ecg,Fs]=rdsamp('mitdb/105',1,'from',450000,'to',480000);
+%   bpfecg = bpfilt(ecg,Fs,5,45,[],0); % prefilter in range [5 - 45] Hz
+%   anns_jqrs = wjqrs(bpfecg,Fs,0.3,0.250,10); % wjqrs peak detector
+%   anns_gqrs = gqrs('mitdb/105','from',450000,'to',480000); % gqrs peak detector
+%   anns_gqrs = double(anns_gqrs);
+%
+%   [F1,~] = bsqi( anns_jqrs', anns_gqrs,0.050,Fs);
+%   plot(tm,ecg);
+%   hold on; plot(tm(anns_jqrs),ecg(anns_jqrs),'+r');
+%   hold on; plot(tm(anns_gqrs),ecg(anns_gqrs),'+k');
+%   legend(['ecg with quality ' num2str(F1)],'wjqrs','gqrs');
+%
+%
 %.. [3] Behar, J., Oster, J., Li, Q., & Clifford, G. D. (2013). ECG signal
 %   quality during arrhythmia and its application to false alarm reduction.  IEEE
 %   transactions on biomedical engineering, 60(6), 1660-1666.
@@ -28,7 +45,7 @@ function [ F1, IndMatch, meanDist ] = bsqi( refqrs, testqrs, agw, fs)
 %.. [4] Johnson, Alistair EW, Joachim Behar, Fernando Andreotti,
 %   Gari D. Clifford, and Julien Oster.  "Multimodal heart beat detection using
 %   signal quality indices." Physiological measurement 36, no. 8 (2015): 1665.
-%
+
 
 %managing inputs
 if nargin<3; agw=0.05; end;
