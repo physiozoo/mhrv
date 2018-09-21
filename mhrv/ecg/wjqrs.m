@@ -22,12 +22,13 @@ function qrs = wjqrs(ecg, fs, thres, rp, ws)
 %
 %.. code-block:: matlab
 %
-%   recordName = 'mitdb/105';
-%   [ecg,fs,tm]=rdsamp(recordName,1);
+%   download_wfdb_records('mitdb', '105', '.');
+%   [~,ecg,Fs]=rdsamp('mitdb/105',1);
+%   bpfecg = bpfilt(ecg,Fs,4,45,[],0); % prefilter in range [4-45] Hz
 %
-%   bpfecg = bpfilt(ecg,fs,4,45,[],0); % prefilter in range [4-45] Hz
-%
-%   anns_jqrs = wjqrs(bpfecg,fs,0.3,0.250,10); % jqrs running on each segment of 10 sec length
+%   anns_jqrs = wjqrs(bpfecg,Fs,0.3,0.250,10); % jqrs running on each segment of 10 sec length
+
+
 
 % TODO: manage sign change.
 
