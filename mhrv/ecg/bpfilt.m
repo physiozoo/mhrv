@@ -23,10 +23,10 @@ function bpfecg = bpfilt(ecg,fs,lcf,hcf,nt,debug)
 %
 %.. code-block:: matlab
 %
-%   recordName = 'mitdb/105';
-%   [ecg,fs,~]=rdsamp(recordName,1);
+%   download_wfdb_records('mitdb', '105', '.');
+%   [~,ecg,Fs]=rdsamp('mitdb/105',1);
 %
-%   bpfecg = bpfilt(ecg,fs,0.5,100,[],1); % prefilter in range [0.5-100] Hz and plot
+%   bpfecg = bpfilt(ecg,Fs,0.5,100,[],1);
 
 % == check NaN
 ecg(isnan(ecg))=-32768;
