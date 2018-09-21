@@ -23,12 +23,12 @@ function qrs_pos = jqrs(ecg, fs, thr, rp, debug)
 %
 %.. code-block:: matlab
 %
-%   recordName = 'mitdb/105';
-%   [ecg,fs,~] = rdsamp(recordName,1);
+%   download_wfdb_records('mitdb', '105', '.');
+%   [~,ecg,Fs]=rdsamp('mitdb/105',1);
 %
-%   bpfecg = bpfilt(ecg,fs,4,45,[],0); % prefilter in range [4-45] Hz
+%   bpfecg = bpfilt(ecg,Fs,4,45,[],0); % prefilter in range [4-45] Hz
 %
-%   qrs_pos = jqrs(bpfecg,fs,0.4,0.250,1); % peak detection and plot
+%   qrs_pos = jqrs(bpfecg,Fs,0.4,0.250,1); % peak detection and plot
 %
 %
 %.. [1] Behar, Joachim, Alistair Johnson, Gari D. Clifford, and Julien Oster.
