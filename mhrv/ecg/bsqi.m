@@ -22,6 +22,8 @@ function [ F1, IndMatch, meanDist ] = bsqi( refqrs, testqrs, agw, fs)
 %   - meanDist: mean distance between matching refqrs and testqrs peaks (sec)
 %
 %
+%Example: Comparing ``gqrs`` to ``wjqrs`` on a record from ``mitdb``.
+%
 %.. code-block:: matlab
 %
 %   download_wfdb_records('mitdb', '105', '.');
