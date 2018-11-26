@@ -21,6 +21,8 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %     ``win_func`` parameter.  Data will be resampled for all methods except
 %     ``lomb``.  Default value is ``{'lomb', 'ar', 'welch'}``.
 %
+%   - time_intervals: specify the time interval vector tnn. If it is not
+%     specified then it will be computed from the nni time series.
 %   - power_methods: The method(s) to use for calculating the power in each
 %     band. A cell array where each element can be any one of the methods given
 %     in 'methods'. This also determines the spectrum that will be returned
@@ -110,6 +112,7 @@ DEFAULT_WIN_FUNC = mhrv_get_default('hrv_freq.win_func', 'value');
 % Define input
 p = inputParser;
 p.addRequired('nni', @(x) isnumeric(x) && ~isscalar(x));
+p.addParameter('time_intervals', [], @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('methods', DEFAULT_METHODS, @(x) iscellstr(x) && ~isempty(x));
 p.addParameter('power_methods', DEFAULT_POWER_METHODS, @iscellstr);
 p.addParameter('norm_method', DEFAULT_NORM_METHOD, @ischar);
@@ -130,6 +133,7 @@ p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(nni, varargin{:});
+tnn = p.Results.time_intervals;
 methods = p.Results.methods;
 power_methods = p.Results.power_methods;
 norm_method = p.Results.norm_method;
@@ -185,7 +189,9 @@ end
 
 % Calculate zero-based interval time axis
 nni = nni(:);
-tnn = [0; cumsum(nni(1:end-1))];
+if isempty(tnn)
+    tnn = [0; cumsum(nni(1:end-1))];
+end
 
 % Zero mean to remove DC component
 nni = nni - mean(nni);
