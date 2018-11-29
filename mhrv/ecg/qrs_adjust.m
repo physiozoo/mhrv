@@ -13,7 +13,7 @@ function cqrs = qrs_adjust(ecg,qrs,fs,inputsign,tol,debug)
 %:param fs: sampling frequency (Hz)
 %:param inputsign: sign of the peak to look for (-1 for negative and 1 for
 %   positive)
-%:param tol: tolerance window (ms)
+%:param tol: tolerance window (sec)
 %:param debug: (boolean)
 %
 %:returns:
@@ -35,7 +35,7 @@ function cqrs = qrs_adjust(ecg,qrs,fs,inputsign,tol,debug)
 % == general
 cqrs = zeros(length(qrs),1); % corrected qrs vector
 NB_qrs = length(qrs);
-WINDOW  = ceil(fs*tol); % allow a maximum of tol in ms shift
+WINDOW  = ceil(fs*tol); % allow a maximum of tol in sec shift
 NB_SAMPLES = length(ecg);
 
 SIGN = inputsign;

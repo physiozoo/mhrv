@@ -66,6 +66,8 @@ T = length(rri);
 I = speye(T);
 D2 = spdiags(ones(T-2,1)*[1 -2 1],[0:2],T-2,T);
 rri_detrended = (I-inv(I+lambda^2*D2'*D2))*rri;
+rri_detrended = rri_detrended/1000; % back to sec
+rri = rri/1000; % back to sec
 
 % Plot
 plot_data.name = 'Detrending rri';
