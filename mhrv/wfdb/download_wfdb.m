@@ -36,10 +36,10 @@ end
 if (ispc)
     if strcmpi(computer('arch'), 'win32')
         fprintf('[%.3f] >> download_wfdb: Detected Win32.\n', cputime-t0);
-        url = 'http://physionet.org/physiotools/binaries/windows/wfdb-10.5.24-mingw32.zip';
+        url = 'http://physionet.org/physiotools/binaries/windows/old/wfdb-10.5.24-mingw32.zip';
     else
         fprintf('[%.3f] >> download_wfdb: Detected Win64.\n', cputime-t0);
-        url = 'http://physionet.org/physiotools/binaries/windows/wfdb-10.5.24-mingw64.zip';
+        url = 'http://physionet.org/physiotools/binaries/windows/old/wfdb-10.5.24-mingw64.zip';
     end 
 end
 
