@@ -163,7 +163,7 @@ try
 
     [res, out, err] = jsystem(command, [], rec_path);
     if(res ~= 0)
-        error('rdann error: %s\n%s', err, out);
+        error('wrann error: %s\n%s', err, out);
     end
     
     files_written{end+1} = [rec_name '.' ann_ext];
