@@ -33,7 +33,7 @@ p.addRequired('rri', @(x) isnumeric(x) && ~isscalar(x));
 p.addRequired('fc', @(x) isnumeric(x) && ~isempty(x) && length(x) <= 2);
 p.addParameter('resamp_freq', DEFAULT_RESAMPLING_FREQ, @isscalar);
 p.addParameter('forder', DEFAULT_FILTER_ORDER, @isscalar);
-p.addParameter('ftype', DEFAULT_FILTER_TYPE, @(x) any(cellfun(@(y) strcmp(y,x), {'low', 'high'})));
+p.addParameter('ftype', DEFAULT_FILTER_TYPE, @(x) any(cellfun(@(y) strcmp(y,x), {'low', 'high', 'exp'})));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -55,30 +55,35 @@ trr = [0; cumsum(rri(1:end-1))];
 trr_resamp = (trr(1):(1/resamp_freq):trr(end))';
 rri_resamp = interp1(trr, rri, trr_resamp, 'spline');
 
-%% Create filter
 
-% Normalized cutoff frequency
-nyq_freq = resamp_freq/2;
-wc = fc ./ nyq_freq;
+%% Create and apply filter
+if strcmpi(ftype, 'low') || strcmpi(ftype, 'high')
+    % Normalized cutoff frequency
+    nyq_freq = resamp_freq/2;
+    wc = fc ./ nyq_freq;
 
-% Filter coefficients
-b = fir1(forder, wc, ftype);
+    % Filter coefficients
+    b = fir1(forder, wc, ftype);
+
+    rri_filt = filter(b, 1, rri_resamp);
+
+    if strcmpi(ftype, 'high')
+        % Add back DC in case of HPF, because we want physiological RR values
+        rri_filt = rri_filt + mean(rri);
+    end
+else
+    tfmax = 1/fc;
+    alpha = -log(1e-3)/tfmax;
+    b = exp(-alpha * [0:(1/resamp_freq):tfmax]);
+    b = b/sum(b);
+    rri_filt = filter(b, 1, rri_resamp);
+end
+
+%% Remove filter delay
 
 % Filter delay (delay in samples is half the filter order)
 delay_sec = ((length(b)-1)/2) / resamp_freq;
-
-%% Apply filter
-
-rri_filt = filter(b, 1, rri_resamp);
-
-if strcmp(ftype, 'high')
-    % Add back DC in case of HPF, because we want physiological RR values
-    rri_filt = rri_filt + mean(rri);
-end
-
-% Remove filter delay
 trr_filt = trr_resamp - delay_sec;
-
 post_delay_idx = trr_filt > delay_sec;
 rri_filt = rri_filt(post_delay_idx);
 trr_filt = trr_filt(post_delay_idx);
@@ -99,6 +104,9 @@ if should_plot
     grid on;
     xlabel('time (sec)'); ylabel('RR intervals');
     legend('Original', 'Filtered');
+    
+    figure;
+    freqz(b,1, 1024, resamp_freq);
 end
 end
 
