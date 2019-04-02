@@ -75,7 +75,7 @@ end
 %% Update the figure and axes
 
 % Get the figure's current on-screen position in cm
-set(fig_handle, 'Units', 'centimeters');
+set(fig_handle, 'PaperUnits', 'centimeters', 'Units', 'centimeters');
 position_cm = get(fig_handle, 'Position');
 x0 = position_cm(1); y0 = position_cm(2);
 
