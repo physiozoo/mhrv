@@ -26,6 +26,7 @@ function [ rri_out ] = ansrr( rri, freqs, varargin )
 DEFAULT_RRI_VARIANCE = [];
 DEFAULT_SNR = 2;
 DEFAULT_MIXTURE_RATIO = 0.5;
+DEFAULT_FS = [];
 
 % Define input
 p = inputParser;
@@ -116,6 +117,19 @@ if should_plot
     ax = subplot(3,1,3);
     [~,~,mse_pd] = mse(y);
     plot_mse(ax, mse_pd);
+    
+    figure;
+    plot(f_axis, pxx_y, 'DisplayName', 'ANS Model', 'LineWidth', 2); hold on;
+    % f2 = figure; plot(f_axis, pxx_y, 'LineWidth', 1.5, 'DisplayName', 'Simulated ANS'); hold on;
+    for f = freqs
+        plot(f, pxx_y(find(abs(f_axis-f)<df/2)), 'DisplayName', sprintf('%.2fHz', f),...
+            'LineStyle', 'none', 'Marker', 'V', 'MarkerSize', 8);
+    end
+    plot(f_axis, ones(size(f_axis)).*(sigma_n^2), 'DisplayName', '\sigma^{2}_{n}', 'LineWidth', 1.5, 'LineStyle','--', 'Color', 'black');
+    xlabel('Frequency (Hz)'); ylabel('PSD');
+    grid on;
+    set(gca, 'XScale','log','YScale','log', 'XLim', [1e-3,1e0], 'YLim', [1e-6,1e-1]);
+    legend('show', 'Location', 'northwest');
 end
 
 end
