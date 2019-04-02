@@ -38,7 +38,7 @@ end
 % Plot MSE of the signal
 h1 = plot(ax, plot_data.scale_axis, plot_data.mse_result, linespec, 'MarkerSize', msz);
 grid(ax, 'on'); hold(ax, 'on');
-xlabel(ax, 'Scale factor'); ylabel(ax, 'Sample Entropy');
+xlabel(ax, 'Scale'); ylabel(ax, 'Sample Entropy');
 set(ax, 'XTick', plot_data.scale_axis(1):2:plot_data.scale_axis(end));
 ylim(ax, [0, max(2, max(plot_data.mse_result))]); % SE values are usually between 0 and 2
 legend_labels{end+1} = legend_name;

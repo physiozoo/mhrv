@@ -48,7 +48,7 @@ if clear
     cla(ax);
 end
 
-colors = lines(length(SUPPORTED_METHODS));
+colors = lines;%;(length(SUPPORTED_METHODS));
 
 % Check for pre-existing plots frequency plots on this axes
 legend_handles = findall(ax,'Tag','freq');
@@ -150,25 +150,18 @@ legend(ax, legend_handles, legend_entries);
 
 %% Labels
 % X
-if strcmpi(xscale, 'linear')
-    xlabel(ax, 'Frequency (Hz)');
-else
-    xlabel(ax, 'Log Frequency (Hz)');
-end
+xlabel(ax, 'Frequency (Hz)');
 
 % Y
 if normalize
-    ylabel_prefix = 'Normalized';
+    ylabel_prefix = 'Normalized ';
     ylabel_units = 'n.u.';
 else
     ylabel_prefix = '';
     ylabel_units = 'ms^2/Hz';
 end
-if strcmpi(yscale, 'log')
-    ylabel_prefix = ['Log ' ylabel_prefix];
-end
 
-ylabel(ax, sprintf('%s Power Spectral Density [%s]', ylabel_prefix, ylabel_units));
+ylabel(ax, sprintf('%sPSD (%s)', ylabel_prefix, ylabel_units));
 
 
 %% Tag

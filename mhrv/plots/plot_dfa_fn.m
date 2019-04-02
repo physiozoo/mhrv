@@ -60,7 +60,7 @@ else
     alpha2_legend = sprintf('\alpha_2=%.3f', fit_alpha2(1));
 end
 
-xlabel(ax, 'log(n)'); ylabel(ax, 'log(F(n))');
+xlabel(ax, 'log_2(n)'); ylabel(ax, 'F(n)');
 set(ax, 'XTick', 2.^(1:15)); % Set ticks at powers of two
 
 legend(ax, 'DFA', alpha1_legend, alpha2_legend, 'Location', 'northwest');
