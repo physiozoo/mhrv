@@ -65,7 +65,6 @@ end
 
 % Find source and dependencies directories
 lib_dir_ = [basepath_ filesep 'lib'];
-src_dir_ = [basepath_ filesep 'mhrv'];
 cfg_dir_ = [basepath_ filesep 'cfg'];
 bin_dir_ = [basepath_ filesep 'bin'];
 
@@ -73,11 +72,10 @@ bin_dir_ = [basepath_ filesep 'bin'];
 addpath(basepath_);
 addpath(genpath(lib_dir_));
 addpath(genpath(cfg_dir_));
-addpath(genpath(src_dir_));
 
 %% Load default toolbox parameters
-mhrv_load_defaults --clear;
-wfdb_path_ = mhrv_get_default('mhrv.paths.wfdb_path', 'value');
+mhrv.defaults.mhrv_load_defaults('--clear');
+wfdb_path_ = mhrv.defaults.mhrv_get_default('mhrv.paths.wfdb_path', 'value');
 
 %% WFDB paths
 % Check if user specified a custom wfdb path. If not, use mhrv root folder.
@@ -90,7 +88,7 @@ end
 % Make sure WFDB tools are installed. If not, download them now.
 should_download = false;
 try
-    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', wfdb_search_path_);
+    wfdb_config_bin_ = mhrv.wfdb.get_wfdb_tool_path('wfdb-config', wfdb_search_path_);
 catch
     warning('WFDB binaries not detected, attempting to download...');
     should_download = true;
@@ -98,17 +96,17 @@ end
 
 if should_download
     try
-        download_wfdb(bin_dir_);
+        mhrv.wfdb.download_wfdb(bin_dir_);
     catch e
         error('Failed to download: %s', e.message);
     end
-    wfdb_config_bin_ = get_wfdb_tool_path('wfdb-config', wfdb_search_path_);
+    wfdb_config_bin_ = mhrv.wfdb.get_wfdb_tool_path('wfdb-config', wfdb_search_path_);
 end
 
 % Check WFDB tools version
 supported_version_ = '10.5.24';
 [~, wfdb_version_] = jsystem([wfdb_config_bin_ ' --version']);
-ver_cmp_ = vercmp(wfdb_version_, supported_version_);
+ver_cmp_ = mhrv.util.vercmp(wfdb_version_, supported_version_);
 if ver_cmp_ < 0
     warning('Detected WFDB version (%s) is older than the tested version, please use %s or newer', wfdb_version_, supported_version_);
 elseif ver_cmp_ > 0
