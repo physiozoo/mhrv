@@ -1,5 +1,8 @@
 # mhrv
 
+[![Documentation
+Status](https://readthedocs.org/projects/mhrv/badge/?version=latest)](https://mhrv.readthedocs.io/en/latest/?badge=latest)
+
 `mhrv` is a matlab toolbox for calculating Heart-Rate Variability (HRV) metrics
 from both ECG signals and RR-interval time series. The toolbox works with ECG
 data in the [PhysioNet](https://physionet.org/) [1] WFDB data format.
