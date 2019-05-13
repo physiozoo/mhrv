@@ -12,6 +12,8 @@ function bin_path = download_wfdb(dest_base_dir)
 %   - bin_path: Path the the directory containing the WFDB binaries that were
 %     downloaded.
 
+import mhrv.wfdb.*;
+
 %% Check input
 if nargin == 0
     dest_base_dir = 'bin';

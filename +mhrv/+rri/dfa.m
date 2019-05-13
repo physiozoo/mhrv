@@ -30,6 +30,8 @@ function [ n, fn, alpha1, alpha2, plot_data ] = dfa( t, sig, varargin )
 %   Cambridge University Press.
 %
 
+import mhrv.defaults.*;
+
 %% Input
 DEFAULT_NMIN = mhrv_get_default('dfa.n_min', 'value');
 DEFAULT_NMAX = mhrv_get_default('dfa.n_max', 'value');

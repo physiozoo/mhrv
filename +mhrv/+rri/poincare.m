@@ -18,6 +18,8 @@ function [ sd1, sd2, plot_data ] = poincare( rri, varargin )
 %     the line of identity.
 %   - sd2: Standard deviation of RR intervals along the line of identity.
 
+import mhrv.defaults.*;
+
 %% === Input
 
 % Defaults

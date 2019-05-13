@@ -25,6 +25,8 @@ function [ ann, ann_types ] = rdann( rec_name, ann_ext, varargin )
 %     documentation).
 %
 
+import mhrv.wfdb.*;
+
 %% === Input
 
 % Defaults

@@ -14,6 +14,9 @@ function [ sqis, stats ] = qrs_compare_set( set_dir, ann_ext, varargin )
 %   - stats: A table containing the Mean and Gross values for the quality indices over all files.
 %
 
+import mhrv.wfdb.*;
+import mhrv.defaults.*;
+
 %% Input
 
 % Define input

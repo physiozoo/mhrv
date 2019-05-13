@@ -34,6 +34,9 @@ function [ sqi ] = qrs_compare( rec_name, varargin )
 %   detection using signal quality indices.  Physiological Measurement, 36, 1–15.
 %
 
+import mhrv.wfdb.*;
+import mhrv.defaults.*;
+
 %% Input
 
 SUPPORTED_ANN_FORMATS = {'wfdb', 'mat'};

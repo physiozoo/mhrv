@@ -9,7 +9,7 @@ p = inputParser;
 p.addRequired('ax', @(x) isgraphics(x, 'axes'));
 p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
-p.addParameter('tag', default_axes_tag(mfilename), @ischar);
+p.addParameter('tag', mhrv.plots.default_axes_tag(mfilename), @ischar);
 p.addParameter('msz', 4, @isscalar);
 p.addParameter('lw_ellipse', 1.5, @isscalar);
 p.addParameter('lw_sdline', 3, @isscalar);

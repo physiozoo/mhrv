@@ -20,6 +20,8 @@ function [ t, sig, Fs ] = rdsamp( rec_name, varargin )
 %   - sig: A matrix where is column is a different channel from the signal.
 %   - Fs: The sampling frequency of the data.
 
+import mhrv.wfdb.*;
+
 %% Input
 
 % Defaults

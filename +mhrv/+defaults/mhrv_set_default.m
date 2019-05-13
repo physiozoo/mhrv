@@ -11,6 +11,8 @@ function [] = mhrv_set_default( varargin )
 %use the '.' character to separate heirarchy levels (e.g. 'rqrs.gqconf').
 %
 
+import mhrv.defaults.*;
+
 %% Validate input
 
 % Make sure input length makes sense

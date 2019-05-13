@@ -31,6 +31,9 @@ function [ qrs, outliers ] = gqrs( rec_name, varargin )
 %   If no output variables are given to the function call, the detected ECG signal and QRS complexes
 %   will be plotted in a new figure.
 
+import mhrv.defaults.*;
+import mhrv.wfdb.*;
+
 %% === Input
 
 % Defaults

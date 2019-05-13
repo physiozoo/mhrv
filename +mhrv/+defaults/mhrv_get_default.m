@@ -21,6 +21,8 @@ function [ param_default ] = mhrv_get_default( param_id, meta )
 %.. note::
 %   If a value for 'meta' was specified, only the corresponding field will be returned.
 
+import mhrv.defaults.*;
+
 % If no defaults were loaded, it's an error
 global mhrv_default_values;
 if isempty(mhrv_default_values)    
@@ -43,7 +45,7 @@ end
 % Check the data in the field
 if ~isstruct(field_data)
     % If the field is not a structure, we'll wrap it in a metadata object
-    param_default = mhrv_parameter(field_data);
+    param_default = mhrv.defaults.mhrv_parameter(field_data);
 elseif isfield(field_data, 'value')
     % If the field is a parameter struct return it
     param_default = field_data;

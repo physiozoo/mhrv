@@ -10,6 +10,8 @@ function [ defaults_map ] = mhrv_get_all_defaults(params_struct)
 %value of the parameter and metadata fields.
 %
 
+import mhrv.defaults.*;
+
 global mhrv_default_values;
 if nargin == 0
     % Use global default parameters structure
@@ -24,12 +26,11 @@ end
 
 %% Helper function to recursively traverse the defaults structure
 function output_map = recurse_defaults_struct(curr_path, curr_element, output_map)
-    
     % If the current element is not a struct, wrap it in a default parameter object before adding to
     % the map.
     if ~isstruct(curr_element)
         if ~isempty(curr_path)
-            output_map(curr_path) = mhrv_parameter(curr_element);
+            output_map(curr_path) = mhrv.defaults.mhrv_parameter(curr_element);
         end
         return;
     end

@@ -11,7 +11,7 @@ p = inputParser;
 p.addRequired('ax', @(x) isgraphics(x, 'axes'));
 p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
-p.addParameter('tag', default_axes_tag(mfilename), @ischar);
+p.addParameter('tag', mhrv.plots.default_axes_tag(mfilename), @ischar);
 p.addParameter('xscale', 'linear', @(x)strcmpi(x,'log')||strcmpi(x,'linear'));
 p.addParameter('yscale', 'linear', @(x)strcmpi(x,'log')||strcmpi(x,'linear'));
 p.addParameter('ylim', 'auto');

@@ -29,6 +29,9 @@ function [ qrs, tm, sig, Fs ] = rqrs( rec_name, varargin )
 %   - sig: The input signal values.
 %   - Fs: The input signals sampling frequency.
 
+import mhrv.defaults.*;
+import mhrv.wfdb.*;
+
 %% === Input
 
 % Defaults

@@ -24,6 +24,8 @@ function [] = mhrv_load_defaults( varargin )
 %Otherwise, it merges the loaded values with the previously existing parameter defaults.
 %
 
+import mhrv.defaults.*;
+
 %% Validate input
 should_clear = false;
 

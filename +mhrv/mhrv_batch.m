@@ -65,8 +65,8 @@ DEFAULT_REC_FILENAMES = {'*'};
 DEFAULT_MHRV_PARAMS = 'defaults';
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_MIN_NN = 0;
-DEFAULT_RR_DIST_MAX = mhrv_get_default('filtrr.range.rr_max', 'value');
-DEFAULT_RR_DIST_MIN = mhrv_get_default('filtrr.range.rr_min', 'value');
+DEFAULT_RR_DIST_MAX = mhrv.defaults.mhrv_get_default('filtrr.range.rr_max', 'value');
+DEFAULT_RR_DIST_MIN = mhrv.defaults.mhrv_get_default('filtrr.range.rr_min', 'value');
 DEFAULT_OUTPUT_FOLDER = '.';
 DEFAULT_OUTPUT_FILENAME = [];
 
@@ -129,7 +129,6 @@ else
     rec_ann_exts = ann_ext;
 end
 
-
 if ~exist(output_dir, 'dir')
     mkdir(output_dir);
 end
@@ -176,7 +175,7 @@ for rec_type_idx = 1:n_rec_types
         % Analyze the record
         fprintf('-> Analyzing record %s\n', rec_name);
         try
-            [curr_hrv, ~, curr_plot_datas] = mhrv(rec_name, 'window_minutes', window_minutes,...
+            [curr_hrv, ~, curr_plot_datas] = mhrv.mhrv(rec_name, 'window_minutes', window_minutes,...
                 'ann_ext', rec_type_ann_ext, 'params', mhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
         catch e
             warning('Error analyzing record %s: %s\nSkipping...', rec_name, e.message);
@@ -221,7 +220,7 @@ for rec_type_idx = 1:n_rec_types
 
     % Save rec_type tables
     hrv_tables{rec_type_idx} = rec_type_table;
-    stats_tables{rec_type_idx} = table_stats(rec_type_table);
+    stats_tables{rec_type_idx} = mhrv.util.table_stats(rec_type_table);
     plot_datas{rec_type_idx} = rec_type_plot_datas;
 end
 
@@ -302,7 +301,7 @@ for rec_type_idx = 1:n_rec_types
                 'WriteVariableNames', true, 'WriteRowNames', true, 'Sheet', sheetname);
 
     % Create a summary table (Stats as columns, HRV metrics as rows)
-    summary_table = table_transpose(curr_stats);
+    summary_table = mhrv.util.table_transpose(curr_stats);
 
     % Column number in spreadsheet
     col_num = (rec_type_idx-1) * (size(summary_table,2) + 1) + 1;

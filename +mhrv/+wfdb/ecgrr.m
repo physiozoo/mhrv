@@ -25,6 +25,9 @@ function [ rri, trr, plot_data ] = ecgrr( rec_name, varargin )
 %   - trr: RR-interval times in seconds.
 %
 
+import mhrv.wfdb.*
+import mhrv.defaults.*
+
 %% Input
 % Defaults
 DEFAULT_ANN_EXT = '';

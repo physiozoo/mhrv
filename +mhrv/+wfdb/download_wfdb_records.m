@@ -60,6 +60,8 @@ function [dl_recs, dl_ann, dl_files] = download_wfdb_records(...
 %
 %
 
+import mhrv.wfdb.*;
+
 %% Input
 
 % Defaults

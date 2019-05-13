@@ -21,6 +21,8 @@ function [ hrv_td, plot_data ] = hrv_time( nni, varargin )
 %       - SEM: Standard error of the mean NN interval length.
 %
 
+import mhrv.defaults.*;
+
 %% === Input
 % Defaults
 DEFAULT_PNN_THRESH_MS = mhrv_get_default('hrv_time.pnn_thresh_ms', 'value');

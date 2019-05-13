@@ -21,6 +21,8 @@ function [ header_info ] = wfdb_header( rec_name )
 %   If no output arguments are given, prints record and channel info to console.
 %
 
+import mhrv.wfdb.*
+
 % DEFAULTS
 COMMENT_REGEX = '^\s*#\s*(.*)?';
 FORMAT_REGEX = '(\d+)(x\d+)?(:\d+)?(+\d+)?';

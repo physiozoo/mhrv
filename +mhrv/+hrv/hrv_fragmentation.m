@@ -15,6 +15,8 @@ function [ hrv_frag ] = hrv_fragmentation( nni, varargin )
 %   Dynamics. Frontiers in Physiology, 8(May), 1–13.
 %
 
+import mhrv.defaults.*;
+
 %% Input
 
 % Define input

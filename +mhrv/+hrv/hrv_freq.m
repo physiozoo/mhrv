@@ -88,6 +88,8 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %     ``power_methods``.
 %   - f_axis: Frequencies, in Hz, at which pxx was calculated.
 
+import mhrv.defaults.*;
+
 %% Input
 SUPPORTED_METHODS = {'Lomb', 'AR', 'Welch', 'FFT'};
 
@@ -356,22 +358,22 @@ for ii = length(power_methods):-1:1
 
     % Absolute power in each band
     col_total_power = ['TOTAL_POWER' suffix];
-    hrv_fd{:,col_total_power} = freqband_power(pxx, f_axis, total_band) * 1e6;
+    hrv_fd{:,col_total_power} = mhrv.util.freqband_power(pxx, f_axis, total_band) * 1e6;
     hrv_fd.Properties.VariableUnits{col_total_power} = 'ms^2';
     hrv_fd.Properties.VariableDescriptions{col_total_power} = sprintf('Total power (%s)', power_methods{ii});
 
     col_vlf_power = ['VLF_POWER' suffix];
-    hrv_fd{:,col_vlf_power} = freqband_power(pxx, f_axis, vlf_band) * 1e6;
+    hrv_fd{:,col_vlf_power} = mhrv.util.freqband_power(pxx, f_axis, vlf_band) * 1e6;
     hrv_fd.Properties.VariableUnits{col_vlf_power} = 'ms^2';
     hrv_fd.Properties.VariableDescriptions{col_vlf_power} = sprintf('Power in the very low frequency band (%s)', power_methods{ii});
 
     col_lf_power = ['LF_POWER' suffix];
-    hrv_fd{:,col_lf_power}  = freqband_power(pxx, f_axis, lf_band) * 1e6;
+    hrv_fd{:,col_lf_power}  = mhrv.util.freqband_power(pxx, f_axis, lf_band) * 1e6;
     hrv_fd.Properties.VariableUnits{col_lf_power} = 'ms^2';
     hrv_fd.Properties.VariableDescriptions{col_lf_power} = sprintf('Power in the low frequency band (%s)', power_methods{ii});
 
     col_hf_power = ['HF_POWER' suffix];
-    hrv_fd{:,col_hf_power}  = freqband_power(pxx, f_axis, [hf_band(1) f_axis(end)]) * 1e6;
+    hrv_fd{:,col_hf_power}  = mhrv.util.freqband_power(pxx, f_axis, [hf_band(1) f_axis(end)]) * 1e6;
     hrv_fd.Properties.VariableUnits{col_hf_power} = 'ms^2';
     hrv_fd.Properties.VariableDescriptions{col_hf_power} = sprintf('Power in the high frequency band (%s)', power_methods{ii});
 

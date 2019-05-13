@@ -45,7 +45,6 @@ function rri_detrended = detrendrr( rri, lambda, Fs, varargin )
 %DEFAULT_LAMBDA = 10; % FIXME: this parameter needs to be tuned for the different mammals (?)
                      % in any case this will need to be included in the
                      % configuration
-
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;

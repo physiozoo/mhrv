@@ -39,6 +39,8 @@ function [ nni, tnn, plot_data ] = filtrr( rri, trr, varargin )
 %   - tnn: NN-interval times in seconds
 %
 
+import mhrv.defaults.*;
+
 %% Input
 
 % Defaults

@@ -35,6 +35,8 @@ function [ files_written ] = wrann( rec_name, ann_ext, ann_idx, varargin )
 %
 %:returns: A cell array with the paths of files that were created.
 
+import mhrv.wfdb.*;
+
 %% === Input
 
 % Defaults

@@ -27,6 +27,8 @@ function [ mse_result, scale_axis, plot_data ] = mse( sig, varargin )
 %   entropy analysis of biological signals’, Physical Review E - Statistical,
 %   Nonlinear, and Soft Matter Physics, 71(2), pp. 1–18.
 
+import mhrv.defaults.*;
+
 %% Input
 DEFAULT_MSE_MAX_SCALE = mhrv_get_default('mse.mse_max_scale', 'value');
 DEFAULT_SAMPEN_R = mhrv_get_default('mse.sampen_r', 'value');
@@ -72,7 +74,7 @@ for scale = scale_axis
     sig_coarse = mean(sig_windows, 1);
     
     % Calculate sample entropy of the coarse-grained signal
-    sampen = sample_entropy(sig_coarse, sampen_m, sampen_r);
+    sampen = mhrv.rri.sample_entropy(sig_coarse, sampen_m, sampen_r);
 
     % An infinite sample entropy is possible, since
     % SampEn = -ln(A/B) where A is the number of template matches of length

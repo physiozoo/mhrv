@@ -12,7 +12,7 @@ p.addRequired('ax', @(x) isgraphics(x, 'axes'));
 p.addRequired('plot_data', @isstruct);
 p.addParameter('clear', false, @islogical);
 p.addParameter('methods', SUPPORTED_METHODS, @(x) cellfun(@(m) any(cellfun(@(ms) strcmp(m,ms), SUPPORTED_METHODS)), x));
-p.addParameter('tag', default_axes_tag(mfilename), @ischar);
+p.addParameter('tag', mhrv.plots.default_axes_tag(mfilename), @ischar);
 
 p.parse(ax, plot_data, varargin{:});
 clear = p.Results.clear;

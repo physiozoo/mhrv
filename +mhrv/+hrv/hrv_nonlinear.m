@@ -36,6 +36,8 @@ function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %   and Soft Matter Physics, 71(2), pp. 1–18.
 %
 
+import mhrv.defaults.*;
+
 %% Input
 DEFAULT_MSE_MAX_SCALE = mhrv_get_default('mse.mse_max_scale', 'value');
 DEFAULT_MSE_METRICS = mhrv_get_default('mse.mse_metrics', 'value');
@@ -72,7 +74,7 @@ tnn = [0; cumsum(nni(1:end-1))];
 
 %% Poincare plot
 
-[sd1, sd2, poincare_plot_data] = poincare(nni, 'plot', false);
+[sd1, sd2, poincare_plot_data] = mhrv.rri.poincare(nni, 'plot', false);
 hrv_nl.SD1 = sd1 * 1000;
 hrv_nl.Properties.VariableUnits{'SD1'} = 'ms';
 hrv_nl.Properties.VariableDescriptions{'SD1'} = 'NN interval standard deviation along the perpendicular to the line-of-identity';
@@ -84,7 +86,7 @@ hrv_nl.Properties.VariableDescriptions{'SD2'} = 'NN interval standard deviation 
 %% DFA-based Nonlinear metrics (short and long-term scaling exponents, alpha1 & alpha2)
 
 % Calcualte DFA
-[~, ~, alpha1, alpha2, dfa_plot_data] = dfa(tnn, nni);
+[~, ~, alpha1, alpha2, dfa_plot_data] = mhrv.rri.dfa(tnn, nni);
 
 % Save the scaling exponents
 hrv_nl.alpha1 = alpha1;
@@ -98,7 +100,7 @@ hrv_nl.Properties.VariableDescriptions{'alpha2'} = 'DFA high-scale slope';
 %% Multiscale sample entropy
 
 % Calculate the MSE graph
-[ mse_values, scale_axis, mse_plot_data ] = mse(nni, 'mse_max_scale', mse_max_scale, 'sampen_m', sampen_m, 'sampen_r',sampen_r);
+[ mse_values, scale_axis, mse_plot_data ] = mhrv.rri.mse(nni, 'mse_max_scale', mse_max_scale, 'sampen_m', sampen_m, 'sampen_r',sampen_r);
 
 % Save the first MSE value (this is the sample entropy).
 if ~isempty(mse_values)

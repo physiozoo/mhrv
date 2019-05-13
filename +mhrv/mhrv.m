@@ -39,6 +39,14 @@ function [ hrv_metrics, hrv_stats, plot_datas ] = mhrv( rec_name, varargin )
 %   - plot_datas: Cell array containing the plot_data structs for each window.
 %
 
+import mhrv.defaults.*
+import mhrv.ecg.*
+import mhrv.hrv.*
+import mhrv.rri.*
+import mhrv.util.*
+import mhrv.wfdb.*
+import mhrv.plots.*
+
 %% Handle input
 
 % Defaults

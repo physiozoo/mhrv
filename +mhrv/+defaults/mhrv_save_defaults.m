@@ -12,6 +12,8 @@ function [] = mhrv_save_defaults( output_filename )
 %output_filename parameters doesn't specify a ``.yml`` extension, it will be added.
 %
 
+import mhrv.defaults.*;
+
 %% Validate input
 
 % Make sure we have parameters

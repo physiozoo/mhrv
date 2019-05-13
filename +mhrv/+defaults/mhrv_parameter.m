@@ -14,6 +14,8 @@ function [ parameter_object ] = mhrv_parameter( value, description, name, units 
 %   with the mhrv_set_default or mhrv_load_defaults functions.
 %
 
+import mhrv.defaults.*;
+
 %% Input validation
 if nargin < 1
     value = '';
