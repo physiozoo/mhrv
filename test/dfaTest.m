@@ -41,7 +41,7 @@ expected = testCase.TestData.expected_ouput;
 expected_n = expected(:,1);
 expected_fn = expected(:,2);
 
-[actual_n, actual_fn] = dfa(t, sig, 'n_min', testCase.TestData.n_min, 'n_max', testCase.TestData.n_max);
+[actual_n, actual_fn] = mhrv.rri.dfa(t, sig, 'n_min', testCase.TestData.n_min, 'n_max', testCase.TestData.n_max);
 actual_n = log10(actual_n);
 actual_fn = log10(actual_fn);
 
