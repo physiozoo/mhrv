@@ -409,7 +409,7 @@ for ii = length(power_methods):-1:1
     % Calculate power in the extra bands
     for jj = 1:length(extra_bands)
         extra_band = extra_bands{jj};
-        extra_band_power = freqband_power(pxx, f_axis, extra_band) * 1e6;
+        extra_band_power = mhrv.util.freqband_power(pxx, f_axis, extra_band) * 1e6;
 
         column_name = sprintf('EX%d_POWER%s', jj, suffix);
         hrv_fd{:,column_name} = extra_band_power;
