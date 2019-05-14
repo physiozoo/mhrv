@@ -20,6 +20,14 @@ DEFAULT_TITLE = [];
 DEFAULT_NOTITLES = false;
 DEFAULT_SAVE_FIGURE = false;
 
+%% For Paper
+DEFAULT_OUTPUT_FORMAT = 'pdf'; % pdf, epsc, tiff, ...
+DEFAULT_NOTITLES = true;
+DEFAULT_FONT_SIZE = 12; % pt
+DEFAULT_FONT_WEIGHT = 'bold'; % 'bold', 'italic'
+DEFAULT_FONT = 'Times';
+%%
+
 % Define input
 p = inputParser;
 p.addRequired('fig_handle', @ishandle);
