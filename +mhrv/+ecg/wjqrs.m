@@ -54,7 +54,7 @@ if NbSeg==1
     stop=length(ecg);
 end
 
-qrs_temp=jqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
+qrs_temp=mhrv.ecg.jqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
 qrs{1} = qrs_temp(:);
 
 start = start+segsizeSamp;
@@ -69,7 +69,7 @@ for ch=2:NbSeg-1
     dTplus  = round(fs);
     dTminus = round(fs);
 
-    qrs_temp=jqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
+    qrs_temp=mhrv.ecg.jqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
 
     NewQRS = (start-1)-dTminus+qrs_temp;
     NewQRS(NewQRS>stop) = [];
@@ -97,7 +97,7 @@ if NbSeg>1
     stop  = length(ecg);
     dTplus  = 0;
     dTminus = round(fs);
-    qrs_temp=jqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
+    qrs_temp=mhrv.ecg.jqrs(ecg(start-dTminus:stop+dTplus),fs,thres,rp,0);
 
     NewQRS = (start-1)-dTminus+qrs_temp;
     NewQRS(NewQRS>stop) = [];
