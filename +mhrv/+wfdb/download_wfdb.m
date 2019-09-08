@@ -31,24 +31,24 @@ t0 = cputime;
 % OSX
 if (ismac)
     fprintf('[%.3f] >> download_wfdb: Detected OSX.\n', cputime-t0);
-    url = 'https://homebrew.bintray.com/bottles-science/wfdb-10.5.24.yosemite.bottle.1.tar.gz';
+    url = 'https://mirrors.aliyun.com/homebrew/homebrew-bottles/bottles-science/wfdb-10.5.24.yosemite.bottle.1.tar.gz';
 end
 
 % Windows
 if (ispc)
     if strcmpi(computer('arch'), 'win32')
         fprintf('[%.3f] >> download_wfdb: Detected Win32.\n', cputime-t0);
-        url = 'http://physionet.org/physiotools/binaries/windows/old/wfdb-10.5.24-mingw32.zip';
+        url = 'http://archive.physionet.org/physiotools/binaries/windows/old/wfdb-10.5.24-mingw32.zip';
     else
         fprintf('[%.3f] >> download_wfdb: Detected Win64.\n', cputime-t0);
-        url = 'http://physionet.org/physiotools/binaries/windows/old/wfdb-10.5.24-mingw64.zip';
+        url = 'http://archive.physionet.org/physiotools/binaries/windows/old/wfdb-10.5.24-mingw64.zip';
     end 
 end
 
 % Linux
 if (isunix && ~ismac)
     fprintf('[%.3f] >> download_wfdb: Detected Linux.\n', cputime-t0);
-    url = 'https://physionet.org/physiotools/binaries/intel-linux/wfdb-10.5.8-i686-Linux.tar.gz';
+    url = 'https://archive.physionet.org/physiotools/binaries/intel-linux/wfdb-10.5.8-i686-Linux.tar.gz';
 end
 
 %% Clear output dir if necessary, but ask user first...
