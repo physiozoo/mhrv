@@ -108,17 +108,19 @@ The above steps should be enough to get most users started. If however you
 don't want `mhrv_init` to download the WFDB tools for you, or the automatic
 installation fails for some reason, you can install them yourself.
 
-  * On OSX, you can use [homebrew](http://brew.sh) to install it easily with
-      `brew install wfdb`.
-  * On Windows and Linux, you should either [download the WFDB
-      binaries](https://physionet.org/physiotools/binaries/)
-      for your OS or compile them [from
-      source](https://physionet.org/physiotools/wfdb.shtml#downloading)
-      using the instructions on their website.
+  * On macOS, you can use [homebrew](http://brew.sh) to install it easily with
+    `brew tap brewsci/science && brew install wfdb`.
+  * On any OS (including macOS), you can compile the WFDB binaries [from
+    source](https://archive.physionet.org/physiotools/wfdb.shtml)
+    using the instructions on their website.
 
 Once you have the binaries, place them in some folder on your `$PATH` or
-somewere under the repo's root folder (`bin/wfdb` would be a good choice as it's
-`.gitignore`d) and they will be found and used automatically. Or, if you would
+somewhere under the repo's root folder (`bin/wfdb` would be a good choice as it's
+`.gitignore`d) and they will be found and used automatically.
+You can replace the binaries that were automatically downloaded with your
+compiled ones.
+
+If you would
 like to manually specify a path outside the repo which contains the WFDB
 binaries (e.g. `/usr/local/bin` for a homebrew install), you can edit
 [`cfg/defaults.yml`](https://github.com/avivrosenberg/mhrv/blob/master/cfg/defaults.yml)
