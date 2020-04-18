@@ -115,8 +115,8 @@ if should_plot
     % MSE
     figure(f1);
     ax = subplot(3,1,3);
-    [~,~,mse_pd] = mse(y);
-    plot_mse(ax, mse_pd);
+    [~,~,mse_pd] = mhrv.rri.mse(y);
+    mhrv.plots.plot_mse(ax, mse_pd);
     
     figure;
     plot(f_axis, pxx_y, 'DisplayName', 'ANS Model', 'LineWidth', 2); hold on;

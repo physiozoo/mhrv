@@ -71,7 +71,7 @@ for ii = 1:length(methods)
     % Get PSD and normalize if requested
     pxx = plot_data.(curr_pxx_type);
     if normalize
-        total_power = freqband_power(pxx, f_axis, [min(f_axis), max(f_axis)]);
+        total_power = mhrv.util.freqband_power(pxx, f_axis, [min(f_axis), max(f_axis)]);
         pxx = pxx ./ total_power;
         pxx = pxx ./ max(pxx);
     else
