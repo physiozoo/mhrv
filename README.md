@@ -125,14 +125,14 @@ run /Users/myname/mhrv/mhrv_init.m
 
 After this the toolbox will be ready to use, regardless of your `pwd`.
 
-### Manual WFDB Installation (Optional)
+### Manual WFDB Installation
 
 The above steps should be enough to get most users started.
 In some cases `mhrv_init` may fail to download the correct binaries for you, or
 you may want to install them yourself.
 
   * On macOS, you can use [homebrew](http://brew.sh). First install homebrew,
-    then install `wfdb` with `brew tap brewsci/science && brew install wfdb`.
+    then install `wfdb` with `brew tap brewsci/science && brew install -s wfdb`.
   * On any OS (including macOS), you can compile the WFDB binaries [from
     source](https://archive.physionet.org/physiotools/wfdb.shtml)
     using the instructions on their website.
