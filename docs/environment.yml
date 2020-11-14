@@ -1,6 +1,7 @@
 name: mhrv-docs
 dependencies:
-  - python=3.6
+  - python=3.8
+  - pip
   - pip:
     - sphinx
     - sphinx-autobuild
