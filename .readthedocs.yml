@@ -16,4 +16,4 @@ formats:
 
 # We specify the all the requirements in the conda env file.
 conda:
-    environment: docs/environment.lock.yml
+    environment: docs/environment.yml
