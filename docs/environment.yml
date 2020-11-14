@@ -1,11 +1,14 @@
 name: mhrv-docs
+
+channels:
+  - conda-forge
+
 dependencies:
   - python=3.8
+  - sphinx=3.3
+  - sphinx-autobuild
+  - sphinx_rtd_theme
+  - recommonmark
   - pip
   - pip:
-    - sphinx
-    - sphinx-autobuild
-    - sphinx_rtd_theme
-    - recommonmark
     - sphinxcontrib-matlabdomain
-    - m2r
