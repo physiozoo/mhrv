@@ -40,11 +40,11 @@
         * Total and normalized power in (configurable) VLF, LF, HF and custom
           user-defined bands.
         * Spectral power estimation using Lomb, Auto Regressive, Welch and FFT methods.
-        * Additional frequency-domain features: LF/HF ratio, VLF/LF ratio, LF and HF peak
+        * Additional frequency-domain features: LF/HF ratio, LF and HF peak
           frequencies, power-law scaling exponent (beta).
     * `mhrv.hrv.hrv_nonlinear` - Nonlinear methods:
         * Short- and long-term scaling exponents (alpha1, alpha2) based on DFA.
-        * Sample Entropy, Tail Entropy (mean sample entropy of the highest scale factors) and Multiscale sample entropy (MSE).
+        * Sample Entropy and Multiscale sample entropy (MSE).
         * Poincaré plot metrics (SD1, SD2).
     * `mhrv.hrv.hrv_fragmentation` - Time-domain RR interval fragmentation analysis [5].
 
