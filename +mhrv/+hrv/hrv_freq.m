@@ -33,7 +33,7 @@ function [ hrv_fd, pxx, f_axis, plot_data ] = hrv_freq( nni, varargin )
 %     for the LF and HF bands, the normalization will be performed
 %     by the (LF+HF) power. This is the standard method used in
 %     many papers to normalize these bands. In any case, VLF and
-%     user-defined custom bands are not affected by this parameter.
+%     user-defined custom bands are normalized by total power.
 %   - band_factor: A factor that will be applied to the frequency bands. Useful
 %     for shifting them linearly to adapt to non-human data. Default: 1.0 (no
 %     shift).
