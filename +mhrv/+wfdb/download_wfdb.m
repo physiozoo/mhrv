@@ -31,7 +31,7 @@ t0 = cputime;
 % OSX
 if (ismac)
     fprintf('[%.3f] >> download_wfdb: Detected OSX.\n', cputime-t0);
-    url = 'https://mirrors.aliyun.com/homebrew/homebrew-bottles/bottles-science/wfdb-10.5.24.yosemite.bottle.1.tar.gz';
+    url = 'https://www.dropbox.com/s/w73ivsvma6t7ahs/wfdb-10.5.24.yosemite.bottle.1.tar.gz?dl=1';
 end
 
 % Windows
