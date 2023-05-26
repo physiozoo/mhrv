@@ -35,7 +35,7 @@ p.addRequired('out_filename', @ischar);
 p.addParameter('width', DEFAULT_WIDTH, @isscalar);
 p.addParameter('height', DEFAULT_HEIGHT, @isscalar);
 p.addParameter('font_size', DEFAULT_FONT_SIZE, @isscalar);
-p.addParameter('font_weight', DEFAULT_FONT_WEIGHT, @isscalar);
+p.addParameter('font_weight', DEFAULT_FONT_WEIGHT, @ischar);
 p.addParameter('font', DEFAULT_FONT, @ischar);
 p.addParameter('output_format', DEFAULT_OUTPUT_FORMAT, @(x)ischar(x)||isempty(x));
 p.addParameter('renderer', DEFAULT_RENDERER, @(x)strcmp(x,'painters')||strcmp(x,'opengl'));
