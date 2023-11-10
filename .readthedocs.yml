@@ -13,6 +13,11 @@ sphinx:
 formats:
   - pdf
 
+# Configure build for conda support
+build:
+  os: "ubuntu-22.04"
+  tools:
+    python: "mambaforge-22.9"
 
 # We specify the all the requirements in the conda env file.
 conda:
